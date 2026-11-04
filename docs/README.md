@@ -4,7 +4,7 @@ OurCampus 将校园地点、同学社区与 AUV 助手放在同一个入口。�
 
 | 文档 | 内容 |
 | --- | --- |
-| [Android 下载](download.md) | 1.17 体验包、安装说明、文件校验及源码对应范围。 |
+| [Android 下载](download.md) | 1.18 体验包、安装说明、文件校验及源码对应范围。 |
 | [快速开始](quickstart.md) | 获取源码、填写配置、启动 Web 与构建 Android。 |
 | [系统架构](architecture.md) | 前端模块、Supabase 服务、AUV 网关与校园信息流程。 |
 | [部署说明](deployment.md) | Web 构建设置、后台配置和 Android 交付。 |

@@ -8,11 +8,11 @@
 
 连接校园地图、动态信息与个人安排的校园服务应用。
 
-[<img src="https://img.shields.io/badge/Android-1.17_体验版-176B55?style=for-the-badge&amp;logo=android&amp;logoColor=white" alt="下载 Android 1.17 体验版">](https://github.com/zhchunyu/Chun-Yu/releases/tag/v1.17)
+[<img src="https://img.shields.io/badge/Android-1.18_体验版-176B55?style=for-the-badge&amp;logo=android&amp;logoColor=white" alt="下载 Android 1.18 体验版">](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.18)
 [<img src="https://img.shields.io/badge/ModelScope-模型下载-6254A4?style=for-the-badge" alt="ModelScope 模型发布页">](https://modelscope.cn/models/chunyuuu/Qwen2.5-7B-Instruct/summary)
 [<img src="https://img.shields.io/badge/SwanLab-实验记录-2C689C?style=for-the-badge" alt="SwanLab 实验记录">](https://swanlab.cn/@zhchunyu/OurCampus-AUV-training/v1/44bg6m/overview)
 
-[安装与使用](docs/download.md) · [微信反馈群](#交流与反馈) · [快速开始](docs/quickstart.md) · [文档中心](docs/README.md) · [Issues](https://github.com/zhchunyu/Chun-Yu/issues)
+[安装与使用](docs/download.md) · [微信反馈群](#交流与反馈) · [快速开始](docs/quickstart.md) · [文档中心](docs/README.md) · [Issues](https://github.com/zhchunyu/Our-Campus/issues)
 
 `React` · `Vite` · `Capacitor` · `Supabase` · `Qwen / QLoRA`
 
@@ -36,19 +36,19 @@
 
 **个人情境关联。** 用户主动选择地点或课表上下文，助手经鉴权网关读取允许访问的资料，再提供相关建议。收藏、路线和订阅共同构成个人服务入口，定位由用户主动触发。
 
-## 下载 Android 1.17
+## 下载 Android 1.18
 
-**[下载 OurCampus-1.17.apk](https://github.com/zhchunyu/Chun-Yu/releases/download/v1.17/OurCampus-1.17.apk)** · [版本说明与校验](docs/download.md)
+**[下载 OurCampus-1.18.apk](https://github.com/zhchunyu/Our-Campus/releases/download/v1.18/OurCampus-1.18.apk)** · [版本说明与校验](docs/download.md)
 
-- Android 7.0 及以上；安装包约 **45.23 MiB**，版本号 **1.17 / 18**。
-- 安装包由团队提供，发布时已检查文件完整性；安装后的实际体验欢迎通过反馈群或 Issues 反馈。
-- 此次发布的是独立体验包。仓库现有 Android 构建配置仍为 1.11，源码与二进制的对应范围见[版本说明](docs/download.md#源码与安装包的关系)。
+- Android 7.0 及以上；安装包约 **34.02 MiB**，版本号 **1.18 / 19**。
+- 新增每日课表、当天时间线和下一节课，修复教学周浏览重置；保留头像、个人主页与应用内更新。
+- 已核验 APK 哈希、签名和线上版本记录。1.17 可在“我的 → 应用设置 → 检查更新”升级；1.16 及更早需手动覆盖安装。源码对应与验收范围见[版本说明](docs/download.md#源码与安装包的关系)。
 
 ## 源码、模型与实验
 
 | 入口 | 可以找到什么 |
 | --- | --- |
-| [GitHub 源码](https://github.com/zhchunyu/Chun-Yu) | Web 与 Android 工程、业务网关、数据库脚本及项目文档。 |
+| [GitHub 源码](https://github.com/zhchunyu/Our-Campus) | Web 与 Android 工程、业务网关、数据库脚本及项目文档。 |
 | [ModelScope 模型发布页](https://modelscope.cn/models/chunyuuu/Qwen2.5-7B-Instruct/summary) | 团队提供的模型下载入口，文件与使用条件以模型页为准。 |
 | [SwanLab 实验记录](https://swanlab.cn/@zhchunyu/OurCampus-AUV-training/v1/44bg6m/overview) | 训练曲线与实验展示；已有 V7、V10 曲线由历史训练日志后续导入。 |
 | [训练与评测资料](models/auv/) | 数据准备、版本配置、推理部署与验收脚本。 |
@@ -60,8 +60,8 @@ ModelScope 当前链接名为 `Qwen2.5-7B-Instruct`；仓库 [V10 配置](models
 需要 Node.js **22.12 或以上**与 npm。
 
 ```powershell
-git clone https://github.com/zhchunyu/Chun-Yu.git
-cd Chun-Yu/apps/ourcampus
+git clone https://github.com/zhchunyu/Our-Campus.git
+cd Our-Campus/apps/ourcampus
 Copy-Item .env.example .env.local
 npm ci
 npm run dev
@@ -84,7 +84,7 @@ npm run dev
   <img src="docs/assets/wechat-feedback-2026-10-25.png" width="280" alt="Our Campus 微信用户反馈群二维码，原图注明 2026 年 11 月 1 日前有效">
 </p>
 
-二维码原图注明 **2026 年 11 月 1 日前有效**。过期或群满时，请通过 [Issues](https://github.com/zhchunyu/Chun-Yu/issues) 联系维护者更新；Issues 也是长期反馈入口。
+二维码原图注明 **2026 年 11 月 1 日前有效**。过期或群满时，请通过 [Issues](https://github.com/zhchunyu/Our-Campus/issues) 联系维护者更新；Issues 也是长期反馈入口。
 
 反馈时附上**应用版本、设备型号、复现步骤和相关截图**。公开反馈请先遮挡账号、联系方式等个人资料。
 
@@ -95,8 +95,8 @@ npm run dev
   <img src="docs/assets/map-preview.png" width="300" alt="2026 年 10 月 6 日归档版本的 OurCampus 地图界面">
 </p>
 
-以上为归档版本地图截图，当前界面请以 1.17 安装包实际显示为准。
+以上为归档版本地图截图，当前界面请以 1.18 安装包实际显示为准。
 
 </details>
 
-<sub>首页与安装包发布资料更新：2026-10-25。后台系统推送、跨设备流程等具体验收范围以对应版本记录为准。</sub>
+<sub>首页与安装包发布资料复核：2026-11-04。后台系统推送、跨设备流程等具体验收范围以对应版本记录为准。</sub>
