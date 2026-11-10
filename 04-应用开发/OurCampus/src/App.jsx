@@ -99,6 +99,17 @@ function App() {
   const [noticeId, setNoticeId] = useState(null)
   const openInformation = useCallback((seed = null, tab = 'messages') => { setMemberTarget(null); setInformationSeed(seed ? { userId: auth.user?.id ?? null, draft: seed } : null); setInformationTab(seed ? 'publish' : tab); setNoticeId(null); setInformationOpen(true) }, [auth.user?.id])
   const closeInformation = useCallback(() => { setInformationOpen(false); setNoticeId(null); setInformationSeed(null) }, [])
+  const openChatFromNotice = useCallback((regionId) => {
+    if (typeof regionId !== 'string' || !regionId) return
+    closeInformation()
+    setMemberTarget(null)
+    setLostFoundPublishToken(0)
+    setHallRegionId(regionId)
+    setHallSection('chat')
+    setHallFullscreen(true)
+    setActiveTab('hall')
+    dispatch({ type: 'CLEAR_SELECTED_LOCATION' })
+  }, [closeInformation])
   const openNotice = useCallback((id) => { setMemberTarget(null); setInformationSeed(null); setInformationTab('messages'); setNoticeId(id); setInformationOpen(true) }, [])
   const push = useCampusPush(auth.user?.id, openNotice)
   const communityPosts = useMemo(() => {
@@ -622,7 +633,7 @@ function App() {
       {myPublicationsOpen && <MyPublicationsPage key={`${auth.user?.id ?? 'guest'}:${myPublicationsFilter}`} initialFilter={myPublicationsFilter} userId={auth.user?.id} reports={information.reports} posts={communityPosts} feedbacks={state.placeFeedback} locations={state.locations} refreshToken={myPublicationsRefresh} covered={informationOpen || Boolean(reviewLocation)} onClose={closeMyPublications} onRefresh={information.refresh} onOpenCloudReports={() => openInformation(null, 'reports')} onOpenMyLostFound={() => { closeMyPublications(); handleOpenHall('lost-found', true) }} onOpenReview={(restaurantId, windowId) => { setReviewWindowId(windowId); setReviewLocationId(restaurantId) }} onOpenFeedback={() => { closeMyPublications(); setServiceSection('repair'); setActiveTab('explore') }} onSelectLocation={(id) => { closeMyPublications(); handleExploreLocation(id) }} />}
       {visibleMemberTarget && !loginMode && <MemberProfilePage key={`${visibleMemberTarget.viewerId}:${visibleMemberTarget.userId}`} userId={visibleMemberTarget.userId} viewerId={visibleMemberTarget.viewerId} onClose={closeMemberProfile} />}
       <CampusNoticeBanner userId={auth.user?.id} information={information} covered={informationOpen || Boolean(loginMode) || auvOpen || Boolean(visibleMemberTarget)} onOpen={openNotice} />
-      {informationOpen && <NotificationCenter key={`${auth.user?.id ?? 'guest'}:${informationTab}`} auth={auth} information={information} push={push} preferences={notificationPreferences} favoriteIds={state.favoriteLocationIds} locations={state.locations} initialTab={informationTab} initialDraft={informationDraftForUser(informationSeed, auth.user?.id)} noticeId={noticeId} onClose={closeInformation} onOpenLogin={() => { setInformationOpen(false); openLogin() }} onSelectLocation={(id) => { closeInformation(); closeMyPublications(); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { closeInformation(); closeMyPublications(); handlePlanRouteToLocation(id) }} />}
+      {informationOpen && <NotificationCenter onOpenChat={openChatFromNotice} key={`${auth.user?.id ?? 'guest'}:${informationTab}`} auth={auth} information={information} push={push} preferences={notificationPreferences} favoriteIds={state.favoriteLocationIds} locations={state.locations} initialTab={informationTab} initialDraft={informationDraftForUser(informationSeed, auth.user?.id)} noticeId={noticeId} onClose={closeInformation} onOpenLogin={() => { setInformationOpen(false); openLogin() }} onSelectLocation={(id) => { closeInformation(); closeMyPublications(); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { closeInformation(); closeMyPublications(); handlePlanRouteToLocation(id) }} />}
       {reviewLocation && <RestaurantReviewsPage onOpenMemberProfile={openMemberProfile} key={`${reviewLocation.id}:${auth.user?.id ?? 'guest'}:${reviewWindowId ?? ''}`} restaurant={reviewLocation} initialWindowId={reviewWindowId} authorName={auth.profile?.nickname ?? '我'} role={auth.role} userId={auth.user?.id} onOpenLogin={openLogin} onClose={closeRestaurantReviews} />}
       {timetableOpen && <TimetablePage key={auth.user?.id ?? 'guest'} userId={auth.user?.id} onClose={closeTimetable} onAskAi={(prompt) => { setTimetableOpen(false); setAuvSeed({ userId: auth.user?.id ?? null, prompt }); setAuvOpen(true) }} />}
       {auvOpen && <AuvAssistantPage initialDraft={auvSeed?.userId === (auth.user?.id ?? null) ? auvSeed?.prompt ?? '' : ''} auth={auth} locations={state.locations} favoriteLocationIds={notificationPreferences.value.favorite_location_ids} onClose={closeAuv} onOpenLogin={() => { setAuvOpen(false); openLogin() }} onSelectLocation={(id) => { setAuvOpen(false); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { setAuvOpen(false); handlePlanRouteToLocation(id) }} />}
