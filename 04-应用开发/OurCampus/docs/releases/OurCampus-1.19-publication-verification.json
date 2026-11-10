@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-10",
+  "release_id": 440375197,
+  "url": "https://github.com/zhchunyu/Our-Campus/releases/tag/v1.19",
+  "tag": "v1.19",
+  "tag_commit": "f4fcc2ddb812a9ae915611cc09b651466ed72620",
+  "prerelease": true,
+  "anonymous_download_verified": true,
+  "apk_download_url": "https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/OurCampus-1.19.apk",
+  "apk_size_bytes": 35680287,
+  "apk_sha256": "a06af4ce5a8b070f251fd1e87fac68791dda9f28934409f193c8b9cf7b40234f",
+  "assets": [
+    {
+      "name": "apk-verification.json",
+      "size": 1129,
+      "digest": "sha256:aa89add45bb1a2029714d6e70df4643af1fe5a13cae51d90c0ca8893b5471f97",
+      "browser_download_url": "https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/apk-verification.json"
+    },
+    {
+      "name": "OurCampus-1.19.apk",
+      "size": 35680287,
+      "digest": "sha256:a06af4ce5a8b070f251fd1e87fac68791dda9f28934409f193c8b9cf7b40234f",
+      "browser_download_url": "https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/OurCampus-1.19.apk"
+    },
+    {
+      "name": "publish-after-verification.sql",
+      "size": 2850,
+      "digest": "sha256:05cce70870d562904802019da61471bb5499104b3611bc47947429f098751f38",
+      "browser_download_url": "https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/publish-after-verification.sql"
+    },
+    {
+      "name": "release-handoff.md",
+      "size": 5760,
+      "digest": "sha256:7177fc778a20fc3a0b5eeca9b2b4cb89d1f7aca17867ed8a80575d0b9b0470b0",
+      "browser_download_url": "https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/release-handoff.md"
+    },
+    {
+      "name": "release-manifest.json",
+      "size": 3295,
+      "digest": "sha256:e87a1aaf3845accccd1c8390b17af13991130d07f91186f8c54542c23e2a8478",
+      "browser_download_url": "https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/release-manifest.json"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "size": 86,
+      "digest": "sha256:ad49fc0d2edc16be8aa9b45e0df9f1bc04058c28df20b585034dd37abfd96f1e",
+      "browser_download_url": "https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/SHA256SUMS.txt"
+    }
+  ],
+  "supabase_publication": "handoff_to_teammate",
+  "physical_overlay_install_verified": false,
+  "actual_push_delivery_verified": false,
+  "pull_request_url": "https://github.com/zhchunyu/Our-Campus/pull/10"
+}

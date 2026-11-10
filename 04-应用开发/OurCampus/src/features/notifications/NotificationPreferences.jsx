@@ -16,7 +16,7 @@ export function NotificationPreferences({ preferences, favoriteIds = [], locatio
   const favorites = preferences.value.favorite_location_ids.map((id) => locations.find((l) => l.id === id)?.name).filter(Boolean)
   return <section className="information-card information-preferences">
     <h3>只提醒重要和与你相关的事</h3>
-    <p>普通新发布留在社区。这里接收重要校园通知、可能匹配的失物线索，以及收藏地点或明确兴趣相关的动态。</p>
+    <p>这里接收重要校园通知、可能匹配的失物线索，以及收藏地点或明确兴趣相关的动态。聊天新消息可在上方按地区开启。</p>
     {preferences.error && <p className="information-small" role="status">{preferences.error}</p>}
     {preferences.status === 'loading' && <p role="status">正在读取提醒偏好…</p>}
     <label className="information-consent"><input type="checkbox" disabled={disabled} checked={preferences.value.match_alerts} onChange={(e) => run(() => preferences.save({ match_alerts: e.target.checked }), '失物匹配提醒偏好已保存。')} />提醒与我发布的失物信息可能匹配的线索</label>
