@@ -39,3 +39,16 @@ export async function getHallNotificationMessage(notice, client = requireSupabas
   if (error) throw error
   return hallNotificationRegion(notice, data) ? data : null
 }
+
+// A detail may refer to a notification older than the currently loaded page.
+// Revalidate its own row and source instead of treating absence from that page as deletion.
+export async function getCurrentHallNotificationDetail(notice, userId, client = requireSupabase()) {
+  if (!UUID.test(userId ?? '') || notice?.recipient_id !== userId || !UUID.test(notice?.id ?? '')
+    || notice.related_type !== 'message') return null
+  const { data, error } = await client.from('notifications').select('*')
+    .eq('id', notice.id).eq('recipient_id', userId).maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  const target = await getHallNotificationMessage(data, client)
+  return target ? { notice: data, target } : null
+}

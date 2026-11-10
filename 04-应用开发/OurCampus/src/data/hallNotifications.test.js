@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('./supabaseClient.js', () => ({ requireSupabase: () => { throw new Error('Inject a test client') } }))
-import { hallSubscriptionScope, isHallSubscription, hallNotificationRegion, setHallNotificationSubscription, getHallNotificationMessage } from './hallNotifications.js'
+import { hallSubscriptionScope, isHallSubscription, hallNotificationRegion, setHallNotificationSubscription, getHallNotificationMessage, getCurrentHallNotificationDetail } from './hallNotifications.js'
 
 const userId = '11111111-1111-4111-8111-111111111111'
 const messageId = '22222222-2222-4222-8222-222222222222'
@@ -75,5 +75,33 @@ describe('chat notice destinations', () => {
     expect(await getHallNotificationMessage({ ...notice, related_id: 'not-a-uuid' }, client)).toBeNull()
     expect(await getHallNotificationMessage({ ...notice, related_type: 'event' }, client)).toBeNull()
     expect(client.from).not.toHaveBeenCalled()
+  })
+})
+
+describe.each(['hall-message', 'hall-match'])('open %s notice refresh', (type) => {
+  const notice = { id: '33333333-3333-4333-8333-333333333333', recipient_id: userId, type, related_type: 'message', related_id: messageId }
+  const message = { id: messageId, region_id: 'teaching', content: 'Live message', deleted_at: null }
+  it('rechecks an older notice by ID rather than relying on the recent notification page', async () => {
+    const client = mockClient()
+    client.query.maybeSingle.mockResolvedValueOnce({ data: notice }).mockResolvedValueOnce({ data: message })
+    expect(await getCurrentHallNotificationDetail(notice, userId, client)).toEqual({ notice, target: message })
+    expect(client.from.mock.calls).toEqual([['notifications'], ['hall_messages']])
+    expect(client.query.eq).toHaveBeenCalledWith('recipient_id', userId)
+  })
+  it('clears an opened detail when the notice is removed by unsubscribe or retraction', async () => {
+    const client = mockClient({ data: null })
+    expect(await getCurrentHallNotificationDetail(notice, userId, client)).toBeNull()
+    expect(client.from.mock.calls).toEqual([['notifications']])
+  })
+  it.each([null, { ...message, deleted_at: '2026-11-10' }])('does not reuse cached text when the live source is unavailable', async (source) => {
+    const client = mockClient()
+    client.query.maybeSingle.mockResolvedValueOnce({ data: notice }).mockResolvedValueOnce({ data: source })
+    expect(await getCurrentHallNotificationDetail(notice, userId, client)).toBeNull()
+  })
+  it('does not query another account and surfaces a failed revalidation', async () => {
+    const client = mockClient({ error: new Error('offline') })
+    expect(await getCurrentHallNotificationDetail(notice, messageId, client)).toBeNull()
+    expect(client.from).not.toHaveBeenCalled()
+    await expect(getCurrentHallNotificationDetail(notice, userId, client)).rejects.toThrow('offline')
   })
 })

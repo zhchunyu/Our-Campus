@@ -11,7 +11,7 @@ import { CampusPush, disablePushDevice, isAndroidPush } from '../../data/campusP
 import { orderRelevantNotices } from '../../data/notificationRelevance.js'
 import { AiChatReminderPreferences, NotificationPreferences } from './NotificationPreferences.jsx'
 import { HallNotificationPreferences } from './HallNotificationPreferences.jsx'
-import { getHallNotificationMessage, hallNotificationRegion } from '../../data/hallNotifications.js'
+import { getHallNotificationMessage, getCurrentHallNotificationDetail, hallNotificationRegion } from '../../data/hallNotifications.js'
 import './notifications.css'
 
 const time = (value) => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -95,6 +95,25 @@ export function NotificationCenter({ auth, information, push, preferences, favor
     return () => { window.removeEventListener('keydown', key); previous?.focus() }
   }, [onClose])
   useEffect(() => { setDetail(null); setError(''); setSuccess(''); setBusy(false); if (draftOwner.current !== userId) { draftOwner.current = userId; setDraft(blankDraft()) } }, [userId])
+  const chatDetailId = detail?.notice.related_type === 'message' ? detail.notice.id : null
+  useEffect(() => {
+    if (!chatDetailId || !userId) return undefined
+    let live = true
+    const refresh = async () => {
+      try {
+        const current = await getCurrentHallNotificationDetail(detail.notice, userId)
+        if (!live || userRef.current !== userId) return
+        setDetail(previous => previous?.notice.id === chatDetailId ? current : previous)
+        if (!current) setError('这条聊天消息已撤回，或聊天提醒已取消。')
+      } catch (error) {
+        if (!live || userRef.current !== userId) return
+        setDetail(previous => previous?.notice.id === chatDetailId ? null : previous)
+        setError(informationError(error))
+      }
+    }
+    refresh()
+    return () => { live = false }
+  }, [chatDetailId, userId, information.notices])
   const run = async (fn, text) => {
     if (busy) return
     const actor = userId
