@@ -1,0 +1,12 @@
+.profile-avatar { display: inline-grid; flex-shrink: 0; place-items: center; overflow: hidden; width: 100%; height: 100%; color: #13674f; background: #e6eee5; font-weight: 700; }
+.profile-avatar > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.mobile-hall-message__profile { display: inline-grid; flex: 0 0 34px; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 11px; overflow: hidden; cursor: pointer; }
+.mobile-hall-message__author { overflow: hidden; min-width: 0; max-width: 40%; padding: 4px 0; border: 0; color: inherit; background: transparent; font: inherit; text-overflow: ellipsis; cursor: pointer; }
+.mobile-hall-message__profile:focus-visible, .mobile-hall-message__author:focus-visible { outline: 2px solid #13674f; outline-offset: 3px; }
+.personal-avatar.profile-avatar { width: 66px; height: 66px; }
+.personal-avatar.personal-identity__avatar { width: 78px; height: 78px; }
+.personal-avatar.personal-sheet__preview-avatar { width: 61px; height: 61px; }
+.personal-local-avatar { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; padding: 12px; margin: 12px 0; border: 1px solid #dfe5dd; border-radius: 13px; font-size: 12px; }
+.personal-local-avatar .personal-avatar { width: 44px; height: 44px; font-size: 18px; }
+.personal-local-avatar p { flex: 1; margin: 0; min-width: 130px; color: #68766d; }
+.personal-local-avatar button { min-height: 40px; padding: 0 10px; border: 1px solid #13674f; border-radius: 10px; background: white; color: #13674f; }

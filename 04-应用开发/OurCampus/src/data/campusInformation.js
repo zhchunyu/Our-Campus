@@ -1,3 +1,4 @@
+import { normalizePostImagePaths, safePostImagePaths } from './postImages.js'
 import { requireSupabase } from './supabaseClient.js'
 
 export const INFORMATION_KINDS = { activity: '校园活动', construction: '施工', closure: '封路 / 关闭', 'water-power': '停水停电', crowd: '排队 / 拥挤', notice: '校园通知', lost: '寻物', found: '招领', repair: '设施报修', feedback: '地点反馈' }
@@ -41,4 +42,33 @@ export function cloudEventRecord(row) {
     startAt: row.start_at, endAt: row.end_at, status: row.status, heatLevel: row.heat_level,
     affectedEdgeIds: row.affected_edge_ids ?? [], visibleTo: row.visible_to, isCloud: true, isDemo: row.is_demo,
     informationKind: row.information_kind, informationScope: row.information_scope }
+}
+
+export function eventReportImagePaths(reports, eventId) {
+  return [...new Set((reports ?? []).filter((report) => report.status === 'published' && report.event_id === eventId).flatMap((report) => safePostImagePaths(report.details?.image_paths)))].slice(0, 3)
+}
+
+export function reportImageDetails(details = {}, uploaded = [], ownerId) {
+  const paths = normalizePostImagePaths([...(details.image_paths ?? []), ...uploaded], ownerId)
+  return paths.length ? { ...details, image_paths: paths } : { ...details }
+}
+
+// Embed reviewed source reports per event, independently of the recent report feed.
+export async function listActiveInformationEvents() {
+  const { data, error } = await requireSupabase().from('campus_events')
+    .select('*,image_reports:campus_reports!campus_reports_event_id_fkey(event_id,status,details)')
+    .eq('source', 'community-reviewed').eq('status', 'active').gt('end_at', new Date().toISOString())
+    .eq('image_reports.status', 'published')
+    .order('created_at', { referencedTable: 'image_reports', ascending: false })
+    .limit(20, { referencedTable: 'image_reports' })
+    .order('start_at', { ascending: false }).limit(100)
+  if (error) throw error
+  return (data ?? []).map((row) => ({ ...cloudEventRecord(row), imagePaths: eventReportImagePaths(row.image_reports, row.id) }))
+}
+
+export function informationDraftForUser(seed, viewerId) {
+  if (!seed?.draft) return undefined
+  if (seed.userId === (viewerId ?? null)) return seed.draft
+  if (seed.userId === null && !seed.draft.sourceMessageId && !seed.draft.details?.image_paths?.length) return seed.draft
+  return undefined
 }

@@ -1,0 +1,37 @@
+.app-update-notice {
+  position: fixed;
+  z-index: 80;
+  right: 16px;
+  bottom: calc(90px + env(safe-area-inset-bottom));
+  left: 16px;
+  max-width: 440px;
+  max-height: 45dvh;
+  margin: 0 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 15px 16px;
+  border: 1px solid #dce6da;
+  border-radius: 16px;
+  color: #284c38;
+  background: #fbfcf8;
+  box-shadow: 0 6px 22px #203d351a;
+  overflow-wrap: anywhere;
+}
+.app-update-notice__heading, .app-update-settings__heading { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.5; }
+.app-update-notice__heading svg, .app-update-settings__heading svg { flex-shrink: 0; }
+.app-update-notice__heading strong, .app-update-settings__heading strong { font-weight: 600; }
+.app-update-notes { max-height: 18dvh; margin: 10px 0; padding-left: 19px; overflow-y: auto; color: #586959; font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
+.app-update-notes li + li { margin-top: 3px; }
+.app-update-hint, .app-update-installed { margin: 7px 0 0; color: #748173; font-size: 12px; line-height: 1.5; }
+.app-update-error { margin: 8px 0 0; color: #a34f36; font-size: 12px; line-height: 1.5; }
+.app-update-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.app-update-actions > button { min-height: 40px; padding: 8px 14px; border: 1px solid #dce6da; border-radius: 9px; font-size: 13px; line-height: 1.4; }
+.app-update-actions > .app-update-primary { border-color: #315e4c; color: #fff; background: #315e4c; }
+.app-update-actions > .app-update-secondary { color: #315e4c; background: #fff; }
+.app-update-actions > button:disabled { opacity: .55; cursor: default; }
+.app-update-actions > button:focus-visible { outline: 2px solid #315e4c; outline-offset: 3px; }
+.app-update-settings { padding: 17px; border-bottom: 1px solid #e7ebe3; color: #284c38; background: #fff; overflow-wrap: anywhere; }
+.app-update-result { margin: 10px 0 0; color: #586959; font-size: 13px; line-height: 1.6; }
+@media (max-height: 560px) {
+  .app-update-notice { bottom: calc(76px + env(safe-area-inset-bottom)); max-height: 55dvh; }
+}

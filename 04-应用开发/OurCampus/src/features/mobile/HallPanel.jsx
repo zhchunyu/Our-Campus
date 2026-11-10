@@ -7,6 +7,10 @@ import { CampusHotspotsPanel } from './CampusHotspotsPanel.jsx'
 import { LostFoundPanel } from './LostFoundPanel.jsx'
 import { RestaurantHallSection } from './RestaurantHallSection.jsx'
 import { CampusSticker } from './CampusSticker.jsx'
+import { PostImagePicker } from './PostImagePicker.jsx'
+import { PostImageGallery } from './PostImageGallery.jsx'
+import { usePostImageDraft } from './usePostImageDraft.js'
+import { ProfileAvatar } from './ProfileAvatar.jsx'
 import { DEFAULT_PERSONAL_ARTWORK } from '../../data/personalHome.js'
 
 const COMPOSER_REGIONS = CAMPUS_HALL_REGIONS.filter((region) => region.id !== 'all')
@@ -14,8 +18,9 @@ const REGION_LABELS = new Map(COMPOSER_REGIONS.map((region) => [region.id, regio
 const SECTION_TITLES = { chat: '校园聊天', hotspots: '校园热点', 'lost-found': '失物招领', restaurants: '餐厅评价' }
 const SECTION_DESCRIPTIONS = { hotspots: '查看校园最新动态', 'lost-found': '查看寻物与招领信息', restaurants: '查看餐厅、窗口与同学评价' }
 
-export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMessage, activeSection, onSectionChange, isFullscreen = false, onCloseSection, locations, hotspots, posts, lostFoundFilter, onLostFoundFilterChange, onSubmitPost, onPostStatusChange, onDeletePost, onSelectLocation, onPlanRouteToLocation, onOpenRestaurantReviews, showLostFound, onLostFoundMapChange, auth, chat, onOpenLogin, information, onPublishInformation, onSubmitAsInformation, onStartLostFound, lostFoundPublishToken = 0, onAskAi, headerActions }) {
+export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMessage, activeSection, onSectionChange, isFullscreen = false, onCloseSection, locations, hotspots, posts, lostFoundFilter, onLostFoundFilterChange, onSubmitPost, onPostStatusChange, onDeletePost, onSelectLocation, onPlanRouteToLocation, onOpenRestaurantReviews, showLostFound, onLostFoundMapChange, auth, chat, onOpenLogin, information, onPublishInformation, onSubmitAsInformation, onStartLostFound, lostFoundPublishToken = 0, onAskAi, headerActions, onOpenMemberProfile }) {
   const [draft, setDraft] = useState('')
+  const photos = usePostImageDraft(auth.user?.id)
   const [composerRegionId, setComposerRegionId] = useState('living')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
@@ -41,7 +46,7 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
     return () => { document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', dismiss) }
   }, [publishMenu])
 
-  useEffect(() => { setDraft(''); setSendError(''); shouldScrollToNewMessage.current = false }, [auth.user?.id])
+  useEffect(() => { setDraft(''); setSendError(''); setSending(false); shouldScrollToNewMessage.current = false }, [auth.user?.id])
 
   useEffect(() => {
     if (!isFullscreen) { setVisibleViewport(null); return undefined }
@@ -86,20 +91,22 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
   const handleSubmit = async (event) => {
     event.preventDefault()
     const content = draft.trim()
-    if (!content || sending) return
+    if ((!content && !photos.items.length) || sending || photos.busy) return
     if (!auth.user) { onOpenLogin(); return }
     setSending(true)
     const senderId = auth.user.id
     setSendError('')
     try {
-      await onSendMessage({ content, regionId: composerRegionId })
+      const imagePaths = await photos.upload()
+      if (currentUserId.current !== senderId) throw new Error('账号已变化，请重新发布')
+      await onSendMessage({ content, regionId: composerRegionId, imagePaths })
       if (currentUserId.current !== senderId) return
       shouldScrollToNewMessage.current = true
       if (selectedRegionId !== 'all' && selectedRegionId !== composerRegionId) onRegionChange(composerRegionId)
-      setDraft('')
+      setDraft(''); photos.reset()
       feedRef.current?.scrollTo({ top: feedRef.current.scrollHeight, behavior: 'smooth' })
     } catch (error) { if (currentUserId.current === senderId) setSendError(describeServerError(error, '发送未成功，草稿已保留，请重试')) }
-    finally { setSending(false) }
+    finally { if (currentUserId.current === senderId) setSending(false) }
   }
   const retract = async (id) => {
     if (retractingId) return
@@ -154,7 +161,7 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
       </div>}
 
       <div className="community-scroll" hidden={activeSection !== 'hotspots'}>
-        <CampusHotspotsPanel events={hotspots} locations={locations} regionId={selectedRegionId} onSelectLocation={onSelectLocation} onPlanRouteToLocation={onPlanRouteToLocation} onPublishInformation={onPublishInformation} onAskAi={onAskAi} />
+        <CampusHotspotsPanel events={hotspots} locations={locations} regionId={selectedRegionId} onSelectLocation={onSelectLocation} onPlanRouteToLocation={onPlanRouteToLocation} onPublishInformation={onPublishInformation} onAskAi={onAskAi} viewerId={auth.user?.id} />
       </div>
       <div className="community-scroll" hidden={activeSection !== 'lost-found'}>
         <LostFoundPanel posts={posts} locations={locations} regionId={selectedRegionId} filter={lostFoundFilter} onFilterChange={onLostFoundFilterChange} onRegionChange={onRegionChange} onSubmitPost={onSubmitPost} onStatusChange={onPostStatusChange} onDeletePost={onDeletePost} onSelectLocation={onSelectLocation} onPlanRouteToLocation={onPlanRouteToLocation} showMapMarkers={showLostFound} onMapMarkersChange={onLostFoundMapChange} currentUserId={auth.user?.id} cloudReady={information.status === 'ready'} publishToken={lostFoundPublishToken} />
@@ -180,12 +187,13 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
               >
                 <article>
                   <header className="mobile-hall-message__header">
-                    <span className="mobile-hall-message__avatar" aria-hidden="true">{[...message.author][0]}</span>
-                    <strong>{campusDisplayText(message.author)}</strong>
+                    <button className="mobile-hall-message__profile" type="button" aria-label={`查看${campusDisplayText(message.author)}的主页`} onClick={() => onOpenMemberProfile?.(message.authorId)}><ProfileAvatar src={message.authorAvatarUrl} name={campusDisplayText(message.author)} /></button>
+                    <button className="mobile-hall-message__author" type="button" onClick={() => onOpenMemberProfile?.(message.authorId)}><strong>{campusDisplayText(message.author)}</strong></button>
                     <span className="mobile-hall-message__region">{REGION_LABELS.get(message.regionId) ?? '校园'}</span>
                     <time dateTime={message.createdAt}>{message.time}</time>
                   </header>
                   <p>{campusDisplayText(message.content)}</p>
+                  <PostImageGallery paths={message.imagePaths} viewerId={auth.user.id} label="聊天照片" />
                   {message.authorId === auth.user.id && <button className="mobile-chat-report" type="button" onClick={() => onSubmitAsInformation(message)}>提交为动态</button>}
                   {message.authorId === auth.user.id && <button className="mobile-chat-retract" type="button" disabled={Boolean(retractingId)} onClick={() => retract(message.id)}>{retractingId === message.id ? '撤回中…' : '撤回'}</button>}
                 </article>
@@ -199,6 +207,7 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
       </section>
 
       <form className="mobile-hall-composer" onSubmit={handleSubmit}>
+        <PostImagePicker draft={photos} disabled={!auth.user || sending} label="添加聊天照片" />
         <label className="sr-only" htmlFor="mobile-hall-message">输入消息</label>
         <input
           id="mobile-hall-message"
@@ -219,7 +228,7 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
           >
             {COMPOSER_REGIONS.map((region) => <option value={region.id} key={region.id}>{region.label}</option>)}
           </select>
-          <button type="submit" disabled={!auth.user || !draft.trim() || sending || chat.connectionStatus === 'offline'}>
+          <button type="submit" disabled={!auth.user || (!draft.trim() && !photos.items.length) || photos.busy || sending || chat.connectionStatus === 'offline'}>
             <Send size={15} aria-hidden="true" /> {sending ? '发送中…' : '发送'}
           </button>
         </div>

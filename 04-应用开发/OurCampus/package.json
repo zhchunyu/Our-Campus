@@ -11,7 +11,8 @@
     "android:sync": "npm run build && npx cap sync android",
     "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug",
     "android:share": "node scripts/serve-android-apk.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "android:release": "npm run android:sync && cd android && gradlew.bat assembleRelease"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",

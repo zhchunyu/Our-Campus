@@ -29,7 +29,8 @@ build/
 .venv/
 venv/
 .env
-.env.local
+.env.*
+!.env.example
 
 # 大文件与媒体（按需开启 LFS 或手动管理）
 *.psd
@@ -75,3 +76,18 @@ venv/
 /地名替换清单.md
 /腾讯地图地名核验清单.md
 /提交打包排除清单.md
+
+# ---- Android 原签名与本机签名配置（仅保留空白样例） ----
+signing.local.properties
+**/android/**/*.jks
+**/android/**/*.keystore
+**/android/**/*.p12
+**/android/**/*.pfx
+**/android/**/*.key
+**/android/**/*.pk8
+**/android/**/*.pem
+!**/android/signing.example.properties
+
+# ---- 本机 AI 记忆：阻止新增入库；已跟踪文件仍受密钥扫描检查 ----
+/.workbuddy-ai/memory/
+/archive/workspace-tools/memory/

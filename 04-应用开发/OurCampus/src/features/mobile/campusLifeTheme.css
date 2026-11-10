@@ -10,7 +10,7 @@
 .personal-avatar--default img { object-position: 70% center; transform: scale(1.45); transform-origin: 60% 65%; }
 .personal-identity__row h2 { font-size: 24px; font-weight: 750; }
 .personal-identity__decorate { background: var(--personal-accent, #13674f); }
-.personal-shortcuts button { min-height: 107px; gap: 9px; font-size: 12px; }
+.personal-shortcuts button { min-height: 82px; gap: 7px; font-size: 12px; }
 .personal-shortcuts .campus-sticker { width: 40px; height: 42px; border-radius: 10px; background: transparent; }
 .personal-shortcuts .campus-sticker > svg { width: 32px; height: 32px; }
 .personal-shortcuts button:nth-child(3) .campus-sticker > svg { fill: #28725b; stroke: #14533f; }

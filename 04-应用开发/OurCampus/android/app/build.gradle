@@ -10,6 +10,29 @@ if (vivoPushEnabled && ['GETUI_APP_ID', 'VIVO_APP_ID', 'VIVO_APP_KEY'].any {
     throw new GradleException('启用 vivo 推送前，请在 push.local.properties 填写 GETUI_APP_ID、VIVO_APP_ID、VIVO_APP_KEY。')
 }
 
+def campusSigningProperties = new Properties()
+def campusSigningFile = rootProject.file('signing.local.properties')
+if (campusSigningFile.exists()) campusSigningFile.withInputStream { campusSigningProperties.load(it) }
+
+def campusSigningValues = [:]
+['KEYSTORE_FILE', 'KEY_ALIAS', 'STORE_PASSWORD', 'KEY_PASSWORD'].each { key ->
+    def configured = campusSigningProperties.getProperty(key)
+    campusSigningValues[key] = configured != null && !configured.trim().isEmpty()
+        ? configured : System.getenv("OURCAMPUS_${key}")
+}
+def campusReleaseSigningReady = campusSigningValues.values().every { it != null && !it.trim().isEmpty() }
+if (campusReleaseSigningReady) {
+    campusReleaseSigningReady = rootProject.file(campusSigningValues.KEYSTORE_FILE).isFile()
+}
+// Check the resolved task graph so aggregate tasks such as "build" also fail closed.
+gradle.taskGraph.whenReady { taskGraph ->
+    if (!campusReleaseSigningReady && taskGraph.allTasks.any {
+        it.project == project && it.name.toLowerCase(Locale.ROOT).contains('release')
+    }) {
+        throw new GradleException('请在原打包电脑配置原签名，不能使用临时debug签名发布升级包')
+    }
+}
+
 android {
     namespace = "cn.edu.sxau.campustwin"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -17,8 +40,8 @@ android {
         applicationId "cn.edu.sxau.campustwin"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 17
-        versionName "1.16"
+        versionCode 20
+        versionName "1.19"
         manifestPlaceholders = [
             GETUI_APPID: campusPushProperties.getProperty('GETUI_APP_ID', '').trim(),
             VIVO_PUSH_ENABLED: vivoPushEnabled.toString(),
@@ -32,8 +55,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (campusReleaseSigningReady) {
+                storeFile rootProject.file(campusSigningValues.KEYSTORE_FILE)
+                keyAlias campusSigningValues.KEY_ALIAS
+                storePassword campusSigningValues.STORE_PASSWORD
+                keyPassword campusSigningValues.KEY_PASSWORD
+            }
+        }
+    }
     buildTypes {
         release {
+            if (campusReleaseSigningReady) signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

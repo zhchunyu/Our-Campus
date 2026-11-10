@@ -38,32 +38,32 @@ html[data-personal-home-hidden] .personal-cover.has-motion > img { animation-pla
 .personal-identity__foot > button:not(.personal-login-button) { display: inline-flex; align-items: center; gap: 3px; min-height: 35px; padding: 0 2px; border: 0; color: #13674f; background: transparent; font-size: 12px; }
 .personal-login-button { display: flex; align-items: center; gap: 5px; min-height: 44px; padding: 0 15px; border: 0; border-radius: 22px; color: #fff; background: #13674f; font-size: 13px; }
 .personal-private { padding: 15px 12px 13px; border: 1px solid #ebe9e1; border-radius: 22px; background: #fff; }
-.personal-section-label { display: flex; align-items: center; gap: 5px; margin: 0 4px 12px; color: #68786b; font-size: 11px; }
+.personal-section-label { display: flex; align-items: center; gap: 5px; margin: 0 4px 8px; color: #68786b; font-size: 11px; }
 .personal-shortcuts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
-.personal-shortcuts button { display: grid; justify-items: center; align-content: center; gap: 10px; min-width: 0; min-height: 95px; padding: 9px 2px; border: 0; border-radius: 15px; color: #27332d; background: #f6dd84; font-size: 11px; font-weight: 600; transition: transform 130ms ease; }
+.personal-shortcuts button { display: grid; justify-items: center; align-content: center; gap: 10px; min-width: 0; min-height: 82px; padding: 9px 2px; border: 0; border-radius: 15px; color: #27332d; background: #f6dd84; font-size: 11px; font-weight: 600; transition: transform 130ms ease; }
 .personal-shortcuts button:active { transform: scale(.97); }
 .personal-shortcuts button:nth-child(2) { background: #f8afa0; }
 .personal-shortcuts button:nth-child(3) { background: #bde6d1; }
 .personal-shortcuts button:nth-child(4) { background: #d7c7f1; }
 .personal-shortcuts svg { color: #155d49; stroke-width: 2; }
-.personal-content { overflow: hidden; border: 1px solid #ebe9e1; border-radius: 21px; background: #fff; }
-.personal-content__heading { padding: 18px 17px 3px; }
-.personal-content__heading h3 { margin: 0; color: #24342d; font-size: 18px; font-weight: 650; }
-.personal-content__heading small { display: block; margin-top: 5px; color: #818a82; font-size: 11px; }
-.personal-content__tabs { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 8px; padding: 0 12px; border-bottom: 1px solid #eeede8; }
-.personal-content__tabs button { position: relative; min-height: 44px; border: 0; color: #738078; background: transparent; font-size: 13px; }
-.personal-content__tabs button.is-active { color: #13674f; font-weight: 650; }
-.personal-content__tabs button.is-active::after { content: ''; position: absolute; right: 20%; bottom: 0; left: 20%; height: 3px; border-radius: 3px; background: #13674f; }
-.personal-content__body { display: grid; justify-items: start; gap: 7px; padding: 21px 18px 19px; min-height: 112px; }
-.personal-content__body > svg { color: #13674f; }
-.personal-content__body strong { color: #24342d; font-size: 14px; font-weight: 650; }
-.personal-content__body p { margin: 0; color: #78847d; font-size: 12px; line-height: 1.6; }
-.personal-content__body button { display: inline-flex; align-items: center; gap: 3px; min-height: 38px; padding: 0; border: 0; color: #13674f; background: transparent; font-size: 12px; }
 .personal-home__notice { margin: 15px 0; padding: 11px 13px; border-radius: 12px; color: #13674f; background: #e7f1e8; font-size: 12px; line-height: 1.6; }
 .personal-home__notice button { margin-left: 10px; min-height: 35px; border: 0; color: #13674f; background: transparent; font: inherit; text-decoration: underline; }
 .mobile-page-panel--me > .organized-account-menu { margin-top: 18px; }
 .mobile-page-panel--me .organized-account-menu, .mobile-page-panel--me :is(.organized-collection, .organized-settings, .organized-management, .organized-development) { border-color: #ebe9e1; border-radius: 17px; }
 .mobile-page-panel--me .organized-account-menu > button, .mobile-page-panel--me :is(.organized-collection, .organized-settings, .organized-management, .organized-development) > summary { min-height: 66px; }
+
+/* One compact tool list; collections open only from their shortcuts. */
+.mobile-page-panel--me .me-tools { margin-top: 14px; overflow: hidden; border: 1px solid #ebe9e1; border-radius: 17px; background: #fff; }
+.mobile-page-panel--me .me-tools > .organized-account-menu, .mobile-page-panel--me .me-tools > :is(.organized-settings, .organized-management) { margin: 0; border: 0; border-bottom: 1px solid #ebe9e1; border-radius: 0; background: transparent; }
+.mobile-page-panel--me .me-tools > :last-child { border-bottom: 0; }
+.mobile-page-panel--me .me-tools > .organized-account-menu > button, .mobile-page-panel--me .me-tools > :is(.organized-settings, .organized-management) > summary { min-height: 56px; padding: 10px 14px; gap: 12px; }
+.mobile-page-panel--me .me-tools > .organized-account-menu strong, .mobile-page-panel--me .me-tools > :is(.organized-settings, .organized-management) > summary strong { font-size: 14px; }
+.me-collection { margin-top: 14px; padding: 5px 14px 10px; border: 1px solid #ebe9e1; border-radius: 17px; background: #fff; scroll-margin-top: 14px; }
+.me-collection__heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.me-collection__heading h3 { margin: 0; color: #24342d; font-size: 15px; font-weight: 650; }
+.me-collection__heading button { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 11px; color: #61736a; background: transparent; }
+.me-collection > .mobile-my-collections { margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
+.me-collection__heading :is(h3, button):focus-visible { outline: 2px solid #13674f; outline-offset: 2px; }
 
 .personal-sheet-backdrop { position: fixed; z-index: 500; inset: 0; display: flex; align-items: flex-end; justify-content: center; background: #17271dc2; }
 .personal-sheet { position: relative; display: flex; flex-direction: column; width: min(100%, 540px); max-height: min(92dvh, 900px); overflow: hidden; border-radius: 26px 26px 0 0; color: #24342d; background: #faf8f4; box-shadow: 0 -18px 60px #091d1429; animation: personal-sheet-enter 280ms cubic-bezier(.2,.8,.2,1); }

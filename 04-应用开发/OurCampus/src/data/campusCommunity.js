@@ -1,3 +1,4 @@
+import { normalizePostImagePaths, safePostImagePaths } from './postImages.js'
 import { CAMPUS_HALL_REGIONS } from './campusHall.js'
 
 export const COMMUNITY_STORAGE_KEY = 'campus-twin-community-v1'
@@ -47,6 +48,27 @@ export function createLostFoundPost(input, locations, previous = null, now = new
     regionId: getCampusRegionId(location), occurredAt: occurredAt.toISOString(), image: input.image ?? '',
     status: previous?.status ?? 'active', createdAt: previous?.createdAt ?? now.toISOString(), updatedAt: now.toISOString(),
   }
+}
+
+// A cloud record carries private object references, never a persisted signed URL.
+export function cloudLostFoundPost(report, locations, localPosts = []) {
+  if (!['lost', 'found'].includes(report?.kind) || ['withdrawn', 'rejected'].includes(report.status)) return null
+  const imagePaths = safePostImagePaths(report.details?.image_paths)
+  const oldPhoto = localPosts.find((post) => post.cloudReportId === report.id)?.image || ''
+  return {
+    id: report.id, cloudReportId: report.id, isCloud: true, authorId: report.author_id, type: report.kind,
+    title: report.details?.item_name || report.title, description: report.body, contact: report.details?.contact || '',
+    locationId: report.location_id, locationDetail: report.details?.location_detail || '',
+    regionId: getCampusRegionId(locations.find((location) => location.id === report.location_id)),
+    occurredAt: report.details?.occurred_at || report.created_at, createdAt: report.created_at, updatedAt: report.updated_at,
+    status: report.status === 'resolved' ? 'resolved' : 'active', imagePaths,
+    image: imagePaths.length ? '' : isLocalPhoto(oldPhoto) ? oldPhoto : '',
+  }
+}
+export function lostFoundReportDetails(post, imagePaths = [], ownerId) {
+  const paths = normalizePostImagePaths(imagePaths, ownerId)
+  return { item_name: post.title, contact: post.contact, location_detail: post.locationDetail,
+    occurred_at: post.occurredAt, ...(paths.length ? { image_paths: paths } : {}) }
 }
 
 export function isSavedLostFoundPost(post) {

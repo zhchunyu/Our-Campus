@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../../data/supabaseClient.js'
-import { cloudEventRecord, informationError } from '../../data/campusInformation.js'
+import { listActiveInformationEvents, informationError } from '../../data/campusInformation.js'
 
 const EMPTY = { ownerId: null, notices: [], reports: [], subscriptions: [], events: [], unread: 0, status: 'idle', error: '', more: false }
 export function useCampusInformation(userId) {
@@ -19,13 +19,13 @@ export function useCampusInformation(userId) {
         supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('recipient_id', userId).is('read_at', null),
         supabase.from('campus_reports').select('*').order('created_at', { ascending: false }).limit(100),
         supabase.from('campus_subscriptions').select('*').eq('user_id', userId),
-        supabase.from('campus_events').select('*').eq('source', 'community-reviewed').eq('status', 'active').gt('end_at', new Date().toISOString()).order('start_at', { ascending: false }).limit(100),
+        listActiveInformationEvents().then((data) => ({ data })),
       ])
       const failed = result.find((r) => r.error)
       if (failed) throw failed.error
       if (currentUser.current !== userId || ticket !== generation.current) return
       setState({ ownerId: userId, notices: result[0].data, unread: result[1].count ?? 0, reports: result[2].data,
-        subscriptions: result[3].data, events: result[4].data.map(cloudEventRecord), status: 'ready', error: '', more: result[0].data.length === 50 })
+        subscriptions: result[3].data, events: result[4].data, status: 'ready', error: '', more: result[0].data.length === 50 })
     } catch (error) {
       if (currentUser.current === userId && ticket === generation.current) setState((s) => ({ ...s, status: 'error', error: informationError(error) }))
     } finally { if (ticket === generation.current) loading.current = false }

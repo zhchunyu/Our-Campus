@@ -8,7 +8,12 @@ import { RestaurantWindowManager } from './RestaurantWindowManager.jsx'
 import { addRestaurantWindow, deleteRestaurantWindow, loadRestaurantWindows } from '../../data/restaurantWindows.js'
 import { supabase } from '../../data/supabaseClient.js'
 import { loadReviewSummary, loadWindowCloudReviews, reviewServerError, submitWindowCloudReview, withdrawWindowCloudReview } from '../../data/restaurantCloudReviews.js'
+import { isMemberUserId } from '../../data/memberHallMessages.js'
+import { getAvatarUrl } from '../../data/memberProfiles.js'
+import { ProfileAvatar } from '../mobile/ProfileAvatar.jsx'
+import { useMemberProfiles } from './useMemberProfiles.js'
 import './restaurant-real-menu.css'
+import './restaurant-review-profiles.css'
 
 function FoodIcon({ type, size = 26 }) {
   const Icon = type === 'noodles' ? Soup : type === 'salad' ? Leaf : type === 'snack' ? Wheat : UtensilsCrossed
@@ -55,14 +60,18 @@ function RatingStars({ rating, size = 12 }) {
   return <span className="restaurant-review-stars" role="img" aria-label={`${rating} 星`}>{[1, 2, 3, 4, 5].map((score) => <span className="restaurant-review-star" key={score} style={{ width: size, height: size }}><Star size={size} aria-hidden="true" /><Star className="restaurant-review-star__fill" size={size} fill="currentColor" style={{ clipPath: `inset(0 ${100 - Math.max(0, Math.min(1, rating - score + 1)) * 100}% 0 0)` }} aria-hidden="true" /></span>)}</span>
 }
 
-function ReviewItem({ review, onDelete, userId, manager }) {
+export function ReviewItem({ review, profile, onDelete, userId, manager, onOpenMemberProfile }) {
   const [helpful, setHelpful] = useState(false)
+  const isMember = !review.isExample && review.isCloud && isMemberUserId(review.authorId)
+  const memberProfile = isMember && profile?.user_id === review.authorId ? profile : null
+  const author = campusDisplayText(memberProfile?.nickname || review.author || '校园同学')
+  const avatar = isMember ? <ProfileAvatar src={getAvatarUrl(memberProfile?.avatar_path)} name={author} className="window-review-item__avatar" /> : <span className="window-review-item__avatar" aria-hidden="true">{[...author][0]}</span>
   const date = review.isExample ? '示例评价' : new Intl.DateTimeFormat('zh-CN', { month: 'numeric', day: 'numeric' }).format(new Date(review.createdAt))
   return (
     <article className="window-review-item">
       <header>
-        <span className="window-review-item__avatar" aria-hidden="true">{[...review.author][0]}</span>
-        <div><strong>{campusDisplayText(review.author)}</strong><span>{date}{!review.isExample && (review.isCloud ? ' · 云端评价' : ' · 本机发布')}</span></div>
+        {isMember && onOpenMemberProfile ? <button type="button" className="window-review-item__profile" aria-label={`查看${author}的主页`} onClick={() => onOpenMemberProfile(review.authorId)}>{avatar}</button> : avatar}
+        <div><strong>{author}</strong><span>{date}{!review.isExample && (review.isCloud ? ' · 云端评价' : ' · 本机发布')}</span></div>
         {review.price !== null && <span className="window-review-item__price">¥{review.price}</span>}
       </header>
       <RatingStars rating={review.rating} />
@@ -76,7 +85,7 @@ function ReviewItem({ review, onDelete, userId, manager }) {
   )
 }
 
-export function RestaurantReviewsPage({ restaurant, authorName = '我', role = 'visitor', userId, onOpenLogin, onClose, initialWindowId = null }) {
+export function RestaurantReviewsPage({ restaurant, authorName = '我', role = 'visitor', userId, onOpenLogin, onOpenMemberProfile, onClose, initialWindowId = null }) {
   const [windows, setWindows] = useState(() => getRestaurantWindows(restaurant.id))
   const [catalogState, setCatalogState] = useState('loading')
   const [catalogError, setCatalogError] = useState('')
@@ -86,6 +95,7 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
   const canManage = isManager && ['ready', 'unseeded'].includes(catalogState)
   const [cloudStats, setCloudStats] = useState([])
   const [cloudReviews, setCloudReviews] = useState([])
+  const memberProfiles = useMemberProfiles({ userIds: cloudReviews.filter((review) => !review.isExample && review.isCloud).map((review) => review.authorId), viewerId: userId })
   const [reviewState, setReviewState] = useState('loading')
   const [reviewError, setReviewError] = useState('')
   const [moreReviews, setMoreReviews] = useState(false)
@@ -181,6 +191,7 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
 
   useEffect(() => {
     const handleKey = (event) => {
+      if (event.defaultPrevented || document.querySelector('.member-profile-backdrop')) return
       if (event.key === 'Escape') {
         event.preventDefault()
         goBack()
@@ -307,7 +318,7 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
             <p className="restaurant-review-page__demo-note"><span />{cloudReady ? '公开评价按真实评分统计；可以推荐，也可以吐槽。' : selectedWindow.isExample ? '示例评价不代表真实口碑；本机发布仅当前设备可见。' : '多人评价待服务器部署，本机评价仅当前设备可见。'}</p>
             <div className="restaurant-review-section-heading"><h3>同学怎么说</h3><select aria-label="评价排序" value={sort} onChange={(event) => setSort(event.target.value)}><option value="recent">最新评价</option><option value="high">评分从高到低</option><option value="low">评分从低到高</option></select></div>
             <div className="restaurant-review-filters" role="group" aria-label="评价筛选">{[{ id: 'all', label: '全部' }, { id: 'recommend', label: '推荐 · 4–5 星' }, { id: 'complaint', label: '吐槽 · 1–3 星' }].map((filter) => <button type="button" key={filter.id} className={reviewFilter === filter.id ? 'is-active' : ''} aria-pressed={reviewFilter === filter.id} onClick={() => setReviewFilter(filter.id)}>{filter.label}</button>)}</div>
-            <div className="window-review-list">{visibleReviews.map((review) => <ReviewItem key={review.id} review={review} onDelete={deleteReview} userId={userId} manager={isManager} />)}</div>
+            <div className="window-review-list">{memberProfiles.error && <p className="restaurant-review-profile-error" role="alert"><span>{memberProfiles.error}</span><button type="button" onClick={memberProfiles.refresh}>重试</button></p>}{visibleReviews.map((review) => <ReviewItem key={review.id} review={review} profile={memberProfiles.profiles[review.authorId]} onDelete={deleteReview} userId={userId} manager={isManager} onOpenMemberProfile={onOpenMemberProfile} />)}</div>
             {moreReviews && <button className="restaurant-review-more" disabled={reviewBusy} type="button" onClick={loadMoreReviews}>{reviewBusy ? '加载中…' : '加载更多评价'}</button>}
             {!visibleReviews.length && <div className="restaurant-reviews-empty"><MessageSquare size={28} /><strong>这里还没有这类评价</strong><p>吃过这个窗口？写下你的感受吧。</p></div>}
           </>}

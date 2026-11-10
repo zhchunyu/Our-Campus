@@ -14,6 +14,7 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(CampusPushPlugin.class);
         registerPlugin(CampusAppearancePlugin.class);
+        registerPlugin(CampusUpdatesPlugin.class);
         super.onCreate(savedInstanceState);
         // The web startup video owns the initial dark surface. Once it
         // finishes, CampusAppearance restores the light surface behind insets.

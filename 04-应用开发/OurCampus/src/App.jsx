@@ -8,8 +8,8 @@ import { eventRepository } from './data/events.js'
 import { campusServices } from './data/campusServices.js'
 import { describeLocationError, getDeviceLocation } from './data/deviceGeolocation.js'
 import { wgs84ToGcj02 } from './data/tencentCampusGeo.js'
-import { createFacilityContribution, createLostFoundPost, getCampusRegionId, loadCommunityState, LOCAL_AUTHOR_ID, MAX_LOCAL_POSTS, reviewFacilityContribution, saveCommunityState, updateLostFoundStatus } from './data/campusCommunity.js'
-import { setReportStatus, submitCampusReport } from './data/campusInformation.js'
+import { cloudLostFoundPost, createFacilityContribution, createLostFoundPost, lostFoundReportDetails, loadCommunityState, LOCAL_AUTHOR_ID, MAX_LOCAL_POSTS, reviewFacilityContribution, saveCommunityState, updateLostFoundStatus } from './data/campusCommunity.js'
+import { informationDraftForUser, setReportStatus, submitCampusReport } from './data/campusInformation.js'
 import { disablePushDevice } from './data/campusPush.js'
 import { useCampusInformation } from './features/notifications/useCampusInformation.js'
 import { useCampusPush } from './features/notifications/useCampusPush.js'
@@ -30,6 +30,7 @@ import { useCampusAuth } from './features/account/useCampusAuth.js'
 import { markStartupReady } from './app/startup.js'
 import { useRealtimeHall } from './features/mobile/useRealtimeHall.js'
 import { MePanel } from './features/mobile/MePanel.jsx'
+import { MemberProfilePage } from './features/mobile/MemberProfilePage.jsx'
 import { MobileTabBar } from './features/mobile/MobileTabBar.jsx'
 import { PrimaryPageActions } from './features/mobile/PrimaryPageActions.jsx'
 import { MyPublicationsPage } from './features/mobile/MyPublicationsPage.jsx'
@@ -40,6 +41,8 @@ import { RestaurantReviewsPage } from './features/reviews/RestaurantReviewsPage.
 import { AuvAssistantPage } from './features/ai/AuvAssistantPage.jsx'
 import { TimetablePage } from './features/timetable/TimetablePage.jsx'
 import { useBackLayer } from './app/useBackLayer.js'
+import { useAppUpdates } from './features/updates/useAppUpdates.js'
+import { AppUpdateNotice } from './features/updates/AppUpdateNotice.jsx'
 
 function loadInitialSnapshot() {
   const source = createLocalCampusDataSource({
@@ -58,6 +61,16 @@ function App() {
   )
   const [storedState, dispatch] = useReducer(campusReducer, initialState)
   const auth = useCampusAuth()
+  const updates = useAppUpdates()
+  const [startupComplete, setStartupComplete] = useState(() => !document.getElementById('app-startup'))
+  useEffect(() => {
+    if (!document.getElementById('app-startup')) { setStartupComplete(true); return undefined }
+    const observer = new MutationObserver(() => {
+      if (!document.getElementById('app-startup')) { setStartupComplete(true); observer.disconnect() }
+    })
+    observer.observe(document.body, { childList: true })
+    return () => observer.disconnect()
+  }, [])
   const information = useCampusInformation(auth.user?.id)
   const notificationPreferences = useNotificationPreferences(auth.user?.id)
   const displayLocations = useMemo(() => storedState.locations.map(campusDisplayRecord), [storedState.locations])
@@ -76,23 +89,31 @@ function App() {
   const [lostFoundPublishToken, setLostFoundPublishToken] = useState(0)
   const [hallLostFoundFilter, setHallLostFoundFilter] = useState('all')
   const [communityState, setCommunityState] = useState(loadCommunityState)
+  const [memberTarget, setMemberTarget] = useState(null)
+  const visibleMemberTarget = auth.user?.id && memberTarget?.viewerId === auth.user.id ? memberTarget : null
+  const closeMemberProfile = useCallback(() => setMemberTarget(null), [])
+  useEffect(() => { setMemberTarget(null) }, [auth.user?.id])
   const [informationOpen, setInformationOpen] = useState(false)
   const [informationSeed, setInformationSeed] = useState(null)
   const [informationTab, setInformationTab] = useState('messages')
   const [noticeId, setNoticeId] = useState(null)
-  const openInformation = useCallback((seed = null, tab = 'messages') => { setInformationSeed(seed); setInformationTab(seed ? 'publish' : tab); setNoticeId(null); setInformationOpen(true) }, [])
+  const openInformation = useCallback((seed = null, tab = 'messages') => { setMemberTarget(null); setInformationSeed(seed ? { userId: auth.user?.id ?? null, draft: seed } : null); setInformationTab(seed ? 'publish' : tab); setNoticeId(null); setInformationOpen(true) }, [auth.user?.id])
   const closeInformation = useCallback(() => { setInformationOpen(false); setNoticeId(null); setInformationSeed(null) }, [])
-  const openNotice = useCallback((id) => { setInformationSeed(null); setInformationTab('messages'); setNoticeId(id); setInformationOpen(true) }, [])
+  const openChatFromNotice = useCallback((regionId) => {
+    if (typeof regionId !== 'string' || !regionId) return
+    closeInformation()
+    setMemberTarget(null)
+    setLostFoundPublishToken(0)
+    setHallRegionId(regionId)
+    setHallSection('chat')
+    setHallFullscreen(true)
+    setActiveTab('hall')
+    dispatch({ type: 'CLEAR_SELECTED_LOCATION' })
+  }, [closeInformation])
+  const openNotice = useCallback((id) => { setMemberTarget(null); setInformationSeed(null); setInformationTab('messages'); setNoticeId(id); setInformationOpen(true) }, [])
   const push = useCampusPush(auth.user?.id, openNotice)
   const communityPosts = useMemo(() => {
-    const cloud = information.reports.filter((r) => ['lost', 'found'].includes(r.kind) && !['withdrawn', 'rejected'].includes(r.status)).map((r) => ({
-      id: r.id, cloudReportId: r.id, isCloud: true, authorId: r.author_id, type: r.kind,
-      title: r.details?.item_name || r.title, description: r.body, contact: r.details?.contact || '',
-      locationId: r.location_id, locationDetail: r.details?.location_detail || '',
-      regionId: getCampusRegionId(storedState.locations.find((l) => l.id === r.location_id)),
-      occurredAt: r.details?.occurred_at || r.created_at, createdAt: r.created_at, updatedAt: r.updated_at,
-      status: r.status === 'resolved' ? 'resolved' : 'active', image: communityState.posts.find((p) => p.cloudReportId === r.id)?.image || '',
-    }))
+    const cloud = information.reports.map((report) => cloudLostFoundPost(report, storedState.locations, communityState.posts)).filter(Boolean)
     return [...cloud, ...communityState.posts.filter((p) => !p.cloudReportId)]
   }, [information.reports, communityState.posts, storedState.locations, auth.user?.id])
   const [tencentRouteState, setTencentRouteState] = useState(null)
@@ -126,7 +147,12 @@ function App() {
   useEffect(() => { if (!auvOpen) setAuvSeed(null) }, [auvOpen])
   const chat = useRealtimeHall({ userId: auth.user?.id ?? null, regionId: hallRegionId })
   const [loginMode, setLoginMode] = useState(null)
-  const openLogin = useCallback(() => setLoginMode('login'), [])
+  const openLogin = useCallback(() => { setMemberTarget(null); setLoginMode('login') }, [])
+  const openMemberProfile = useCallback((userId) => {
+    if (!auth.user?.id) { openLogin(); return }
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId ?? '')) return
+    setMemberTarget({ viewerId: auth.user.id, userId })
+  }, [auth.user?.id, openLogin])
   const closeLogin = useCallback(() => setLoginMode(null), [])
   const mapReturnRef = useRef(null)
   const rememberMapOrigin = () => {
@@ -275,13 +301,13 @@ function App() {
     if (input.syncToCloud) {
       if (!auth.user) { openLogin(); throw new Error('请先登录，登录后可继续发布') }
       post.cloudReportId = await submitCampusReport({ clientId: input.clientId, kind: post.type, title: post.title,
-        body: post.description, locationId: post.locationId, details: { item_name: post.title, contact: post.contact,
-          location_detail: post.locationDetail, occurred_at: post.occurredAt } })
+        body: post.description, locationId: post.locationId,
+        details: lostFoundReportDetails(post, input.imagePaths, auth.user.id) })
       post.cloudOwnerId = auth.user.id
     }
     let warning = ''
     try { updateCommunity({ ...communityState, posts: previous ? communityState.posts.map((item) => item.id === post.id ? post : item) : [post, ...communityState.posts] }) }
-    catch (error) { if (!post.cloudReportId) throw error; warning = '云端发布成功，但本机照片未能保存。' }
+    catch (error) { if (!post.cloudReportId) throw error; warning = '云端发布成功，本机历史记录未能保存；云端照片不受影响。' }
     if (post.cloudReportId) await information.refresh()
     return { cloud: Boolean(post.cloudReportId), warning }
   }
@@ -365,7 +391,8 @@ function App() {
         </div>
       </header>
 
-      <main inert={Boolean(loginMode || informationOpen || reviewLocation || auvOpen || timetableOpen || myPublicationsOpen)} className={`workspace workspace--tab-${activeTab}${state.routePlan ? ' workspace--has-route' : ''}${activeTab === 'map' && selectedLocation ? ' workspace--has-detail' : ''}`}>
+      <main inert={Boolean(loginMode || informationOpen || reviewLocation || auvOpen || timetableOpen || myPublicationsOpen || visibleMemberTarget)} className={`workspace workspace--tab-${activeTab}${state.routePlan ? ' workspace--has-route' : ''}${activeTab === 'map' && selectedLocation ? ' workspace--has-detail' : ''}`}>
+        <AppUpdateNotice updates={updates} covered={!startupComplete || Boolean(loginMode || informationOpen || reviewLocation || auvOpen || timetableOpen || myPublicationsOpen || visibleMemberTarget)} />
         <div style={{ display: 'contents' }} inert={activeTab !== 'map'} aria-hidden={activeTab !== 'map' ? true : undefined}>
         <MapWorkspace
           locations={state.locations}
@@ -454,6 +481,7 @@ function App() {
         )}
         {activeTab === 'hall' && (
           <HallPanel
+            onOpenMemberProfile={openMemberProfile}
             headerActions={<PrimaryPageActions unread={information.unread} onOpenMessages={() => openInformation()} />}
             messages={chat.messages}
             selectedRegionId={hallRegionId}
@@ -464,7 +492,7 @@ function App() {
             onOpenLogin={openLogin}
             information={information}
             onPublishInformation={() => openInformation({ kind: 'notice' })}
-            onSubmitAsInformation={(message) => openInformation({ kind: 'notice', title: message.content.slice(0, 60), body: message.content, sourceMessageId: message.id })}
+            onSubmitAsInformation={(message) => openInformation({ kind: 'notice', title: message.content.slice(0, 60), body: message.content, sourceMessageId: message.id, details: { image_paths: message.imagePaths ?? [] } })}
             activeSection={hallSection}
             isFullscreen={hallFullscreen}
             onCloseSection={() => { setHallFullscreen(false); setLostFoundPublishToken(0) }}
@@ -504,6 +532,8 @@ function App() {
         )}
         {activeTab === 'me' && (
           <MePanel
+            updates={updates}
+            onOpenMemberProfile={openMemberProfile}
             key={auth.user?.id ?? 'guest'}
             onOpenMyPublications={() => { setMyPublicationsFilter('all'); setMyPublicationsOpen(true) }}
             onOpenTimetable={() => setTimetableOpen(true)}
@@ -601,9 +631,10 @@ function App() {
       </main>
       {loginMode && <LoginSheet key={loginMode} auth={auth} initialMode={loginMode} onClose={closeLogin} />}
       {myPublicationsOpen && <MyPublicationsPage key={`${auth.user?.id ?? 'guest'}:${myPublicationsFilter}`} initialFilter={myPublicationsFilter} userId={auth.user?.id} reports={information.reports} posts={communityPosts} feedbacks={state.placeFeedback} locations={state.locations} refreshToken={myPublicationsRefresh} covered={informationOpen || Boolean(reviewLocation)} onClose={closeMyPublications} onRefresh={information.refresh} onOpenCloudReports={() => openInformation(null, 'reports')} onOpenMyLostFound={() => { closeMyPublications(); handleOpenHall('lost-found', true) }} onOpenReview={(restaurantId, windowId) => { setReviewWindowId(windowId); setReviewLocationId(restaurantId) }} onOpenFeedback={() => { closeMyPublications(); setServiceSection('repair'); setActiveTab('explore') }} onSelectLocation={(id) => { closeMyPublications(); handleExploreLocation(id) }} />}
-      <CampusNoticeBanner userId={auth.user?.id} information={information} covered={informationOpen || Boolean(loginMode) || auvOpen} onOpen={openNotice} />
-      {informationOpen && <NotificationCenter key={`${auth.user?.id ?? 'guest'}:${informationTab}`} auth={auth} information={information} push={push} preferences={notificationPreferences} favoriteIds={state.favoriteLocationIds} locations={state.locations} initialTab={informationTab} initialDraft={informationSeed} noticeId={noticeId} onClose={closeInformation} onOpenLogin={() => { setInformationOpen(false); openLogin() }} onSelectLocation={(id) => { closeInformation(); closeMyPublications(); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { closeInformation(); closeMyPublications(); handlePlanRouteToLocation(id) }} />}
-      {reviewLocation && <RestaurantReviewsPage key={`${reviewLocation.id}:${auth.user?.id ?? 'guest'}:${reviewWindowId ?? ''}`} restaurant={reviewLocation} initialWindowId={reviewWindowId} authorName={auth.profile?.nickname ?? '我'} role={auth.role} userId={auth.user?.id} onOpenLogin={openLogin} onClose={closeRestaurantReviews} />}
+      {visibleMemberTarget && !loginMode && <MemberProfilePage key={`${visibleMemberTarget.viewerId}:${visibleMemberTarget.userId}`} userId={visibleMemberTarget.userId} viewerId={visibleMemberTarget.viewerId} onClose={closeMemberProfile} />}
+      <CampusNoticeBanner userId={auth.user?.id} information={information} covered={informationOpen || Boolean(loginMode) || auvOpen || Boolean(visibleMemberTarget)} onOpen={openNotice} />
+      {informationOpen && <NotificationCenter onOpenChat={openChatFromNotice} key={`${auth.user?.id ?? 'guest'}:${informationTab}`} auth={auth} information={information} push={push} preferences={notificationPreferences} favoriteIds={state.favoriteLocationIds} locations={state.locations} initialTab={informationTab} initialDraft={informationDraftForUser(informationSeed, auth.user?.id)} noticeId={noticeId} onClose={closeInformation} onOpenLogin={() => { setInformationOpen(false); openLogin() }} onSelectLocation={(id) => { closeInformation(); closeMyPublications(); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { closeInformation(); closeMyPublications(); handlePlanRouteToLocation(id) }} />}
+      {reviewLocation && <RestaurantReviewsPage onOpenMemberProfile={openMemberProfile} key={`${reviewLocation.id}:${auth.user?.id ?? 'guest'}:${reviewWindowId ?? ''}`} restaurant={reviewLocation} initialWindowId={reviewWindowId} authorName={auth.profile?.nickname ?? '我'} role={auth.role} userId={auth.user?.id} onOpenLogin={openLogin} onClose={closeRestaurantReviews} />}
       {timetableOpen && <TimetablePage key={auth.user?.id ?? 'guest'} userId={auth.user?.id} onClose={closeTimetable} onAskAi={(prompt) => { setTimetableOpen(false); setAuvSeed({ userId: auth.user?.id ?? null, prompt }); setAuvOpen(true) }} />}
       {auvOpen && <AuvAssistantPage initialDraft={auvSeed?.userId === (auth.user?.id ?? null) ? auvSeed?.prompt ?? '' : ''} auth={auth} locations={state.locations} favoriteLocationIds={notificationPreferences.value.favorite_location_ids} onClose={closeAuv} onOpenLogin={() => { setAuvOpen(false); openLogin() }} onSelectLocation={(id) => { setAuvOpen(false); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { setAuvOpen(false); handlePlanRouteToLocation(id) }} />}
     </div>

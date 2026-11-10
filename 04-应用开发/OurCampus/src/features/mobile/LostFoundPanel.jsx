@@ -3,6 +3,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search, Plus, ImagePlus, MapPin, Navigation, PackageSearch, KeyRound, Check, Pencil, Trash2, X } from 'lucide-react'
 import { createDemoLostFoundPosts, filterLostFoundPosts, getRegionLabel, LOCAL_AUTHOR_ID } from '../../data/campusCommunity.js'
 import { prepareCommunityPhoto } from './communityImage.js'
+import { usePostImageDraft } from './usePostImageDraft.js'
+import { PostImagePicker } from './PostImagePicker.jsx'
+import { PostImageGallery } from './PostImageGallery.jsx'
 import { informationError, newReportId } from '../../data/campusInformation.js'
 
 const displayTime = (value) => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -23,6 +26,10 @@ export function LostFoundPanel({ posts, locations, regionId, filter, onFilterCha
   const [saving, setSaving] = useState(false)
   const [syncToCloud, setSyncToCloud] = useState(true)
   const clientId = useRef(null)
+  const submittedDraft = useRef(null)
+  const photoDraft = usePostImageDraft(currentUserId)
+  const activeUser = useRef(currentUserId); activeUser.current = currentUserId
+  const cloudPhotos = !editingId && syncToCloud
   const [deleteId, setDeleteId] = useState(null)
   useBackLayer(Boolean(draft || deleteId || saving), () => { if (!saving) { if (deleteId) setDeleteId(null); else closeForm() } }, 30)
   const photoSequence = useRef(0)
@@ -32,10 +39,13 @@ export function LostFoundPanel({ posts, locations, regionId, filter, onFilterCha
   useEffect(() => { if (filter === 'mine') setStatus('all') }, [filter])
   useEffect(() => () => { photoSequence.current += 1 }, [])
 
-  const closeForm = () => { photoSequence.current += 1; setDraft(null); setEditingId(null); setPhotoBusy(false); setError('') }
+  const closeForm = () => { photoSequence.current += 1; setDraft(null); setEditingId(null); setPhotoBusy(false); setError(''); photoDraft.reset() }
   const change = (key, value) => setDraft((current) => current ? { ...current, [key]: value } : current)
   const openForm = (post = null) => {
+    if (saving) return
+    submittedDraft.current = null
     clientId.current = newReportId()
+    photoDraft.reset()
     photoSequence.current += 1
     setPhotoBusy(false); setError(''); setNotice(''); setEditingId(post?.id ?? null)
     setDraft(post ? { ...post, occurredAt: localDateTime(post.occurredAt) } : newDraft())
@@ -53,12 +63,20 @@ export function LostFoundPanel({ posts, locations, regionId, filter, onFilterCha
   }
   const submit = async (event) => {
     event.preventDefault()
-    if (photoBusy || saving) return
+    if (photoBusy || photoDraft.busy || saving) return
     setSaving(true)
+    const actor = currentUserId
     try {
-      const result = await onSubmitPost({ ...draft, syncToCloud: !editingId && syncToCloud, clientId: clientId.current, occurredAt: new Date(draft.occurredAt).toISOString() }, editingId)
+      const imagePaths = cloudPhotos && currentUserId ? await photoDraft.upload() : []
+      if (actor !== activeUser.current) throw new Error('账号已变化，请重新发布')
+      const payload = { ...draft, image: cloudPhotos ? '' : draft.image, imagePaths,
+        syncToCloud: cloudPhotos, occurredAt: new Date(draft.occurredAt).toISOString() }
+      const fingerprint = JSON.stringify({ actor, editingId, payload })
+      if (submittedDraft.current !== fingerprint) { clientId.current = newReportId(); submittedDraft.current = fingerprint }
+      const result = await onSubmitPost({ ...payload, clientId: clientId.current }, editingId)
+      if (actor !== activeUser.current) return
       closeForm(); onFilterChange('mine'); onRegionChange('all'); setStatus('all')
-      setNotice(result?.warning || (result?.cloud ? '已保存到云端，后台将分析可能的匹配。照片仍只保存在本机。' : '信息已保存在本机，其他设备不可见。'))
+      setNotice(result?.warning || (result?.cloud ? '信息与照片已保存到云端，其他登录用户可查看。后台将分析可能的匹配。' : '信息已保存在本机，其他设备不可见。'))
     } catch (saveError) { setError(informationError(saveError)) }
     finally { setSaving(false) }
   }
@@ -82,19 +100,21 @@ export function LostFoundPanel({ posts, locations, regionId, filter, onFilterCha
     {notice && <p className="community-notice" role="status">{notice}</p>}
     {draft && <form className="community-form" onSubmit={submit} aria-label={editingId ? '编辑失物信息' : '发布失物信息'}>
       <div className="community-list-heading"><h3>{editingId ? '编辑信息' : '发布失物信息'}</h3><button type="button" className="community-icon-button" onClick={closeForm} disabled={saving} aria-label="关闭发布表单"><X size={18} /></button></div>
-      <label>信息类型<select value={draft.type} onChange={(event) => change('type', event.target.value)}><option value="lost">我丢了东西 · 寻物</option><option value="found">我捡到东西 · 招领</option></select></label>
-      <label>物品名称<input autoFocus required maxLength={40} value={draft.title} placeholder="例如：蓝色折叠伞" onChange={(event) => change('title', event.target.value)} /></label>
-      <label>物品特征<textarea required maxLength={300} rows={3} value={draft.description} placeholder="颜色、品牌、明显特征等" onChange={(event) => change('description', event.target.value)} /></label>
-      <label>校园地点<select required value={draft.locationId} onChange={(event) => change('locationId', event.target.value)}><option value="">请选择丢失或拾获的地点</option>{locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label>
-      <label>具体位置<input maxLength={100} value={draft.locationDetail} placeholder="例如：一楼大厅、北侧入口" onChange={(event) => change('locationDetail', event.target.value)} /></label>
-      <label>{draft.type === 'lost' ? '丢失时间' : '拾获时间'}<input required type="datetime-local" value={draft.occurredAt} max={localDateTime()} onChange={(event) => change('occurredAt', event.target.value)} /></label>
-      <label>联系方式<input required maxLength={80} value={draft.contact} placeholder="微信号、电话或物品领取点" onChange={(event) => change('contact', event.target.value)} /></label>
-      <div className="community-photo-field"><label className="community-upload"><ImagePlus size={18} />{photoBusy ? '正在处理照片…' : '添加物品照片（可选）'}<input aria-label="添加物品照片" type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} disabled={photoBusy} /></label><small>JPG / PNG / WebP，最多 5 MB；自动缩小后保存在本机。</small></div>
-      {draft.image && <div className="community-photo-preview"><img src={draft.image} alt="待发布的物品照片" /><button type="button" onClick={() => change('image', '')}>移除照片</button></div>}
+      <label>信息类型<select disabled={saving} value={draft.type} onChange={(event) => change('type', event.target.value)}><option value="lost">我丢了东西 · 寻物</option><option value="found">我捡到东西 · 招领</option></select></label>
+      <label>物品名称<input autoFocus disabled={saving} required maxLength={40} value={draft.title} placeholder="例如：蓝色折叠伞" onChange={(event) => change('title', event.target.value)} /></label>
+      <label>物品特征<textarea disabled={saving} required maxLength={300} rows={3} value={draft.description} placeholder="颜色、品牌、明显特征等" onChange={(event) => change('description', event.target.value)} /></label>
+      <label>校园地点<select disabled={saving} required value={draft.locationId} onChange={(event) => change('locationId', event.target.value)}><option value="">请选择丢失或拾获的地点</option>{locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label>
+      <label>具体位置<input disabled={saving} maxLength={100} value={draft.locationDetail} placeholder="例如：一楼大厅、北侧入口" onChange={(event) => change('locationDetail', event.target.value)} /></label>
+      <label>{draft.type === 'lost' ? '丢失时间' : '拾获时间'}<input disabled={saving} required type="datetime-local" value={draft.occurredAt} max={localDateTime()} onChange={(event) => change('occurredAt', event.target.value)} /></label>
+      <label>联系方式<input disabled={saving} required maxLength={80} value={draft.contact} placeholder="微信号、电话或物品领取点" onChange={(event) => change('contact', event.target.value)} /></label>
+      {cloudPhotos ? <PostImagePicker draft={photoDraft} disabled={saving} label="添加物品照片" /> : <>
+      <div className="community-photo-field"><label className="community-upload"><ImagePlus size={18} />{photoBusy ? '正在处理照片…' : '添加物品照片（可选）'}<input aria-label="添加物品照片" type="file" accept="image/jpeg,image/png,image/webp" onChange={handlePhoto} disabled={photoBusy || saving} /></label><small>JPG / PNG / WebP，最多 5 MB；自动缩小后保存在本机。</small></div>
+      {draft.image && <div className="community-photo-preview"><img src={draft.image} alt="待发布的物品照片" /><button type="button" disabled={saving} onClick={() => change('image', '')}>移除照片</button></div>}
+      </>}
       {error && <p className="community-error" role="alert">{error}</p>}
-      {!editingId && <label className="information-consent"><input type="checkbox" checked={syncToCloud} disabled={saving} onChange={(e) => setSyncToCloud(e.target.checked)} />同步到云端，交给 AI 分析匹配。联系方式对登录用户可见；照片仅存本机，联系方式字段不发送模型。</label>}
+      {!editingId && <label className="information-consent"><input type="checkbox" checked={syncToCloud} disabled={saving} onChange={(e) => setSyncToCloud(e.target.checked)} />同步到云端，交给 AI 分析匹配。信息与照片对登录用户可见；联系方式和照片不发送模型。</label>}
       {!currentUserId && syncToCloud && <small>云端发布需要先登录，登录后可继续提交。</small>}
-      <button className="community-primary community-submit" type="submit" disabled={photoBusy || saving}>{saving ? '正在保存…' : editingId ? '保存修改' : syncToCloud ? '发布到校园社区' : '仅保存在本机'}</button>
+      <button className="community-primary community-submit" type="submit" disabled={photoBusy || photoDraft.busy || saving}>{saving ? '正在保存…' : editingId ? '保存修改' : syncToCloud ? '发布到校园社区' : '仅保存在本机'}</button>
     </form>}
     <div className="community-chip-strip" aria-label="失物信息类型">{[{ id: 'all', label: '全部' }, { id: 'lost', label: '寻物' }, { id: 'found', label: '招领' }, { id: 'mine', label: '我的发布' }].map((item) => <button type="button" key={item.id} className={filter === item.id ? 'is-active' : ''} aria-pressed={filter === item.id} onClick={() => onFilterChange(item.id)}>{item.label}</button>)}</div>
     <div className="community-search-row"><label className="community-search"><Search size={16} /><input aria-label="搜索失物信息" type="search" value={query} placeholder="搜索物品或特征" onChange={(event) => setQuery(event.target.value)} /></label><select aria-label="失物处理状态" value={status} onChange={(event) => setStatus(event.target.value)}><option value="active">寻找中</option><option value="resolved">已完成</option><option value="all">全部状态</option></select></div>
@@ -107,6 +127,7 @@ export function LostFoundPanel({ posts, locations, regionId, filter, onFilterCha
       return <article className={`community-card lost-found-card${post.status === 'resolved' ? ' is-resolved' : ''}`} key={post.id}>
         <div className="lost-found-card-heading"><div className={`lost-found-thumbnail lost-found-thumbnail--${post.type}`}>{post.image ? <img src={post.image} alt={campusDisplayText(post.title)} /> : post.type === 'lost' ? <PackageSearch size={27} /> : <KeyRound size={27} />}</div><div><div className="community-card-top"><span className={`community-tag community-tag--${post.type}`}>{post.type === 'lost' ? '寻物' : '招领'}</span><small>{post.isDemo ? '示例' : mine ? '我的发布' : '校园发布'}</small>{post.status === 'resolved' && <span className="community-tag">{doneLabel}</span>}</div><h3>{campusDisplayText(post.title)}</h3><span className="community-meta">{getRegionLabel(post.regionId)} · {displayTime(post.occurredAt)}</span></div></div>
         <p className="community-description">{campusDisplayText(post.description)}</p><div className="community-meta"><MapPin size={13} />{location?.name ?? '地点未收录'}{post.locationDetail ? ` · ${campusDisplayText(post.locationDetail)}` : ''}</div>
+        <PostImageGallery paths={post.imagePaths} viewerId={currentUserId} label="物品照片" />
         <details className="community-details"><summary>查看照片与联系方式</summary>{post.image && <img className="lost-found-detail-photo" src={post.image} alt={`${campusDisplayText(post.title)}的详细照片`} />}<p><strong>联系／领取方式</strong><br />{campusDisplayText(post.contact)}</p>{post.isDemo && <small>这是一条示例信息，无真实物品和联系人。</small>}</details>
         <div className="community-card-actions"><button type="button" disabled={!location} onClick={() => onSelectLocation(post.locationId)}><MapPin size={14} />查看地点</button><button type="button" disabled={!location} onClick={() => onPlanRouteToLocation(post.locationId)}><Navigation size={14} />去这里</button></div>
         {mine && <div className="community-owner-actions">{!post.cloudReportId && <button type="button" disabled={saving} onClick={() => openForm(post)}><Pencil size={13} />编辑</button>}{(!post.cloudReportId || post.status === 'active') && <button type="button" disabled={saving} onClick={() => updateStatus(post)}><Check size={13} />{post.status === 'active' ? `标记${doneLabel}` : '重新开启'}</button>}<button type="button" disabled={saving} onClick={() => setDeleteId(post.id)} aria-label={`撤回${campusDisplayText(post.title)}`}><Trash2 size={13} /></button></div>}
