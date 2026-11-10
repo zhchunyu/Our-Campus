@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'r
 import { Compass, LayoutGrid, Radio } from 'lucide-react'
 import { createLocalCampusDataSource } from './data/campusDataSource.js'
 import { loadPersistedState, savePersistedState } from './data/appStorage.js'
+import { buildAuvContext } from './data/auvContext.js'
+import { loadTimetable } from './data/timetable.js'
 import { teamCampusMap } from './data/campusMap.js'
 import { campusDisplayRecord } from './data/campusPresentation.js'
 import { eventRepository } from './data/events.js'
@@ -99,6 +101,17 @@ function App() {
   const [noticeId, setNoticeId] = useState(null)
   const openInformation = useCallback((seed = null, tab = 'messages') => { setMemberTarget(null); setInformationSeed(seed ? { userId: auth.user?.id ?? null, draft: seed } : null); setInformationTab(seed ? 'publish' : tab); setNoticeId(null); setInformationOpen(true) }, [auth.user?.id])
   const closeInformation = useCallback(() => { setInformationOpen(false); setNoticeId(null); setInformationSeed(null) }, [])
+  const openChatFromNotice = useCallback((regionId) => {
+    if (typeof regionId !== 'string' || !regionId) return
+    closeInformation()
+    setMemberTarget(null)
+    setLostFoundPublishToken(0)
+    setHallRegionId(regionId)
+    setHallSection('chat')
+    setHallFullscreen(true)
+    setActiveTab('hall')
+    dispatch({ type: 'CLEAR_SELECTED_LOCATION' })
+  }, [closeInformation])
   const openNotice = useCallback((id) => { setMemberTarget(null); setInformationSeed(null); setInformationTab('messages'); setNoticeId(id); setInformationOpen(true) }, [])
   const push = useCampusPush(auth.user?.id, openNotice)
   const communityPosts = useMemo(() => {
@@ -126,6 +139,12 @@ function App() {
   const [deviceLocationStatus, setDeviceLocationStatus] = useState('idle')
   const [deviceLocationMessage, setDeviceLocationMessage] = useState('')
   const [devicePositionFocusToken, setDevicePositionFocusToken] = useState(0)
+  const aiLocation = useRef({ ownerId: auth.user?.id ?? null, locationId: null })
+  if (aiLocation.current.ownerId !== (auth.user?.id ?? null)) aiLocation.current = { ownerId: auth.user?.id ?? null, locationId: null }
+  const handleCurrentLocationChange = (locationId) => {
+    aiLocation.current = { ownerId: auth.user?.id ?? null, locationId }
+    dispatch({ type: 'SET_CURRENT_LOCATION', locationId })
+  }
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => markStartupReady('interface'))
     return () => window.cancelAnimationFrame(frame)
@@ -262,15 +281,17 @@ function App() {
   }
 
   const handleLocateDevice = async () => {
+    aiLocation.current = { ownerId: auth.user?.id ?? null, locationId: null }
     setDeviceLocationMessage('')
     setDeviceLocationStatus('loading')
 
     try {
       const position = await getDeviceLocation()
-      setDevicePosition({ ...wgs84ToGcj02(position), accuracy: position.accuracy })
+      setDevicePosition({ ...wgs84ToGcj02(position), accuracy: position.accuracy, timestamp: position.timestamp })
       setDevicePositionFocusToken((token) => token + 1)
       setDeviceLocationStatus('located')
     } catch (error) {
+      setDevicePosition(null)
       setDeviceLocationMessage(describeLocationError(error))
       setDeviceLocationStatus('error')
     }
@@ -411,13 +432,13 @@ function App() {
           onToggleToolbar={(open) => dispatch({ type: 'TOGGLE_TOOLBAR', open })}
           onToolChange={(tool) => dispatch({ type: 'SET_ACTIVE_TOOL', tool })}
           onRoleChange={undefined}
-          onCurrentLocationChange={(locationId) => dispatch({ type: 'SET_CURRENT_LOCATION', locationId })}
+          onCurrentLocationChange={handleCurrentLocationChange}
           onSettingsChange={(changes) => dispatch({ type: 'SET_SETTINGS', changes })}
           onResetSettings={() => dispatch({ type: 'RESET_SETTINGS' })}
           onResetView={() => dispatch({ type: 'RESET_VIEW' })}
           onFullscreen={handleFullscreen}
           onClearRoute={closeRoute}
-          onClearCurrentLocation={() => dispatch({ type: 'SET_CURRENT_LOCATION', locationId: null })}
+          onClearCurrentLocation={() => handleCurrentLocationChange(null)}
           onLocateDevice={handleLocateDevice}
           onResetDemoData={() => dispatch({ type: 'RESET_DEMO_DATA', locations: initialSnapshot.locations, events: initialSnapshot.events })}
           onSelectLocation={(locationId) => dispatch({ type: 'SELECT_LOCATION', locationId })}
@@ -545,7 +566,7 @@ function App() {
             onRoleChange={undefined}
             auth={auth}
             onOpenLogin={openLogin}
-            onCurrentLocationChange={(locationId) => dispatch({ type: 'SET_CURRENT_LOCATION', locationId })}
+            onCurrentLocationChange={handleCurrentLocationChange}
             onSettingsChange={(changes) => dispatch({ type: 'SET_SETTINGS', changes })}
             onResetSettings={() => dispatch({ type: 'RESET_SETTINGS' })}
             onResetView={() => dispatch({ type: 'RESET_VIEW' })}
@@ -622,10 +643,16 @@ function App() {
       {myPublicationsOpen && <MyPublicationsPage key={`${auth.user?.id ?? 'guest'}:${myPublicationsFilter}`} initialFilter={myPublicationsFilter} userId={auth.user?.id} reports={information.reports} posts={communityPosts} feedbacks={state.placeFeedback} locations={state.locations} refreshToken={myPublicationsRefresh} covered={informationOpen || Boolean(reviewLocation)} onClose={closeMyPublications} onRefresh={information.refresh} onOpenCloudReports={() => openInformation(null, 'reports')} onOpenMyLostFound={() => { closeMyPublications(); handleOpenHall('lost-found', true) }} onOpenReview={(restaurantId, windowId) => { setReviewWindowId(windowId); setReviewLocationId(restaurantId) }} onOpenFeedback={() => { closeMyPublications(); setServiceSection('repair'); setActiveTab('explore') }} onSelectLocation={(id) => { closeMyPublications(); handleExploreLocation(id) }} />}
       {visibleMemberTarget && !loginMode && <MemberProfilePage key={`${visibleMemberTarget.viewerId}:${visibleMemberTarget.userId}`} userId={visibleMemberTarget.userId} viewerId={visibleMemberTarget.viewerId} onClose={closeMemberProfile} />}
       <CampusNoticeBanner userId={auth.user?.id} information={information} covered={informationOpen || Boolean(loginMode) || auvOpen || Boolean(visibleMemberTarget)} onOpen={openNotice} />
-      {informationOpen && <NotificationCenter key={`${auth.user?.id ?? 'guest'}:${informationTab}`} auth={auth} information={information} push={push} preferences={notificationPreferences} favoriteIds={state.favoriteLocationIds} locations={state.locations} initialTab={informationTab} initialDraft={informationDraftForUser(informationSeed, auth.user?.id)} noticeId={noticeId} onClose={closeInformation} onOpenLogin={() => { setInformationOpen(false); openLogin() }} onSelectLocation={(id) => { closeInformation(); closeMyPublications(); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { closeInformation(); closeMyPublications(); handlePlanRouteToLocation(id) }} />}
+      {informationOpen && <NotificationCenter onOpenChat={openChatFromNotice} key={`${auth.user?.id ?? 'guest'}:${informationTab}`} auth={auth} information={information} push={push} preferences={notificationPreferences} favoriteIds={state.favoriteLocationIds} locations={state.locations} initialTab={informationTab} initialDraft={informationDraftForUser(informationSeed, auth.user?.id)} noticeId={noticeId} onClose={closeInformation} onOpenLogin={() => { setInformationOpen(false); openLogin() }} onSelectLocation={(id) => { closeInformation(); closeMyPublications(); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { closeInformation(); closeMyPublications(); handlePlanRouteToLocation(id) }} />}
       {reviewLocation && <RestaurantReviewsPage onOpenMemberProfile={openMemberProfile} key={`${reviewLocation.id}:${auth.user?.id ?? 'guest'}:${reviewWindowId ?? ''}`} restaurant={reviewLocation} initialWindowId={reviewWindowId} authorName={auth.profile?.nickname ?? '我'} role={auth.role} userId={auth.user?.id} onOpenLogin={openLogin} onClose={closeRestaurantReviews} />}
-      {timetableOpen && <TimetablePage key={auth.user?.id ?? 'guest'} userId={auth.user?.id} onClose={closeTimetable} onAskAi={(prompt) => { setTimetableOpen(false); setAuvSeed({ userId: auth.user?.id ?? null, prompt }); setAuvOpen(true) }} />}
-      {auvOpen && <AuvAssistantPage initialDraft={auvSeed?.userId === (auth.user?.id ?? null) ? auvSeed?.prompt ?? '' : ''} auth={auth} locations={state.locations} favoriteLocationIds={notificationPreferences.value.favorite_location_ids} onClose={closeAuv} onOpenLogin={() => { setAuvOpen(false); openLogin() }} onSelectLocation={(id) => { setAuvOpen(false); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { setAuvOpen(false); handlePlanRouteToLocation(id) }} />}
+      {timetableOpen && <TimetablePage key={auth.user?.id ?? 'guest'} userId={auth.user?.id} onClose={closeTimetable} onAskAi={(prompt) => { setTimetableOpen(false); setAuvSeed({ userId: auth.user?.id ?? null, prompt, source: 'timetable' }); setAuvOpen(true) }} />}
+      {auvOpen && <AuvAssistantPage initialPurpose={auvSeed?.userId === (auth.user?.id ?? null) ? auvSeed?.source ?? '' : ''} initialDraft={auvSeed?.userId === (auth.user?.id ?? null) ? auvSeed?.prompt ?? '' : ''} auth={auth} locations={state.locations} initialLocationId={state.selectedId ?? ''} getContext={() => buildAuvContext({
+        locations: state.locations,
+        manualLocationId: aiLocation.current.ownerId === (auth.user?.id ?? null) && aiLocation.current.locationId === state.currentLocationId ? state.currentLocationId : null,
+        routePlan: state.routePlan,
+        favoriteIds: notificationPreferences.status === 'ready' ? notificationPreferences.value.favorite_location_ids : undefined,
+        timetable: auth.user?.id ? loadTimetable(auth.user.id) : null,
+      })} onClose={closeAuv} onOpenLogin={() => { setAuvOpen(false); openLogin() }} onSelectLocation={(id) => { setAuvOpen(false); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { setAuvOpen(false); handlePlanRouteToLocation(id) }} />}
     </div>
   )
 }

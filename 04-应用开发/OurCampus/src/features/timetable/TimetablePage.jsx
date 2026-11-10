@@ -1,9 +1,10 @@
 import { campusDisplayText } from '../../data/campusPresentation.js'
+import { createTimetablePlanningQuestion } from '../../data/auvContext.js'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowLeft, CalendarDays, Check, FileUp, Settings2, Sparkles } from 'lucide-react'
 import { importTimetableFile } from '../../data/timetableImport.js'
-import { calibrateTimetable, canUseCalendar, createTimetablePrompt, currentTeachingWeek, dateAnchor, DAY_NAMES, getMaxTeachingWeek, loadTimetable, saveTimetable, scheduleConflicts, validTimetable } from '../../data/timetable.js'
+import { calibrateTimetable, canUseCalendar, currentTeachingWeek, dateAnchor, DAY_NAMES, getMaxTeachingWeek, loadTimetable, saveTimetable, scheduleConflicts, validTimetable } from '../../data/timetable.js'
 import { useBackLayer } from '../../app/useBackLayer.js'
 import { useTimetableNavigation } from './useTimetableNavigation.js'
 import { getTermPosition, NextClassCard, TimetableDayView, TimetableWeekNavigation } from './TimetableDayView.jsx'
@@ -97,7 +98,7 @@ export function TimetablePage({ userId, cloudTimetable, cloudSynced = false, clo
     if (!anchor || !target || !day) return
     navigation.selectWeek(Math.floor((target - anchor) / 604800000) + 1); navigation.selectDay(day)
   }
-  const askAi = () => { try { onAskAi?.(createTimetablePrompt(timetable, week)) } catch (failure) { setError(failure.message) } }
+  const askAi = () => { try { onAskAi?.(createTimetablePlanningQuestion(week)) } catch (failure) { setError(failure.message) } }
 
   return createPortal(<section className="timetable-page" role="dialog" aria-modal="true" aria-labelledby="timetable-title" ref={frameRef}>
     <div className="timetable-frame">
