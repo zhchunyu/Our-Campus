@@ -1,15 +1,15 @@
 # ---- 三维资产：产物可重生成，源文件与导入件必须保留 ----
-/02-三维资产/cad/STEP/*
-!/02-三维资产/cad/STEP/imported/
-/02-三维资产/cad/DXF/*
-!/02-三维资产/cad/DXF/imported/
-/02-三维资产/cad/STL/*
-!/02-三维资产/cad/STL/imported/
-/02-三维资产/cad/GLB/*
-!/02-三维资产/cad/GLB/imported/
-/02-三维资产/cad/3MF/*
-!/02-三维资产/cad/3MF/imported/
-/02-三维资产/cad/tmp/
+/archive/3d-research/cad/STEP/*
+!/archive/3d-research/cad/STEP/imported/
+/archive/3d-research/cad/DXF/*
+!/archive/3d-research/cad/DXF/imported/
+/archive/3d-research/cad/STL/*
+!/archive/3d-research/cad/STL/imported/
+/archive/3d-research/cad/GLB/*
+!/archive/3d-research/cad/GLB/imported/
+/archive/3d-research/cad/3MF/*
+!/archive/3d-research/cad/3MF/imported/
+/archive/3d-research/cad/tmp/
 
 # Blender 自动备份与缓存
 *.blend1
@@ -39,15 +39,15 @@ venv/
 # ---- 单张成图不入库：仓库只留图集（建模图集 HTML）与站点，不存单张 PNG ----
 # 说明：02-三维资产/renders/ 已有 64 张在库中（历史提交），此处不追加以免歧义；
 #       新增归档目录一律不入库，只把汇总图集放进去。
-/08-交付与归档/renders_*/
+/archive/deliverables/renders_*/
 
 # ---- 临时探针工程与素材 ----
-/02-三维资产/blender/projects/_tmp_*.blend
-/02-三维资产/99-临时工作区/
+/archive/3d-research/blender/projects/_tmp_*.blend
+/archive/3d-research/99-临时工作区/
 
 # .blend 工程文件走 GitHub Release（tag: blend-projects）分发，不入仓库树 —— 单文件 40~90 MB，
 # 远超 GitHub API 的 blob 单请求体积上限（实测约 36 MB）。放在这里可避免误提交。
-/02-三维资产/blender/projects/*.blend
+/archive/3d-research/blender/projects/*.blend
 
 # ---- 工具产物与外部素材 ----
 /.trae-html-share-packages/
@@ -89,5 +89,11 @@ signing.local.properties
 !**/android/signing.example.properties
 
 # ---- 本机 AI 记忆：阻止新增入库；已跟踪文件仍受密钥扫描检查 ----
+# Keep credentials and private assistant notes out of future commits
+.env.*
+!.env.example
 /.workbuddy-ai/memory/
 /archive/workspace-tools/memory/
+
+# Local ignored build/config remnants after moving the application to apps/ourcampus
+/04-应用开发/OurCampus/

@@ -1,201 +1,103 @@
-# 春雨工作区
+<div align="center">
 
-> 面向 C 端的未来校园社区软件 —— 第八届全球校园人工智能算法精英大赛 · 场景创新赛道
+<img src="docs/assets/ourcampus-icon.png" width="88" height="88" alt="OurCampus 图标">
 
----
+# OurCampus
 
-## 一、项目一句话定位
+### 校园变化，与你有关。
 
-用 AI 把「校园」重建成一个可交互、可共创、可生长的数字社区，让 C 端学生用户在其中社交、学习、生活、创作。
+连接校园地图、动态信息与个人安排的校园服务应用。
 
----
+[<img src="https://img.shields.io/badge/Android-1.19_体验版-176B55?style=for-the-badge&amp;logo=android&amp;logoColor=white" alt="下载 Android 1.19 体验版">](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.19)
+[<img src="https://img.shields.io/badge/ModelScope-模型下载-6254A4?style=for-the-badge" alt="ModelScope 模型发布页">](https://modelscope.cn/models/chunyuuu/Qwen2.5-7B-Instruct/summary)
+[<img src="https://img.shields.io/badge/SwanLab-实验记录-2C689C?style=for-the-badge" alt="SwanLab 实验记录">](https://swanlab.cn/@zhchunyu/OurCampus-AUV-training/v1/44bg6m/overview)
 
-## 二、赛事关键约束（速查）
+[安装与使用](docs/download.md) · [微信反馈群](#交流与反馈) · [快速开始](docs/quickstart.md) · [文档中心](docs/README.md) · [贡献者与署名](CONTRIBUTORS.md) · [Issues](https://github.com/zhchunyu/Our-Campus/issues)
 
-| 项目 | 要求 |
-| --- | --- |
-| 赛道 | 场景创新赛道（AIC · 全球青年智能体应用场景创新创业挑战 · 场景挑战赛） |
-| 赛制 | 初赛 — 复赛 — 总决赛三级赛制，不分赛区；复赛等同省级赛事，复赛一等奖推荐全国总决赛 |
-| 团队 | 在读学生团队 + 指导教师；材料中不得出现学校、指导教师、队员任何个人信息 |
-| 报名 | 报名系统提交「网盘根目录文件夹」及文档链接（名称/简介/在线演示网址/技术文档/网盘各链接） |
-| 提交截止 | 2026-10-15 20:00（提交前自检全部材料与链接有效性） |
+`React` · `Vite` · `Capacitor` · `Supabase` · `Qwen / QLoRA`
 
-**提交物清单**
+</div>
 
-1. 作品名称（≤20 字）
-2. 作品简介（≤500 字，问题-方案-效果-应用）
-3. 技术报告（PDF，≤10MB，建议 3000–5000 字，图文并茂）
-4. 演示视频（MP4，≥1080p，3–5 分钟）
-5. 答辩 PPT（覆盖作品背景 / 核心技术 / 创新点 / 应用前景）
-6. 代码与数据（源代码 / 模型数据 / 可执行程序，分模块清晰划分）
-7. 佐证材料（论文/专利/软著/获奖/用户反馈/媒体报道等，合并为一个 PDF）
+## 找到地点，也找到下一步
 
-**评分权重**：创新性 25 / 需求分析 15 / AI 技术应用 20 / 项目实施 15 / 应用成效 15 / 总结与展望 10（+ 附录附加分 5）
+去哪里办事、通知是否仍然有效、某个变化与自己的安排有没有关系——OurCampus 把这些问题放到同一个入口。学生可以从地图进入地点、服务和社区，也可以向 AUV 提问，再从回答跳转到相关地点。
 
-> ⚠️ **红线**：作品材料（作品方案、演示视频、答辩 PPT 等）中**不得出现参赛团队所在学校名称、指导教师和队员任何个人信息**，否则扣分或取消资格。
-
-赛事原文见 `00-赛事与规范/`（附件 1 赛题及竞赛规则、附件 2 技术报告参考大纲）。
-
----
-
-## 三、目录导航
-
-| 目录 | 用途 | 负责内容 |
+| 探索校园 | 了解变化 | 安排生活 |
 | --- | --- | --- |
-| `00-赛事与规范/` | 赛事原始资料、官方模板、提交规范 | 赛制解读、合规检查 |
-| `01-产品设计/` | 需求调研 → 功能架构 → 原型 → UI | 产品定义与体验设计 |
-| `02-三维资产/` | **CAD 建模 + Blender 场景资产生产线** | 校园数字孪生资产 |
-| `03-算法工程/` | 数据、训练、推理服务、评测 | AI 能力内核 |
-| `04-应用开发/` | 前端 / 后端 / 共享层 | C 端产品实现 |
-| `05-测试与质量/` | 测试用例、测试报告 | 功能完整性佐证 |
-| `06-竞赛材料/` | 7 项提交物的成稿 | 参赛交付 |
-| `07-项目文档/` | 会议记录、技术文档、参考资料 | 过程沉淀 |
-| `08-交付与归档/` | 最终交付、历史版本 | 版本管理 |
-| `99-临时工作区/` | 草稿、试验、废弃内容 | 不进入交付 |
+| 地点搜索、附近设施、服务目录、路线预览与导航入口。 | 主动上报、管理员审核、站内通知、失物线索与校园交流。 | 课表导入、地点收藏、常用路线、餐口菜单与评价。 |
 
----
+## 三项能力，连接信息与行动
 
-## 四、三维资产生产线（核心工作流）
+<img src="docs/assets/ourcampus-service-flow.svg" width="100%" alt="OurCampus 服务流程：校园上报由 AI 整理草稿，管理员审核后进入带地点、状态与有效期的动态记录；AUV 结合用户主动选择的情境提供回复，并衔接地图、消息与地点操作。">
 
-本项目采用 **「文本 → CAD → Blender → 应用」** 的四段式资产管线：
+**动态信息流。** 以地点和事件为连接点，组织上报、审核、发布与结束。查询依据同时检查事件状态和有效时间；资料不足时保留未知，避免把历史通知直接当作当前事实。
 
+**校园任务适配。** 在开源 Qwen 基座上训练领域适配器，让校园表达对应到系统使用的地点和事件字段。训练、推理与评测资料保留在 [AUV 工程](models/auv/)，最新事实由业务数据提供。
+
+**个人情境关联。** 用户主动选择地点或课表上下文，助手经鉴权网关读取允许访问的资料，再提供相关建议。收藏、路线和订阅共同构成个人服务入口，定位由用户主动触发。
+
+## 下载 Android 1.19 体验版
+
+**[下载 OurCampus-1.19.apk](https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/OurCampus-1.19.apk)** · [版本说明与校验](docs/download.md)
+
+- Android 7.0 及以上；安装包约 **34.03 MiB**，版本号 **1.19 / 20**。
+- 加入前台通知排队、按地区主动订阅聊天提醒和个推接入；保留社区图片、精简个人页、每日课表和头像同步。
+- APK 哈希、v2 签名及与 1.18 的证书一致性已核验。真机覆盖安装、后台送达和 vivo 离线通道仍待验收；请保留旧应用并覆盖安装。
+- GitHub 当前为公开预发布体验包，应用内更新元数据尚交由管理员接手。`main` 已继续开发 **1.20 / 21** 的 AI 上下文与相关聊天提醒，这些客户端改动未包含在本次 1.19 APK 中。详见[发布与源码记录](docs/releases/2026-11-10-1.19-release-and-ai-source.md)。
+
+## 源码、模型与实验
+
+| 入口 | 可以找到什么 |
+| --- | --- |
+| [GitHub 源码](https://github.com/zhchunyu/Our-Campus) | Web 与 Android 工程、业务网关、数据库脚本及项目文档。 |
+| [ModelScope 模型发布页](https://modelscope.cn/models/chunyuuu/Qwen2.5-7B-Instruct/summary) | 团队提供的模型下载入口，文件与使用条件以模型页为准。 |
+| [SwanLab 实验记录](https://swanlab.cn/@zhchunyu/OurCampus-AUV-training/v1/44bg6m/overview) | 训练曲线与实验展示；已有 V7、V10 曲线由历史训练日志后续导入。 |
+| [训练与评测资料](models/auv/) | 数据准备、版本配置、推理部署与验收脚本。 |
+
+ModelScope 当前链接名为 `Qwen2.5-7B-Instruct`；仓库 [V10 配置](models/auv/model-finetune/v10_extract.yaml) 使用 Qwen2.5-14B。两者分别展示，具体权重与实验版本请按对应记录核对。
+
+## 本地运行
+
+需要 Node.js **22.12 或以上**与 npm。
+
+```powershell
+git clone https://github.com/zhchunyu/Our-Campus.git
+cd Our-Campus/apps/ourcampus
+Copy-Item .env.example .env.local
+npm ci
+npm run dev
 ```
-自然语言描述
-    │
-    ▼
-[ text-to-cad / cad skill ]      参数化建模，输出 STEP / DXF
-    │
-    ▼
-[ cad-viewer skill ]             本地浏览器实时预览与校核
-    │
-    ▼
-[ Blender + mcp-for-blender ]    实时场景搭建、材质、灯光、渲染
-    │
-    ▼
-[ export-pipeline skill ]        导出 GLB / glTF 供前端消费
-    │
-    ▼
-C 端应用（Web / 小程序 / 桌面）
-```
 
-**目录约定**
+启动前填写 `.env.local` 中的地图与 Supabase 配置。模型密钥仅放在服务端，完整步骤见[快速开始](docs/quickstart.md)。
 
-- `02-三维资产/cad/` —— 遵循 cadgen 工程规范：`src/` 放模型脚本，`STEP/` `DXF/` `STL/` `GLB/` `3MF/` 放产物，`checks/` 放校验脚本，`tmp/` 放临时探索。模型目录见 `cad/src/README.md`。
-- `02-三维资产/blender/projects/` —— `.blend` 工程文件
-- `02-三维资产/blender/addons/` —— Blender 插件（含 `blender_mcp.py`）
-- `02-三维资产/exports/` —— 交付给前端的最终资产
-- `02-三维资产/renders/` —— 渲染出图（用于方案书与 PPT）
-
----
-
-## 五、环境配置状态
-
-### 已安装的 Skills（用户级 `~/.workbuddy-ai/skills/`，共 27 个）
-
-**text-to-cad 库**（来源：`earthtojake/text-to-cad`，MIT）
-
-| Skill | 作用 |
+| 想了解什么 | 文档 |
 | --- | --- |
-| `cad` | 文本/图像 → 参数化 CAD，导出 STEP / STL / 3MF / GLB |
-| `cad-viewer` | 本地浏览器实时预览 CAD 与机器人文件 |
-| `dxf` | 生成 2D 工程图（轮廓、模板、垫片、排版） |
-| `step-parts` | 检索现成标准件 STEP（螺丝、轴承、电机、连接器） |
+| 页面、数据库和模型怎样协作 | [系统架构](docs/architecture.md) |
+| 怎样构建 Android、配置服务 | [快速开始](docs/quickstart.md) · [部署说明](docs/deployment.md) |
+| 当前实现与已验证范围 | [开发状态](docs/status.md) |
+| 在哪里找代码与历史资料 | [仓库目录](docs/repository-layout.md) · [资料归档](archive/) |
 
-**Blender 配套库**（来源：`arjun988/blender-skills`，MIT）
+## 交流与反馈
 
-- 编排：`blender-director`、`references`
-- 建模：`blender-modeler`、`environment-artist`、`prop-artist`、`archviz`、`vegetation-artist`、`hard-surface`
-- 风格：`lowpoly-style`、`stylized-style`、`realistic-style`
-- 生产：`materials`、`lighting`、`uv-workflow`、`texture-workflow`
-- 技术：`geometry-nodes`、`procedural-modeling`、`camera-cinematography`、`rendering`
-- 管线：`scene-assembly`、`asset-optimization`、`export-pipeline`、`qa-review`
+欢迎加入 **Our Campus 用户反馈群**，交流安装体验与使用建议。
 
-> 上游 `blender-skills` 共 94 个 skill，此处按「校园资产生产」需求精选 23 个核心 skill 安装。
-> 其余（角色、恐怖风格、游戏品类、毛发/布料/绑定等）暂存在
-> `~/.workbuddy-ai/cache/skill-src/bs/blender-skills-main/.claude/skills/`，需要时可随时补充安装。
+<p align="center">
+  <img src="docs/assets/wechat-feedback-2026-10-25.png" width="280" alt="Our Campus 微信用户反馈群二维码，原图注明 2026 年 11 月 1 日前有效">
+</p>
 
-### MCP 配置
+二维码原图注明 **2026 年 11 月 1 日前有效**。过期或群满时，请通过 [Issues](https://github.com/zhchunyu/Our-Campus/issues) 联系维护者更新；Issues 也是长期反馈入口。
 
-- 配置文件：`~/.workbuddy-ai/mcp.json`
-- 服务：`blender` → `uvx mcp-for-blender`（PyPI 包 `mcp-for-blender`，即原 `blender-mcp`）
-- `uv` / `uvx`：`C:\Users\31967\.local\bin\uv.exe`（v0.12.17）
-- Python 运行时：uv 托管的 CPython 3.11.15
-- 连接参数：`localhost:9876`；遥测默认关闭（如需开启，删除 `DISABLE_TELEMETRY`）
+反馈时附上**应用版本、设备型号、复现步骤和相关截图**。公开反馈请先遮挡账号、联系方式等个人资料。
 
-**启用方式**：连接器管理页右上角「自定义连接器」入口 → 找到 `blender` → 点击「信任」。
+<details>
+<summary>查看归档界面预览</summary>
 
-### Blender 环境
+<p align="center">
+  <img src="docs/assets/map-preview.png" width="300" alt="2026 年 10 月 6 日归档版本的 OurCampus 地图界面">
+</p>
 
-| 项目 | 值 |
-| --- | --- |
-| 版本 | **Blender 5.2.2（Microsoft Store / MSIX 版）** |
-| 启动方式 | 桌面快捷方式 `Blender 5.2.2.0.lnk` 或开始菜单 |
-| 程序路径 | `C:\Program Files\WindowsApps\BlenderFoundation.Blender_5.2.2.0_x64__ppwjx1n5r4v9t\Blender\blender.exe` |
-| 插件目录（虚拟化） | `%LOCALAPPDATA%\Packages\BlenderFoundation.Blender_ppwjx1n5r4v9t\LocalCache\Roaming\Blender Foundation\Blender\5.2\scripts\addons\` |
-| 已安装插件 | `blender_mcp.py`（MCP for Blender v1.7，**已就位**） |
+以上为归档版本地图截图，当前界面请以 1.19 安装包实际显示为准。
 
-> Store 版 Blender 的 `%APPDATA%` 被 MSIX 重定向到 `LocalCache\Roaming`，因此插件必须放在上面的虚拟化路径，普通 `%APPDATA%\Blender Foundation\` 下不会生效。
+</details>
 
-**备用环境**：`C:\Users\31967\Blender\blender-4.5.9-windows-x64\`（便携版 Blender 4.5.9 LTS）。
-若 Store 版 5.2 与插件存在兼容问题，可直接用这个版本，双击其中的 `blender.exe` 即可运行。
-
----
-
-## 六、交付与发布
-
-### 在线访问（公网）
-
-**https://2cb735b0c4814c359bab62cc039d9c7a.sg2.agentos-app.run**
-
-静态站点，内容 = `02-三维资产/site/`（由 `tools/make_site.py` 生成，约 17 MB）：
-
-| 页面 | 内容 |
-| --- | --- |
-| `/` | 入口页（链接中枢 + 成果指标） |
-| `/preview.html` | **全园 3D 预览**（three.js + GLB，112 万面，7 个机位预设） |
-| `/建模图集/山河大学_三维建模图集.html` | 三维建模图集（五章，A4 横向可打印成 PDF） |
-| `/建模图集/…_手机版.html` | 图集单文件版（图片内嵌，可离线） |
-| `/renders/总览_R0-R6.html` | 分阶段改动对照 + A/B 量化 |
-
-> ★ 同一目录**重新发布链接不变**，更新内容不必换链接。
-> ★ 站点用**中文文件名的百分号编码相对路径**引用图片 —— 已实测线上 24/24、81/81 图片正常加载。
-
-### 代码仓库
-
-**https://github.com/zhchunyu/Chun-Yu**（**私有**）｜ 交付分支 **`main`**
-
-| 内容 | 位置 |
-| --- | --- |
-| 全部源文件（711 个 / 533 MB） | 仓库树 |
-| Blender 工程文件（24 个 / 1112 MB） | **Release** `blend-projects`（见下） |
-
-> ★ **`.blend` 为什么走 Release 而不是仓库树**：GitHub API 的 blob 端点有**单请求体积**限制
-> （实测 34 MB 通过 / 40 MB 起 `422 too large`，与"单文件 100 MB"的名义上限无关）。
-> 24 个 `.blend` 里 16 个过不去 ⇒ 改以 Release 资产分发（走 `uploads.github.com`，
-> 原始字节直传，单资产上限 2 GB）。
-> 下载页：`https://github.com/zhchunyu/Chun-Yu/releases/tag/blend-projects`
-
-> ★ **本机 `git push` 走不通**：代理按域名拦截，`github.com` 返回 `CONNECT 502`，
-> 但 `api.github.com` 可达 ⇒ 推送改走 **Git Data API**（`tools/push_via_api.py`，
-> blobs → tree → commit → ref，含 blob 缓存续传与 SHA 校验）。
-
----
-
-## 七、待办（人工步骤）
-
-- [x] 安装 Blender（已有 Store 版 5.2.2）
-- [x] 安装 MCP 插件到 Blender 插件目录
-- [ ] **在 Blender 中启用插件**：`Edit → Preferences → Add-ons` → 搜索 `MCP for Blender` → 勾选启用
-- [ ] **启动服务**：3D 视口按 `N` → **MCP for Blender** 标签 → 点击 **Start MCP Server**
-- [ ] 连接器管理页「信任」`blender` 服务
-- [x] 在 `01-产品设计/` 中补齐需求与用户画像
-- [ ] 确定技术栈并初始化 `04-应用开发/`
-- [ ] `06-竞赛材料/`：作品简介 / 方案书 PDF / 演示视频 / 答辩 PPT / 佐证材料 / 网盘链接
-      （★ 建模层面的取图入口见 `06-竞赛材料/README.md` 与 `02-三维资产/建模图集/选图清单.md`）
-
-> ★ **无头渲染用便携版** `C:\Users\31967\Blender\blender-4.5.9-windows-x64\blender.exe` ——
-> Store（MSIX）版**无法从命令行调用**，只适合手动开界面。
-
----
-
-*最后更新：2026-09-22*
+<sub>首页与安装包发布资料复核：2026-11-10。后台部署、源码开发版本与已发布 APK 分别记录，具体验收范围见版本说明。</sub>

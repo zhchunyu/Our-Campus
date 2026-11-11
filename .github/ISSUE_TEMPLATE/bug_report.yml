@@ -1,0 +1,36 @@
+name: 问题反馈
+description: 报告使用 OurCampus 时遇到的问题
+title: "[问题] "
+body:
+  - type: input
+    id: version
+    attributes:
+      label: 应用版本
+      placeholder: 例如 Android 1.11 或 Web 本地开发
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: 设备与环境
+      placeholder: 手机型号、系统版本或浏览器版本
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 从哪个入口开始，依次进行了什么操作？
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期与实际行为
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 截图或日志
+      description: 请移除密钥、账号凭据和不必要的个人信息。

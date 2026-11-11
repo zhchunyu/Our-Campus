@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 438" role="img" aria-labelledby="title desc">
+  <title id="title">从校园变化到个人帮助</title>
+  <desc id="desc">上报经过 AI 草稿与人工审核进入动态校园记录，AUV 结合用户主动提供的情境形成回复，并连接地图、消息与地点操作。数据更新与模型训练分别维护。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 8 4 0 8Z" fill="#65837b"/></marker>
+    <style>text{font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif}.title{font-size:29px;font-weight:700;fill:#173d33}.head{font-size:22px;font-weight:700;fill:#173d33}.body{font-size:17px;fill:#405d56}.label{font-size:15px;fill:#5b716a}.link{stroke:#65837b;stroke-width:2;fill:none;marker-end:url(#arrow)}</style>
+  </defs>
+  <rect width="1200" height="438" rx="16" fill="#f6f9f7"/>
+  <text x="40" y="54" class="title">从校园变化，到与你有关的帮助</text>
+  <text x="40" y="84" class="label">同一地点连接信息、情境与操作 · 数据更新与模型适配分别维护</text>
+  <rect x="40" y="120" width="236" height="114" rx="12" fill="#e4f0ea"/>
+  <text x="60" y="153" class="head">01  收集与确认</text>
+  <text x="60" y="187" class="body">主动上报 → AI 草稿</text>
+  <text x="60" y="215" class="body">管理员审核发布</text>
+  <path d="M282 177 H322" class="link"/>
+  <rect x="334" y="120" width="236" height="114" rx="12" fill="#e2eef7"/>
+  <text x="354" y="153" class="head">02  动态校园记录</text>
+  <text x="354" y="187" class="body">地点 · 状态 · 有效期</text>
+  <text x="354" y="215" class="body">发布 · 修订 · 结束</text>
+  <path d="M576 177 H616" class="link"/>
+  <rect x="628" y="120" width="236" height="114" rx="12" fill="#eae6f5"/>
+  <text x="648" y="153" class="head">03  AUV 校园助手</text>
+  <text x="648" y="187" class="body">按权限读取当前资料</text>
+  <text x="648" y="215" class="body">理解问题，组织回复</text>
+  <path d="M870 177 H910" class="link"/>
+  <rect x="922" y="120" width="238" height="114" rx="12" fill="#f6eddd"/>
+  <text x="942" y="153" class="head">04  回复与地点操作</text>
+  <text x="942" y="187" class="body">信息回复 · 地点关联</text>
+  <text x="942" y="215" class="body">查看地点与导航入口</text>
+  <rect x="334" y="293" width="236" height="87" rx="12" fill="#edf1f4"/>
+  <text x="354" y="326" class="head">用户主动提供情境</text>
+  <text x="354" y="357" class="body">问题 · 地点 · 课表</text>
+  <path d="M576 336 H746 V242" class="link"/>
+  <rect x="922" y="293" width="238" height="87" rx="12" fill="#edf1f4"/>
+  <text x="942" y="326" class="head">校园任务适配</text>
+  <text x="942" y="357" class="body">开源基座 + 领域适配器</text>
+  <path d="M916 336 H788 V242" class="link"/>
+  <text x="40" y="408" class="label">展示助手查询链路；业务记录也直接支持地图与消息。完整结构与验证范围见项目文档。</text>
+</svg>
