@@ -27,3 +27,34 @@
 .mobile-chat-retract:disabled { opacity: .5; }
 .mobile-chat-send-error { margin: 0; color: #974c3e; font-size: 12px; line-height: 1.5; }
 .mobile-hall-composer input:disabled { opacity: .7; }
+
+/* The selected hall section occupies the phone viewport; only its content scrolls. */
+.mobile-page-panel.mobile-page-panel--hall-fullscreen {
+  position: fixed; z-index: 110; top: 0; right: 0; bottom: auto; left: 0;
+  display: flex; flex-direction: column; width: 100%; height: 100dvh;
+  min-height: 0; padding: 0; overflow: hidden; background: #f7f8f3;
+}
+.hall-fullscreen-heading {
+  display: flex; flex: 0 0 auto; align-items: center; gap: 12px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid #e2e8dd; background: #fff;
+}
+.hall-fullscreen-heading > button { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; padding: 0; border: 1px solid #e0e7dc; border-radius: 50%; color: var(--green); background: #fff; }
+.hall-fullscreen-heading > div { min-width: 0; }
+.hall-fullscreen-heading h2 { margin: 0 0 5px; color: var(--ink); font-size: 18px; line-height: 1.35; }
+.hall-fullscreen-heading p { display: flex; align-items: center; gap: 6px; margin: 0; color: #7a897b; font-size: 11px; line-height: 1.5; }
+.hall-connection-dot { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: #bea66d; }
+.hall-connection-dot.is-live { background: #5a9764; }
+.mobile-page-panel--hall-fullscreen > .mobile-hall-regions { margin: 0; padding: 11px max(16px, env(safe-area-inset-right, 0px)) 11px max(16px, env(safe-area-inset-left, 0px)); border-bottom: 1px solid #e5eadd; }
+.mobile-page-panel--hall-fullscreen .mobile-hall-region { min-height: 36px; font-size: 12px; }
+.mobile-page-panel--hall-fullscreen > .mobile-hall-feed { flex: 1 1 0; min-height: 0; padding: 14px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); scrollbar-width: thin; }
+.mobile-page-panel--hall-fullscreen .mobile-hall-feed__heading h3 { font-size: 13px; }
+.mobile-page-panel--hall-fullscreen .mobile-hall-message article { padding: 12px; }
+.mobile-page-panel--hall-fullscreen .mobile-hall-message__header strong { font-size: 12px; }
+.mobile-page-panel--hall-fullscreen .mobile-hall-message article p { font-size: 14px; line-height: 1.65; white-space: pre-wrap; }
+.mobile-page-panel--hall-fullscreen :is(.mobile-chat-report,.mobile-chat-retract) { display: inline-flex; align-items: center; min-height: 30px; margin: 7px 9px 0 0; }
+.mobile-page-panel--hall-fullscreen > .mobile-hall-composer { margin: 0; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); border: 0; border-top: 1px solid #e2e8dd; border-radius: 0; background: #fff; box-shadow: 0 -5px 18px #28403205; }
+.mobile-page-panel--hall-fullscreen .mobile-hall-composer > input { min-height: 44px; font-size: 16px; }
+.mobile-page-panel--hall-fullscreen .mobile-hall-composer__actions :is(select,button) { min-height: 40px; font-size: 12px; }
+.mobile-page-panel--hall-fullscreen > .community-scroll:not([hidden]) { flex: 1 1 0; min-height: 0; padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.mobile-page-panel--hall-fullscreen :is(button,input,select,textarea,summary):focus-visible { outline: 2px solid #548565; outline-offset: 2px; }

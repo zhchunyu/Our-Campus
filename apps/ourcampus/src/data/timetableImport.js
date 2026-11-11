@@ -155,7 +155,7 @@ export function normalizeTimetable(cells) {
     const name = item.split(/\s+/)[0]
     if (!courses.some((course) => course.name === name) && !unscheduled.some((course) => course.name === name)) unscheduled.push({ name: name.slice(0, 100), note: item.slice(0, 200) })
   }
-  return { version: 1, semester, courses, unscheduled, importedAt: new Date().toISOString(), termStart: semester.startsWith('2026-') ? '2026-08-30' : '', dateConfirmed: false }
+  return { version: 1, semester, courses, unscheduled, importedAt: new Date().toISOString(), termStart: '', dateConfirmed: false }
 }
 
 export function parseTimetableBuffer(buffer) {

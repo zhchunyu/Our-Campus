@@ -3,7 +3,7 @@ import { FileCog, Maximize2, RotateCcw, Route, Trash2 } from 'lucide-react'
 import { ROUTE_MODES, ROUTE_MODE_LABELS } from '../../domain/route.js'
 import { teamCampusMap } from '../../data/campusMap.js'
 
-export function SettingsPanel({ settings, onChange, onResetSettings, onResetView, onFullscreen, onClearRoute, onClearCurrentLocation, onResetDemoData, canUndoAdminAction, lastAdminAction, onUndoAdminAction, showClearCurrentLocation = true }) {
+export function SettingsPanel({ settings, onChange, onResetSettings, onResetView, onFullscreen, onClearRoute, onClearCurrentLocation, onResetDemoData, canUndoAdminAction, lastAdminAction, onUndoAdminAction, showClearCurrentLocation = true, showDevelopmentTools = true }) {
   const [confirmReset, setConfirmReset] = useState(false)
 
   return (
@@ -27,9 +27,9 @@ export function SettingsPanel({ settings, onChange, onResetSettings, onResetView
       </div>
       <div className="settings-footer-actions">
         <button type="button" onClick={onResetSettings}>恢复默认设置</button>
-        <button type="button" onClick={() => setConfirmReset(true)}>恢复演示数据</button>
+        {showDevelopmentTools && <button type="button" onClick={() => setConfirmReset(true)}>恢复演示数据</button>}
       </div>
-      {confirmReset && (
+      {showDevelopmentTools && confirmReset && (
         <div className="settings-reset-confirm" role="alertdialog" aria-label="确认恢复演示数据">
           <strong>确定恢复演示数据？</strong>
           <span>这会清除本机保存的管理员修改、热点和撤销记录。</span>
@@ -45,7 +45,7 @@ export function SettingsPanel({ settings, onChange, onResetSettings, onResetView
           <button type="button" onClick={onUndoAdminAction}>撤销</button>
         </div>
       )}
-      <p className="settings-meta">v0.1.0 · 地图 {teamCampusMap.version}<br />本地自动保存 · 演示数据源</p>
+      {showDevelopmentTools && <p className="settings-meta">v0.1.0 · 地图 {teamCampusMap.version}<br />本地自动保存 · 演示数据源</p>}
     </section>
   )
 }

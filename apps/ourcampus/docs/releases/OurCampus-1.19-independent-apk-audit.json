@@ -1,0 +1,119 @@
+{
+  "apk_sha256": "a06af4ce5a8b070f251fd1e87fac68791dda9f28934409f193c8b9cf7b40234f",
+  "size": 35680287,
+  "manifest": [
+    {
+      "tag": "manifest",
+      "attributes": {
+        "versionCode": 20,
+        "versionName": "1.19",
+        "compileSdkVersion": 36,
+        "compileSdkVersionCodename": "16",
+        "package": "cn.edu.sxau.campustwin",
+        "platformBuildVersionCode": 36,
+        "platformBuildVersionName": 16
+      }
+    },
+    {
+      "tag": "uses-sdk",
+      "attributes": {
+        "minSdkVersion": 24,
+        "targetSdkVersion": 36
+      }
+    },
+    {
+      "tag": "application",
+      "attributes": {
+        "theme": 2131623941,
+        "label": 2131558428,
+        "icon": 2131492864,
+        "allowBackup": true,
+        "supportsRtl": true,
+        "extractNativeLibs": false,
+        "usesCleartextTraffic": true,
+        "roundIcon": 2131492867,
+        "appComponentFactory": "androidx.core.app.CoreComponentFactory"
+      }
+    },
+    {
+      "tag": "meta-data",
+      "attributes": {
+        "name": "OURCAMPUS_VIVO_PUSH_ENABLED",
+        "value": false
+      }
+    },
+    {
+      "tag": "meta-data",
+      "attributes": {
+        "name": "GETUI_APPID",
+        "value": "2Oxl7C9Hw18vahrvjaYBP1"
+      }
+    },
+    {
+      "tag": "meta-data",
+      "attributes": {
+        "name": "ZX_APPID_GETUI",
+        "value": "913e6a50-c3b6-4989-8ac6-1ecb53649be3"
+      }
+    }
+  ],
+  "v2_signers": [
+    {
+      "certificate_sha256": "501005b09c563a900b6b2b30729725306bf0af4ccabcddc2d0d64d3b842b43e0",
+      "subject": "C=US,O=Android,CN=Android Debug",
+      "issuer": "C=US,O=Android,CN=Android Debug",
+      "extra_signed_zero_bytes": 4,
+      "verified_algorithms": [
+        {
+          "algorithm": "0x103",
+          "signature_valid": true,
+          "content_digest_valid": true,
+          "chunk_count": 36
+        }
+      ]
+    }
+  ],
+  "previous_118_v2_signers": [
+    {
+      "certificate_sha256": "501005b09c563a900b6b2b30729725306bf0af4ccabcddc2d0d64d3b842b43e0",
+      "subject": "C=US,O=Android,CN=Android Debug",
+      "issuer": "C=US,O=Android,CN=Android Debug",
+      "extra_signed_zero_bytes": 4,
+      "verified_algorithms": [
+        {
+          "algorithm": "0x103",
+          "signature_valid": true,
+          "content_digest_valid": true,
+          "chunk_count": 36
+        }
+      ]
+    }
+  ],
+  "same_certificate_as_118": true,
+  "web_features": {
+    "聊天新消息提醒": true,
+    "打开这个地区的聊天": true,
+    "hall-region:": true,
+    "正在登记通知设备": true,
+    "相关聊天提醒": false,
+    "开启与我有关的公开聊天提醒": false,
+    "campus_ai_reminder_preferences": false,
+    "capturedAt": false,
+    "expectedUserId": false
+  },
+  "native_feature_strings": {
+    "CampusPushPlugin": true,
+    "PushService": true,
+    "com/igexin": true
+  },
+  "equals_current_profile_dist": false,
+  "different_from_current_dist": [
+    "assets/index-BEr-6LBX.js",
+    "assets/index-CMQGyc2_.js",
+    "assets/web-Br_IBSuR.js",
+    "assets/web-CJlJ1OFI.js",
+    "index.html"
+  ],
+  "tamper_detection_negative_check": "passed",
+  "verification_method": "Independent local AXML parser plus cryptography APK Signature Scheme v2; official Android SDK apksigner not installed"
+}

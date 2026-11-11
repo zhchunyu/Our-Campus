@@ -11,6 +11,7 @@
         android:theme="@style/AppTheme">
 
         <meta-data android:name="OURCAMPUS_PUSH_APP_ID" android:value="${GETUI_APPID}" />
+        <meta-data android:name="OURCAMPUS_VIVO_PUSH_ENABLED" android:value="${VIVO_PUSH_ENABLED}" />
         <service android:name=".CampusPushService" android:exported="false" />
         <service android:name=".CampusPushTransportService" android:exported="false" android:process=":pushservice" />
 
@@ -25,6 +26,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="ourcampus-push" android:host="notifications" android:path="/detail" />
             </intent-filter>
 
         </activity>

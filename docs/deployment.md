@@ -31,16 +31,17 @@ VITE_AUV_GATEWAY_URL
 
 ## Supabase 配置
 
-当前应用沿用已有 Supabase 项目。目录重组只改变源码路径；已有生产数据库、账号和业务数据继续由原项目维护。
+当前应用沿用已有 Supabase 项目。2026-11-10 已部署 `auv-assistant` v37、`campus-information-worker` v24，以及 20 号自动关联提醒迁移 `20261110130724`。本轮 GitHub 发布不重新建库，不修改已有账号，也不发布新的 Supabase APK 更新元数据。
 
 | 配置内容 | 工程位置 |
 | --- | --- |
 | 账号、聊天、窗口等 SQL 与交接说明 | [`apps/ourcampus/docs/supabase`](../apps/ourcampus/docs/supabase/) |
-| Edge Functions | [`apps/ourcampus/supabase/functions`](../apps/ourcampus/supabase/functions/) |
+| 当前线上函数发布源 | [`apps/ourcampus/supabase/deployed/2026-11-10/backend`](../apps/ourcampus/supabase/deployed/2026-11-10/backend/) |
+| 本地开发参考 | [`apps/ourcampus/supabase/functions`](../apps/ourcampus/supabase/functions/)；不能整体覆盖当前线上函数 |
 | 函数鉴权配置 | [`apps/ourcampus/supabase/config.toml`](../apps/ourcampus/supabase/config.toml) |
 | 校园信息与推送增量交接 | [后台交接入口](../apps/ourcampus/docs/校园信息推送交接-2026-10-08/README-先看这里.md) |
 
-已有服务侧记录包含 `auv-assistant` 和 `campus-information-worker` 的部署，以及校园信息与餐厅评价相关数据表。接手时先核对现有表、函数版本、权限与调度，再按缺失项处理。
+当前发布源保留六文件 AUV 工程和单文件 worker，应分别使用对应入口及完整依赖。开发参考与线上发布源存在差异，接手时先核对实际版本、表、权限与调度；不要把本地旧参考目录整体部署到线上。生产 RLS、内部 RPC 仅服务端调用、既有函数权限与 20 号回滚回归已核对，真实模型和手机投递仍待验收。
 
 旧交接文档包含基础建库与增量 SQL。已有数据库先执行交接包中的只读前置检查，确认实际状态；不要因为目录变更重跑基础建库、种子或已经执行的增量脚本。
 
@@ -52,24 +53,31 @@ VITE_AUV_GATEWAY_URL
 
 ### AUV 助手
 
-服务端通过 Secrets 读取：
+服务端通过 Supabase Secrets 读取模型配置，密钥只留在后台：
 
-```text
-AUV_BASE_URL
-AUV_API_KEY
-```
+| 名称 | 配置 |
+| --- | --- |
+| `AUV_BASE_URL` | 百炼北京可使用 `https://dashscope.aliyuncs.com/compatible-mode/v1`。兼容服务的根地址由服务端补上 `/v1`，已有 `/v1` 时不重复追加；最后请求 `/chat/completions`。供应商要求的 `/compatible-mode` 等前缀须保留，不填写完整 `/chat/completions` 请求地址。 |
+| `AUV_API_KEY` | 对应地域与业务空间的服务端密钥，不写入前端、Git 或公开文档。 |
+| `AUV_EXTRACT_MODEL` | 保留 V10 自定义模型 Code：`qwen2.5-14b-instruct-ee0c448400cb`。 |
+| `AUV_PERSONA_MODEL` | 普通聊天改为 `qwen3.7-flash`；截至本轮核对用户尚未修改，仍需保存后验证真实对话。 |
+| `AUV_HALL_MODEL` | 可选的公开聊天理解模型；未配置或空白时默认 `qwen3.7-flash`，独立于事件抽取和普通聊天设置。 |
 
-`AUV_BASE_URL` 为模型服务根地址，不拼接 `/v1/chat/completions`。`auv-assistant` 的配置保留 `verify_jwt = true`，函数内部继续验证用户会话。
+V10 用于事件抽取，通用 flash 用于自然对话和有界公开聊天分类。仅受支持的 flash 别名及日期快照显式关闭思考，其他自定义模型不附加该专用参数。
 
-函数源码引用同级 `_shared` 目录。更新部署工程时，应同步完整共享目录，避免网关、校园地名和业务规则使用不同版本。模型密钥通过团队既有方式单独交接，不写入前端环境变量或文档。
+`auv-assistant` 保持 `verify_jwt = true`，函数内部继续验证用户会话。其发布入口是 `backend/auv-assistant/index.ts`，共享依赖在同一 `backend/_shared` 下；应同步完整六文件工程。模型密钥通过团队既有私密渠道交接，不写入客户端环境变量。
 
 ### 校园信息工作函数
 
 `campus-information-worker` 沿用配置中的 `verify_jwt = false`，函数内部验证独立的 `x-campus-worker-token`。其工作令牌、服务端参数与调度配置按[服务器交接材料](../apps/ourcampus/docs/校园信息推送交接-2026-10-08/README-先看这里.md)维护。
 
-交接材料中的任务调度使用即时异步唤醒与定时补偿。现有调度是否启用、任务是否成功完成，应结合实际任务记录核对；不因函数已部署直接认定队列和消息送达已通过验收。
+当前生产 worker 发布源为 `backend/campus-information-worker/index.ts` 单文件，更新时保持独立令牌鉴权与投递前权限复查。调度使用即时唤醒和每分钟补偿，已核对启用。20 号脚本只为新公开聊天排队，不补处理旧聊天；每条最多一次模型请求，每月自动分析最多 1000 次，个人相关提醒默认关闭。撤回、关闭偏好和退订会重新核对待发记录。
+
+次数限制不等于百炼账户费用上限。没有设备的任务也可能正常处理结束；任务完成或服务商受理不能代替手机实际送达。当前启用设备与回执均为 0。
 
 ## 独立 Node 网关
+
+本节保留自托管入口。它沿用本地开发参考，不等同于当前线上六文件工程；如需自托管，应先按已发布后端同步处理器、共享依赖和对应测试，再配置对外入口。不要用旧本地处理器替换当前生产服务。
 
 如使用自有服务器托管 AI 网关，在 `apps/ourcampus` 运行：
 
@@ -87,9 +95,11 @@ npm run ai:serve
 3. 在 `apps/ourcampus` 运行 `npm run android:apk`。
 4. 从 `android/app/build/outputs/apk/debug/app-debug.apk` 获取 debug 产物并安装验证。
 
-保留现有 applicationId，升级时递增版本号。仓库中现有体验包为 1.11 / versionCode 12；正式签名由负责人保管。
+可下载体验包为 1.19 / versionCode 20，GitHub 标签 `v1.19`；当前 main 准备后续 1.20 / 21 源码，没有对应新 APK。保留 applicationId `cn.edu.sxau.campustwin`，沿用原证书并递增版本，原签名由原打包电脑保管。
 
-系统推送需要个推平台配置、公开 AppID、服务端凭据与手机通知权限；部分品牌的离线通知还需厂商通道。AppID 可交给客户端构建使用，AppKey 与 MasterSecret 留在服务端。完成配置后重新打包并进行真机验证。
+上面的 debug 产物仅供开发测试，不能默认覆盖团队已装 APK。面向已有用户的更新应在原签名电脑配置既有签名，运行 `npm run android:release`，再核对签名、版本、哈希、真实覆盖安装和资料保留。1.19 签名与已发布 1.18 一致，但真机覆盖安装仍未验收；本机新生成的 debug 证书不能替代既有证书。
+
+系统推送需要个推平台配置、公开 AppID、服务端凭据与手机通知权限；部分品牌的离线通知还需厂商通道。AppID 可交给客户端构建使用，AppKey 与 MasterSecret 留在服务端。完成配置后重新打包并进行真机验证。当前 1.19 已包含正确的个推公开 AppID，vivo 厂商开关仍关闭；iQOO/vivo 划掉后台后的投递需要平台与厂商通道配置和单独验收。
 
 ## 部署后的验证
 

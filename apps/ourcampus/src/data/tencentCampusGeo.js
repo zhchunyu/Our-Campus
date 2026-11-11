@@ -57,12 +57,31 @@ export function wgs84ToGcj02({ latitude, longitude }) {
 }
 
 export function getCampusMapPositionFromTencentPosition({ lat, lng }) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
   const { lngX, lngY, lngOffset, latX, latY, latOffset } = IMAGE_TO_GCJ02
   const determinant = lngX * latY - lngY * latX
   const longitudeDelta = lng - lngOffset
   const latitudeDelta = lat - latOffset
-  const imageX = (longitudeDelta * latY - lngY * latitudeDelta) / determinant
-  const imageY = (lngX * latitudeDelta - longitudeDelta * latX) / determinant
+  let imageX = (longitudeDelta * latY - lngY * latitudeDelta) / determinant
+  let imageY = (lngX * latitudeDelta - longitudeDelta * latX) / determinant
+  // 正向坐标包含局部修正，逆向也迭代消除同一修正，避免旧引导图上的定位再次偏移。
+  for (let iteration = 0; iteration < 30; iteration += 1) {
+    const correction = residualCorrection(imageX, imageY)
+    const correctedLng = longitudeDelta - correction.lng
+    const correctedLat = latitudeDelta - correction.lat
+    const nextX = (correctedLng * latY - lngY * correctedLat) / determinant
+    const nextY = (lngX * correctedLat - correctedLng * latX) / determinant
+    if (Math.hypot(nextX - imageX, nextY - imageY) < 0.01) {
+      imageX = nextX
+      imageY = nextY
+      break
+    }
+    imageX = (imageX + nextX) / 2
+    imageY = (imageY + nextY) / 2
+  }
+  const base = applyAffine(imageX, imageY)
+  const correction = residualCorrection(imageX, imageY)
+  if (Math.hypot(base.lat + correction.lat - lat, base.lng + correction.lng - lng) > 0.00001) return null
   const scene = teamCampusMap.scenes['2d']
   const normalizedX = (imageX / scene.imageWidth - scene.crop.x) / scene.crop.width
   const normalizedY = (imageY / scene.imageHeight - scene.crop.y) / scene.crop.height
@@ -72,16 +91,16 @@ export function getCampusMapPositionFromTencentPosition({ lat, lng }) {
 }
 
 // 有独立腾讯 POI 坐标的地点直接使用实测点，避免只靠校园引导图外推。
-// ★ 实测坐标表见 tencentPoiPositions.js，由 tools/harvest-tencent-poi.mjs 自动生成。
-// ★ 系统误差校正：官方引导图是手绘示意图，全局仿射变换平均误差约 16 m（个别点 40 m）。
-//   以实测 POI 点为控制点，把"实测 − 仿射"的残差按反距离权重平滑地加到其余地点上：
-//   控制点处误差归零，邻近建筑获得同向修正，远处保持原状（不会引入新的偏差）。
+// 坐标表来自队友提交的腾讯 POI 与底图点击记录（2026-10-11）。
+// 未采集地点仍为估算：用附近控制点残差修正示意图换算，不能等同于实测精度。
 const CONTROL_RESIDUALS = Object.freeze((() => {
   const scene = teamCampusMap.scenes['2d']
   if (!scene) return []
   const locations = locationRepository.loadAll()
   return Object.entries(TENCENT_POI_POSITIONS)
     .map(([id, exact]) => {
+      // 该点在原示意图中放错了建筑（队友记录偏差约 513m），不用于修正邻近地点。
+      if (id === 'veterinary-center') return null
       const position = locations.find((item) => item.id === id)?.mapPosition?.['2d']
       if (!Array.isArray(position)) return null
       const imageX = (scene.crop.x + position[0] * scene.crop.width) * scene.imageWidth
@@ -105,7 +124,7 @@ function residualCorrection(imageX, imageY) {
   for (const control of CONTROL_RESIDUALS) {
     const distance = Math.hypot(imageX - control.imageX, imageY - control.imageY)
     if (distance < 1) return { lat: control.dLat, lng: control.dLng }
-    // 反距离平方加权：越近修正越强，超过 1200 px（约等于整个校园）后影响自然衰减
+    // 反距离平方加权，仅用于未采集地点的近似定位。
     const weight = 1 / (distance * distance)
     weightSum += weight
     latSum += weight * control.dLat

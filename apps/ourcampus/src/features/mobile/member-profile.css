@@ -1,0 +1,29 @@
+/* Public member page lives above the main panels, alongside personal previews. */
+.member-profile-backdrop { z-index: 510; }
+.member-profile { --member-ink: #24342d; --member-muted: #78847d; color: var(--member-ink); background: #faf8f4; }
+.member-profile__header { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 10px; padding-top: calc(10px + env(safe-area-inset-top)); border-bottom: 1px solid #e9e8e1; background: #faf8f4; }
+.member-profile__header h1 { margin: 0; text-align: center; font-size: 17px; font-weight: 650; }
+.member-profile__scroll { padding-top: 22px; padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
+.member-profile__identity { display: flex; align-items: center; gap: 16px; padding: 13px 3px 27px; }
+.member-profile .member-profile__avatar { width: 78px; height: 78px; border: 4px solid #fff; border-radius: 50%; font-size: 30px; box-shadow: 0 3px 14px #1a352213; }
+.member-profile__identity > div { min-width: 0; }
+.member-profile__identity h2 { margin: 0; color: var(--member-ink); font-size: 24px; font-weight: 750; line-height: 1.3; overflow-wrap: anywhere; }
+.member-profile__identity p { margin: 7px 0 0; color: var(--member-muted); font-size: 12px; }
+.member-profile__messages { overflow: hidden; border: 1px solid #ebe9e1; border-radius: 20px; background: #fff; }
+.member-profile__heading { padding: 20px 18px 16px; border-bottom: 1px solid #eeede8; }
+.member-profile__heading h3 { margin: 0; color: var(--member-ink); font-size: 17px; font-weight: 650; }
+.member-profile__heading p { margin: 6px 0 0; color: var(--member-muted); font-size: 11px; }
+.member-profile__message-list { margin: 0; padding: 0 18px; list-style: none; }
+.member-profile__message-list li { padding: 17px 0; }
+.member-profile__message-list li + li { border-top: 1px solid #eeede8; }
+.member-profile__message-list li > div { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; color: var(--member-muted); font-size: 11px; }
+.member-profile__message-list li span { padding: 4px 7px; border-radius: 6px; color: #416952; background: #edf4ec; }
+.member-profile__message-list li p { margin: 10px 0 0; color: #34463c; font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.member-profile__state { display: grid; justify-items: center; align-content: center; gap: 10px; min-height: 200px; padding: 28px 18px; color: #63816c; text-align: center; }
+.member-profile__state strong { color: #41574a; font-size: 14px; font-weight: 600; }
+.member-profile__state p { margin: 0; color: var(--member-muted); font-size: 12px; line-height: 1.6; }
+.member-profile__notice { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 15px; padding: 10px 13px; border-radius: 12px; color: #8b4437; background: #fcece6; font-size: 12px; line-height: 1.6; }
+.member-profile__messages > .member-profile__notice { margin: 12px 12px 0; }
+.member-profile__retry { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 5px; min-height: 40px; padding: 0 12px; border: 1px solid #ceddce; border-radius: 11px; color: #13674f; background: #fff; font-size: 12px; }
+.member-profile button:focus-visible { outline: 2px solid #13674f; outline-offset: 2px; }
+@media (min-width: 761px) { .member-profile__header { padding-top: 12px; } }

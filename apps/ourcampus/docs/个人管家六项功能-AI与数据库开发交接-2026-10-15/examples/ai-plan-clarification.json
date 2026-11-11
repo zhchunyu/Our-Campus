@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "kind": "plan",
+  "generated_by": "auv",
+  "status": "needs_clarification",
+  "text": "合成样例：安排前需要核对教学周日期和取件点，目前没有保存任务。",
+  "time_zone": "Asia/Shanghai",
+  "plan_id": null,
+  "snapshot_token": null,
+  "context_fetched_at": "2026-10-15T04:00:00Z",
+  "expires_at": null,
+  "items": [],
+  "questions": [
+    "请先确认本学期第一教学周的周一日期。",
+    "你准备去哪个快递点，取件预计需要多久？"
+  ],
+  "warnings": [
+    {
+      "code": "unconfirmed_calendar",
+      "text": "教学周日期未确认，不能据此认定明天下午空闲。"
+    },
+    {
+      "code": "missing_place",
+      "text": "取件地点和受理时间尚不明确。"
+    }
+  ],
+  "citations": [
+    {
+      "source_id": "fixture-request-1",
+      "type": "user_input",
+      "url": null,
+      "observed_at": "2026-10-15T04:00:00Z",
+      "version": null
+    }
+  ],
+  "requires_confirmation": true,
+  "saved": false
+}

@@ -164,15 +164,132 @@ const DEMO_STATUS = Object.freeze({
   gymnasium: { activity: '体育场训练活动', crowdStatus: 'low', updatedAt: '20 分钟前' },
 })
 
+// 保留旧地名检索与官网入口；地点 ID 不变，账号收藏和云端记录继续关联。
+const LEGACY_PLACES = Object.freeze({
+  "library": {
+    "name": "图书馆",
+    "aliases": [
+      "校图书馆",
+      "主图书馆"
+    ],
+    "externalUrl": "https://libweb.sxau.edu.cn/"
+  },
+  "teaching-a": {
+    "name": "崇学楼",
+    "aliases": [
+      "教学楼",
+      "教学科研楼"
+    ]
+  },
+  "canteen": {
+    "name": "谷园餐厅",
+    "aliases": [
+      "谷园",
+      "学生食堂",
+      "餐厅"
+    ]
+  },
+  "ball-court": {
+    "name": "球类场",
+    "aliases": [
+      "球场",
+      "篮球场",
+      "球类场地"
+    ]
+  },
+  "chongwen-building": {
+    "name": "崇文楼",
+    "aliases": [
+      "崇文教学楼"
+    ]
+  },
+  "qinxue-building": {
+    "name": "勤学楼",
+    "aliases": []
+  },
+  "resource-environment-college": {
+    "name": "资源环境学院",
+    "aliases": [],
+    "externalUrl": "https://zhxy.sxau.edu.cn/index.htm"
+  },
+  "veterinary-center": {
+    "name": "动物医学中心",
+    "aliases": []
+  },
+  "agricultural-engineering-building": {
+    "name": "农业工程学院",
+    "aliases": []
+  },
+  "chongshi-building": {
+    "name": "崇实楼",
+    "aliases": []
+  },
+  "workshop-west-1": {
+    "name": "车间",
+    "aliases": []
+  },
+  "workshop-west-2": {
+    "name": "车间",
+    "aliases": []
+  },
+  "hanshi-building": {
+    "name": "韩氏楼",
+    "aliases": []
+  },
+  "tianshi-building": {
+    "name": "田氏楼",
+    "aliases": []
+  },
+  "physical-chemistry-building": {
+    "name": "理化楼",
+    "aliases": []
+  },
+  "chongxin-building": {
+    "name": "崇信楼",
+    "aliases": []
+  },
+  "animal-science-building": {
+    "name": "动科楼",
+    "aliases": []
+  },
+  "kangxinyuan": {
+    "name": "康馨苑",
+    "aliases": []
+  },
+  "food-laboratory": {
+    "name": "食品实验室",
+    "aliases": []
+  },
+  "yixinyuan-canteen": {
+    "name": "怡馨园餐厅",
+    "aliases": []
+  },
+  "sports-department": {
+    "name": "体育部",
+    "aliases": [],
+    "externalUrl": "https://tyb.sxau.edu.cn/index.htm"
+  },
+  "ruizhi-sports-center": {
+    "name": "睿智文体馆",
+    "aliases": []
+  },
+  "bitaoyuan-canteen": {
+    "name": "碧桃园餐厅",
+    "aliases": []
+  }
+})
+
 const demoLocations = [...CAMPUS_LANDMARKS, ...OTHER_CAMPUS_BUILDINGS, ...APARTMENT_PLACES].map((place) => ({
   ...place,
+  aliases: [...new Set([...place.aliases, ...(LEGACY_PLACES[place.id]?.aliases ?? []), LEGACY_PLACES[place.id]?.name].filter(Boolean))],
+  ...(LEGACY_PLACES[place.id]?.externalUrl ? { externalUrl: LEGACY_PLACES[place.id].externalUrl } : {}),
   source: 'campus-guide',
   sourceBuildingName: place.name,
   modelAnchorId: null,
   mapPosition: { '2d': toMapPosition(place.imagePosition) },
   entryNodeId: place.id === 'east-gate' ? 'main-gate-entry' : `${place.id}-entry`,
   firstPersonSpawnOffset: [0, 0, 0],
-  keywords: [...new Set([place.name, ...place.aliases, ...place.keywords])],
+  keywords: [...new Set([place.name, ...place.aliases, ...place.keywords, LEGACY_PLACES[place.id]?.name].filter(Boolean))],
   openStatus: 'open',
   crowdStatus: 'normal',
   updatedAt: '刚刚更新',

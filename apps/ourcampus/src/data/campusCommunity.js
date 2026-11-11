@@ -1,3 +1,4 @@
+import { normalizePostImagePaths, safePostImagePaths } from './postImages.js'
 import { CAMPUS_HALL_REGIONS } from './campusHall.js'
 
 export const COMMUNITY_STORAGE_KEY = 'campus-twin-community-v1'
@@ -10,7 +11,7 @@ export function getCampusRegionId(location) {
   if (location.category === 'transport') return 'gate'
   if (location.category === 'learning') return 'teaching'
   if (location.category === 'living' && /公寓|宿舍/.test(location.name)) return 'dorm'
-  if (/体育|运动|球类|游泳|文体/.test(location.name)) return 'sports'
+  if (/体育|运动|球类|球场|篮球|网球|游泳|文体/.test(location.name)) return 'sports'
   return 'living'
 }
 
@@ -49,6 +50,27 @@ export function createLostFoundPost(input, locations, previous = null, now = new
   }
 }
 
+// A cloud record carries private object references, never a persisted signed URL.
+export function cloudLostFoundPost(report, locations, localPosts = []) {
+  if (!['lost', 'found'].includes(report?.kind) || ['withdrawn', 'rejected'].includes(report.status)) return null
+  const imagePaths = safePostImagePaths(report.details?.image_paths)
+  const oldPhoto = localPosts.find((post) => post.cloudReportId === report.id)?.image || ''
+  return {
+    id: report.id, cloudReportId: report.id, isCloud: true, authorId: report.author_id, type: report.kind,
+    title: report.details?.item_name || report.title, description: report.body, contact: report.details?.contact || '',
+    locationId: report.location_id, locationDetail: report.details?.location_detail || '',
+    regionId: getCampusRegionId(locations.find((location) => location.id === report.location_id)),
+    occurredAt: report.details?.occurred_at || report.created_at, createdAt: report.created_at, updatedAt: report.updated_at,
+    status: report.status === 'resolved' ? 'resolved' : 'active', imagePaths,
+    image: imagePaths.length ? '' : isLocalPhoto(oldPhoto) ? oldPhoto : '',
+  }
+}
+export function lostFoundReportDetails(post, imagePaths = [], ownerId) {
+  const paths = normalizePostImagePaths(imagePaths, ownerId)
+  return { item_name: post.title, contact: post.contact, location_detail: post.locationDetail,
+    occurred_at: post.occurredAt, ...(paths.length ? { image_paths: paths } : {}) }
+}
+
 export function isSavedLostFoundPost(post) {
   return post && typeof post.id === 'string' && post.authorId === LOCAL_AUTHOR_ID
     && ['lost', 'found'].includes(post.type) && ['active', 'resolved'].includes(post.status)
@@ -80,7 +102,7 @@ export function createDemoLostFoundPosts() {
   const now = new Date().toISOString()
   return [
     { id: 'demo-lost-umbrella', type: 'lost', title: '深蓝色折叠伞', locationId: 'library', regionId: 'teaching', description: '示例：伞柄带一根灰色挂绳。可发布照片和特征，方便同学辨认。', locationDetail: '图书馆附近（示例）' },
-    { id: 'demo-found-keys', type: 'found', title: '一串钥匙', locationId: 'canteen', regionId: 'living', description: '示例：拾获物品可以关联校园地点，认领完成后由发布者更新状态。', locationDetail: '禾香餐厅附近（示例）' },
+    { id: 'demo-found-keys', type: 'found', title: '一串钥匙', locationId: 'canteen', regionId: 'living', description: '示例：拾获物品可以关联校园地点，认领完成后由发布者更新状态。', locationDetail: '谷园餐厅附近（示例）' },
   ].map((post) => ({ ...post, authorId: 'demo', status: 'active', createdAt: now, occurredAt: now, updatedAt: now, image: '', isDemo: true, contact: '示例信息，没有真实联系人。' }))
 }
 

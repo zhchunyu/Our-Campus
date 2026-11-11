@@ -23,6 +23,7 @@ const entries = [
 
 export const GUYUAN_WINDOWS = entries.map((entry, index) => ({
   ...entry, id: `b126e080-1008-4000-8000-${String(index + 1).padStart(12, '0')}`,
+  photo: `${import.meta.env?.BASE_URL || '/'}assets/restaurants/guyuan/${entry.key}.jpg`,
   number: `资料${index + 1}`, floor: '一层', numberVerified: false,
   icon: entry.category === '面食' ? 'noodles' : entry.category === '小吃' ? 'snack' : 'rice',
   tone: entry.category === '面食' ? 'wheat' : entry.category === '小吃' ? 'peach' : 'green',
@@ -30,5 +31,5 @@ export const GUYUAN_WINDOWS = entries.map((entry, index) => ({
 }))
 export function enrichGuyuanWindow(window) {
   const entry = GUYUAN_WINDOWS.find((item) => item.id === window.id || item.name === window.name)
-  return entry ? { ...entry, ...window, menu: window.menu?.length ? window.menu : entry.menu, floor: window.floor || entry.floor, numberVerified: window.numberVerified ?? entry.numberVerified, cloudStored: true } : { ...window, cloudStored: true }
+  return entry ? { ...entry, ...window, photo: window.photo || entry.photo, menu: window.menu?.length ? window.menu : entry.menu, floor: window.floor || entry.floor, numberVerified: window.numberVerified ?? entry.numberVerified, cloudStored: true } : { ...window, cloudStored: true }
 }

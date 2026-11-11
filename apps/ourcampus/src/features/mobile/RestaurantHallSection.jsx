@@ -17,6 +17,6 @@ export function RestaurantHallSection({ locations, onOpenReviews }) {
         <ChevronRight size={20} aria-hidden="true" />
       </button>)}
     </div> : <div className="community-empty"><UtensilsCrossed size={30} /><strong>暂未收录餐厅</strong><p>餐厅地点收录后会显示在这里。</p></div>}
-    <p className="community-footnote">窗口名单由管理员维护；新评价暂存本机。</p>
+    <p className="community-footnote">窗口名单由管理员维护；评价来源会在窗口详情中标明。</p>
   </div>
 }

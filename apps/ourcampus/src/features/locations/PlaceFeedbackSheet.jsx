@@ -19,8 +19,8 @@ function toLocalDateTime(value) {
 
 const FEEDBACK_OPTIONS = Object.values(PLACE_FEEDBACK_TYPES)
 
-export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback }) {
-  const [type, setType] = useState(PLACE_FEEDBACK_TYPES.CROWD)
+export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback, initialType = PLACE_FEEDBACK_TYPES.CROWD }) {
+  const [type, setType] = useState(initialType)
   const [description, setDescription] = useState('')
   const [suggestedDescription, setSuggestedDescription] = useState('')
   const [crowdStatus, setCrowdStatus] = useState(location.crowdStatus ?? 'normal')
@@ -34,6 +34,7 @@ export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback }) {
   const [submitting, setSubmitting] = useState(false)
   const clientId = useRef(newReportId())
   const dialogRef = useRef(null)
+  useBackLayer(true, () => { if (!submitting) onClose() }, 90)
 
   useEffect(() => {
     const previouslyFocused = document.activeElement
@@ -84,7 +85,7 @@ export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback }) {
     <div
       className="place-feedback-backdrop"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose()
+        if (!submitting && event.target === event.currentTarget) onClose()
       }}
     >
       <section
@@ -98,10 +99,10 @@ export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback }) {
         <header className="place-feedback-sheet__header">
           <div>
             <span><MapPin size={13} /> 校园 · 地点反馈</span>
-            <h2 id="place-feedback-title">{submitted ? '反馈已收下' : '报告地点情况'}</h2>
+            <h2 id="place-feedback-title">{submitted ? '反馈已收下' : type === PLACE_FEEDBACK_TYPES.REPAIR ? '提交设施报修' : '报告地点情况'}</h2>
             <p>{location.name}</p>
           </div>
-          <button type="button" onClick={onClose} aria-label="关闭反馈窗口"><X size={18} /></button>
+          <button type="button" onClick={onClose} disabled={submitting} aria-label="关闭反馈窗口"><X size={18} /></button>
         </header>
 
         {submitted ? (
@@ -201,3 +202,4 @@ export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback }) {
     document.body,
   )
 }
+import { useBackLayer } from '../../app/useBackLayer.js'

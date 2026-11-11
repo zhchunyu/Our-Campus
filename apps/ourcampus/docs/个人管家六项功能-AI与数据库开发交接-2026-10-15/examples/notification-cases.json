@@ -1,0 +1,102 @@
+{
+  "fixture_type": "target_policy_fixtures_not_actual_runtime_results",
+  "policy_version": "butler-v1-proposed",
+  "cases": [
+    {
+      "case_id": "N01",
+      "scenario": "主要道路经确认完全封闭，审核确定需全校知晓",
+      "confirmed": true,
+      "active": true,
+      "kind": "closure",
+      "importance": "important",
+      "impact_scope": "all",
+      "explicit_personal_relation": false,
+      "expected_send": true,
+      "expected_priority": 3
+    },
+    {
+      "case_id": "N02",
+      "scenario": "未核实听说封路，即使提到全校",
+      "confirmed": false,
+      "active": true,
+      "kind": "closure",
+      "importance": "important",
+      "impact_scope": "all",
+      "explicit_personal_relation": false,
+      "expected_send": false,
+      "expected_priority": null
+    },
+    {
+      "case_id": "N03",
+      "scenario": "普通局部施工但可通行，无个人关联",
+      "confirmed": true,
+      "active": true,
+      "kind": "construction",
+      "importance": "ordinary",
+      "impact_scope": "area",
+      "explicit_personal_relation": false,
+      "expected_send": false,
+      "expected_priority": null
+    },
+    {
+      "case_id": "N04",
+      "scenario": "普通局部施工，用户当天已确认待办地点受影响",
+      "confirmed": true,
+      "active": true,
+      "kind": "construction",
+      "importance": "ordinary",
+      "impact_scope": "area",
+      "explicit_personal_relation": true,
+      "expected_send": true,
+      "expected_priority": 2
+    },
+    {
+      "case_id": "N05",
+      "scenario": "重要区域封闭，但本用户不在审核影响范围且无关联",
+      "confirmed": true,
+      "active": true,
+      "kind": "closure",
+      "importance": "important",
+      "impact_scope": "area",
+      "explicit_personal_relation": false,
+      "expected_send": false,
+      "expected_priority": null
+    },
+    {
+      "case_id": "N06",
+      "scenario": "已过期封路的旧消息不得作为新通知发给新用户",
+      "confirmed": true,
+      "active": false,
+      "kind": "closure",
+      "importance": "important",
+      "impact_scope": "all",
+      "explicit_personal_relation": false,
+      "expected_send": false,
+      "expected_priority": null
+    },
+    {
+      "case_id": "N07",
+      "scenario": "图书馆普通有效活动与明确收藏相关",
+      "confirmed": true,
+      "active": true,
+      "kind": "activity",
+      "importance": "ordinary",
+      "impact_scope": "area",
+      "explicit_personal_relation": true,
+      "expected_send": true,
+      "expected_priority": 2
+    },
+    {
+      "case_id": "N08",
+      "scenario": "普通新活动，无兴趣、收藏或主动订阅",
+      "confirmed": true,
+      "active": true,
+      "kind": "activity",
+      "importance": "ordinary",
+      "impact_scope": "area",
+      "explicit_personal_relation": false,
+      "expected_send": false,
+      "expected_priority": null
+    }
+  ]
+}

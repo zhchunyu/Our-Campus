@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-10",
+  "timezone": "Asia/Shanghai",
+  "project_id": "hkdblizadnkskxslyjyq",
+  "auv_assistant": {
+    "version": 37,
+    "status": "ACTIVE"
+  },
+  "information_worker": {
+    "version": 24,
+    "status": "ACTIVE"
+  },
+  "hall_proactive_database": {
+    "applied": true,
+    "migration": "20261110130724",
+    "table_exists": true,
+    "approval": "explicit_user_approval_2026-11-10",
+    "production_rollback_regression": "passed"
+  },
+  "notifications_preserved": 111,
+  "enabled_devices": 0,
+  "provider_receipts": 0,
+  "live_provider_test_performed": false,
+  "original_signing_available_locally": false,
+  "verification": {
+    "backend_original_workspace_tests": 111,
+    "backend_standalone_bundle_tests": 75,
+    "production_monolith_worker_tests": 55,
+    "client_targeted_tests": 71,
+    "isolated_sql": "passed migration twice, 8 lock order transactions, complete rollback regression",
+    "frontend_build": "passed",
+    "android_sync": "passed",
+    "live_multi_connection_stress": "not performed",
+    "production_fixture_cleanup": "passed: original notifications111; fixture users0; analysis0; budget0; jobs0; wake enabled",
+    "legacy_six_rpc_bodies_and_acl": "preserved except approved lock prefix",
+    "health_advisors": "no lints"
+  },
+  "persona_model_setting": "user confirmed not changed; browser connection failed; manual change pending",
+  "hall_model_default": "qwen3.7-flash",
+  "source_snapshot_only": true,
+  "github_119_release_url": "https://github.com/zhchunyu/Our-Campus/releases/tag/v1.19",
+  "github_119_apk_contains_nov10_client_changes": false
+}

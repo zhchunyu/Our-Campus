@@ -1,0 +1,416 @@
+{
+  "contract_version": "butler-v1-proposed",
+  "status": "not_implemented",
+  "date": "2026-10-15",
+  "authentication": "Existing Supabase JWT. Resolve user on server. No user_id parameter or service role in client.",
+  "time_zone": "Asia/Shanghai",
+  "feature_ids": [
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "F6"
+  ],
+  "new_ai_mode": {
+    "endpoint": "/functions/v1/auv-assistant",
+    "method": "POST",
+    "mode": "plan",
+    "request_fields": [
+      "mode",
+      "text",
+      "date",
+      "timeZone",
+      "clientRequestId"
+    ],
+    "response_schema": "ai-plan-result.schema.json",
+    "max_text_length": 1000,
+    "compatibility": "Keep existing chat and extract modes unchanged."
+  },
+  "rpcs": [
+    {
+      "name": "campus_butler_snapshot",
+      "parameters": {
+        "p_date": {
+          "type": "date",
+          "required": true
+        },
+        "p_time_zone": {
+          "type": "text",
+          "required": false,
+          "default": "Asia/Shanghai"
+        }
+      },
+      "returns": [
+        "schema_version",
+        "date",
+        "now",
+        "time_zone",
+        "context_fetched_at",
+        "data_status",
+        "coverage",
+        "timetable",
+        "agenda",
+        "matters",
+        "relevant_events",
+        "preferences",
+        "snapshot_token"
+      ],
+      "rules": [
+        "Owner only. Distinguish available empty, missing, unconfirmed and unavailable.",
+        "No unfiltered all-campus activity feed in relevant_events."
+      ],
+      "feature_ids": [
+        "F1",
+        "F2",
+        "F3",
+        "F4",
+        "F5",
+        "F6"
+      ]
+    },
+    {
+      "name": "campus_save_timetable",
+      "parameters": {
+        "p_timetable": {
+          "type": "jsonb",
+          "required": true
+        },
+        "p_course_locations": {
+          "type": "jsonb",
+          "required": true
+        },
+        "p_expected_version": {
+          "type": "bigint",
+          "required": true,
+          "minimum": 0
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "timetable",
+        "row_version"
+      ],
+      "rules": [
+        "Payload matches existing version-1 timetable format.",
+        "Only explicit user import; no automatic guest or other-account overwrite.",
+        "course_locations: array of course_id/location_id/confirmed_by_user."
+      ],
+      "feature_ids": [
+        "F1",
+        "F2",
+        "F4"
+      ]
+    },
+    {
+      "name": "campus_save_butler_preferences",
+      "parameters": {
+        "p_patch": {
+          "type": "jsonb",
+          "required": true
+        },
+        "p_expected_version": {
+          "type": "bigint",
+          "required": true,
+          "minimum": 0
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "preferences",
+        "row_version"
+      ],
+      "rules": [
+        "Allow only time_zone/goals/free_windows/quiet_enabled/quiet_start/quiet_end/important_bypass_quiet/blocked_topics.",
+        "Keep favorites and interests in existing campus_notification_preferences.",
+        "Cleared goals/free_windows must no longer be model context."
+      ],
+      "feature_ids": [
+        "F6"
+      ]
+    },
+    {
+      "name": "campus_upsert_personal_task",
+      "parameters": {
+        "p_task": {
+          "type": "jsonb",
+          "required": true
+        },
+        "p_expected_version": {
+          "type": "bigint",
+          "required": true,
+          "minimum": 0
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "task",
+        "row_version",
+        "conflicts"
+      ],
+      "rules": [
+        "p_task allows id/client_id/title/kind/status/start_at/end_at/due_at/location_id/allow_conflict.",
+        "No client-supplied source provenance or user_id.",
+        "For new manual tasks id is null and expected version is 0; server binds source_type=user_request.",
+        "Hard conflict requires explicit allow_conflict=true for manual entry; plan confirmation never bypasses conflicts."
+      ],
+      "feature_ids": [
+        "F1",
+        "F4"
+      ]
+    },
+    {
+      "name": "campus_confirm_plan",
+      "parameters": {
+        "p_plan_id": {
+          "type": "uuid",
+          "required": true
+        },
+        "p_items": {
+          "type": "jsonb",
+          "required": true
+        },
+        "p_expected_snapshot_token": {
+          "type": "text",
+          "required": true
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "plan_id",
+        "saved",
+        "task_ids",
+        "row_version"
+      ],
+      "rules": [
+        "Owner, expiry, current source versions, selected draft IDs and conflicts rechecked in one transaction.",
+        "p_items allows draft_item_id/title/start_at/end_at/due_at/location_id only.",
+        "No partial success. Same confirmed draft returns original task IDs, even with another request ID."
+      ],
+      "feature_ids": [
+        "F2",
+        "F4"
+      ]
+    },
+    {
+      "name": "campus_start_matter",
+      "parameters": {
+        "p_input": {
+          "type": "jsonb",
+          "required": true
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "matter",
+        "row_version"
+      ],
+      "rules": [
+        "Input allows source_type/source_id/kind/user_reported_state/next_follow_up_at.",
+        "source_type report/event/service_guide; report must belong to current user; guides published and events readable.",
+        "Unique owner/source. Steps and provenance are copied from validated server source."
+      ],
+      "feature_ids": [
+        "F3",
+        "F5"
+      ]
+    },
+    {
+      "name": "campus_set_matter_state",
+      "parameters": {
+        "p_matter_id": {
+          "type": "uuid",
+          "required": true
+        },
+        "p_action": {
+          "type": "text",
+          "required": true,
+          "enum": [
+            "stop_tracking",
+            "resume",
+            "complete_personal"
+          ]
+        },
+        "p_expected_version": {
+          "type": "bigint",
+          "required": true,
+          "minimum": 0
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "matter",
+        "row_version"
+      ],
+      "rules": [
+        "Stop does not withdraw or resolve the source report/event.",
+        "For actual lost-item recovery call existing campus_set_report_status first; personal completion alone is not official source completion.",
+        "Cancel queued follow-ups; workers must recheck source state."
+      ],
+      "feature_ids": [
+        "F3"
+      ]
+    },
+    {
+      "name": "campus_set_matter_step",
+      "parameters": {
+        "p_matter_id": {
+          "type": "uuid",
+          "required": true
+        },
+        "p_step_id": {
+          "type": "text",
+          "required": true
+        },
+        "p_done": {
+          "type": "boolean",
+          "required": true
+        },
+        "p_expected_version": {
+          "type": "bigint",
+          "required": true,
+          "minimum": 0
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "matter",
+        "row_version"
+      ],
+      "rules": [
+        "Only current owner steps; mark evidence_source=user_reported, not official receipt."
+      ],
+      "feature_ids": [
+        "F3",
+        "F5"
+      ]
+    },
+    {
+      "name": "campus_record_recommendation_feedback",
+      "parameters": {
+        "p_target_type": {
+          "type": "text",
+          "required": true,
+          "enum": [
+            "notification",
+            "event",
+            "plan"
+          ]
+        },
+        "p_target_id": {
+          "type": "uuid",
+          "required": true
+        },
+        "p_feedback": {
+          "type": "text",
+          "required": true,
+          "enum": [
+            "useful",
+            "not_useful",
+            "less_like_this"
+          ]
+        },
+        "p_reason": {
+          "type": "text",
+          "required": false,
+          "default": "",
+          "max_length": 200
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "feedback_id",
+        "row_version"
+      ],
+      "rules": [
+        "Target must be readable by owner. Does not suppress confirmed important public notices."
+      ],
+      "feature_ids": [
+        "F6"
+      ]
+    },
+    {
+      "name": "campus_delete_recommendation_feedback",
+      "parameters": {
+        "p_feedback_id": {
+          "type": "uuid",
+          "required": true
+        },
+        "p_client_request_id": {
+          "type": "uuid",
+          "required": true,
+          "semantics": "One operation; reuse on retry; changed body with same id must fail."
+        }
+      },
+      "returns": [
+        "schema_version",
+        "deleted"
+      ],
+      "rules": [
+        "Only owner. Remove reason/derived recommendation use and invalidate caches; idempotent."
+      ],
+      "feature_ids": [
+        "F6"
+      ]
+    }
+  ],
+  "errors": {
+    "unauthenticated": 401,
+    "forbidden": 403,
+    "invalid_input": 400,
+    "invalid_date": 400,
+    "invalid_reference": 400,
+    "version_conflict": 409,
+    "stale_context": 409,
+    "schedule_conflict": 409,
+    "draft_expired": 409,
+    "invalid_state": 409,
+    "idempotency_conflict": 409,
+    "rate_limited": 429,
+    "ai_unavailable": 502,
+    "invalid_ai_result": 502,
+    "upstream_timeout": 504,
+    "service_unavailable": 503
+  },
+  "error_transport_note": "HTTP mappings are gateway targets; provide stable SQLSTATE/business-code mapping for RPC without assuming custom PostgREST HTTP behavior."
+}

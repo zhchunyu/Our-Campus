@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "kind": "plan",
+  "generated_by": "auv",
+  "status": "ready_for_confirmation",
+  "text": "合成样例：周五 16:00–18:00 安排高数复习；这是待确认草案，尚未加入个人安排。",
+  "time_zone": "Asia/Shanghai",
+  "plan_id": "20000000-0000-4000-8000-000000000001",
+  "snapshot_token": "fixture-only-not-a-real-server-token",
+  "context_fetched_at": "2026-10-15T04:00:00Z",
+  "expires_at": "2026-10-16T04:00:00Z",
+  "items": [
+    {
+      "draft_item_id": "study-1",
+      "title": "复习高数",
+      "kind": "study",
+      "start_at": "2026-10-16T08:00:00Z",
+      "end_at": "2026-10-16T10:00:00Z",
+      "due_at": null,
+      "location_id": null,
+      "source_ref": {
+        "type": "user_request",
+        "id": null,
+        "version": null
+      },
+      "reasons": [
+        {
+          "type": "user_request",
+          "source_id": "fixture-request-1",
+          "text": "用户明确希望在周五下午复习两小时。"
+        },
+        {
+          "type": "free_slot",
+          "source_id": "fixture-timetable-1",
+          "text": "合成快照中此时段没有已确认课程和个人任务。"
+        }
+      ],
+      "uncertainties": []
+    }
+  ],
+  "questions": [],
+  "warnings": [],
+  "citations": [
+    {
+      "source_id": "fixture-request-1",
+      "type": "user_input",
+      "url": null,
+      "observed_at": "2026-10-15T04:00:00Z",
+      "version": null
+    },
+    {
+      "source_id": "fixture-timetable-1",
+      "type": "timetable",
+      "url": null,
+      "observed_at": "2026-10-15T04:00:00Z",
+      "version": "1"
+    }
+  ],
+  "requires_confirmation": true,
+  "saved": false
+}

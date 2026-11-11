@@ -13,6 +13,13 @@ export async function loadReviewSummary(restaurantId) {
   if (error) throw error
   return data.map((r) => ({ windowId: r.window_id, count: Number(r.count), ratingSum: Number(r.rating_sum), rating: r.rating === null ? null : Number(r.rating).toFixed(1), price: r.price === null ? null : Number(r.price), recommended: Number(r.recommended) }))
 }
+export async function loadUserCloudReviews(userId) {
+  if (!userId) return []
+  const { data, error } = await requireSupabase().from('restaurant_reviews').select('*')
+    .eq('author_id', userId).order('created_at', { ascending: false }).limit(100)
+  if (error) throw error
+  return data.map((review) => ({ ...mapCloudReview(review), status: review.status }))
+}
 export async function loadWindowCloudReviews(windowId, before = null) {
   let query = requireSupabase().from('restaurant_reviews').select('*').eq('window_id', windowId).eq('status', 'visible')
   if (before) query = query.or(`created_at.lt.${before.createdAt},and(created_at.eq.${before.createdAt},id.lt.${before.id})`)

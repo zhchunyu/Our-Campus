@@ -16,6 +16,7 @@ export function LoginSheet({ onClose, auth, initialMode = 'login' }) {
   const [busy, setBusy] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const dialogRef = useRef(null)
+  useBackLayer(true, () => { if (!busy) onClose() }, 100)
 
   useEffect(() => {
     const previouslyFocused = document.activeElement
@@ -139,7 +140,7 @@ export function LoginSheet({ onClose, auth, initialMode = 'login' }) {
         <form className="mobile-login-form" onSubmit={submit} noValidate>
           <div className="mobile-login-fields">
             {!(mode === 'reset' && auth.recoveryRequested) && field('email', '邮箱', Mail, { type: 'email', inputMode: 'email', autoComplete: 'email', placeholder: '输入你的常用邮箱', maxLength: 254, readOnly: ['confirm', 'reset'].includes(mode) })}
-            {mode === 'signup' && field('nickname', '大厅昵称', UserRound, { type: 'text', autoComplete: 'nickname', placeholder: '同学们会看到这个名字', maxLength: 40 })}
+            {mode === 'signup' && field('nickname', '昵称', UserRound, { type: 'text', autoComplete: 'nickname', placeholder: '同学们会看到这个名字', maxLength: 40 })}
             {(mode === 'confirm' || (mode === 'reset' && !auth.recoveryRequested)) && field('token', '邮件验证码', KeyRound, { type: 'text', inputMode: 'numeric', autoComplete: 'one-time-code', placeholder: '填写邮件中的数字验证码', maxLength: 10 })}
             {['login', 'signup', 'reset'].includes(mode) && field('password', mode === 'reset' ? '新密码' : '密码', KeyRound, { type: 'password', autoComplete: mode === 'login' ? 'current-password' : 'new-password', placeholder: mode === 'login' ? '输入密码' : '至少 8 位，包含字母和数字', maxLength: 128 })}
             {['signup', 'reset'].includes(mode) && field('passwordAgain', '确认密码', KeyRound, { type: 'password', autoComplete: 'new-password', placeholder: '再次输入密码', maxLength: 128 })}
@@ -158,3 +159,4 @@ export function LoginSheet({ onClose, auth, initialMode = 'login' }) {
     </div>, document.body,
   )
 }
+import { useBackLayer } from '../../app/useBackLayer.js'

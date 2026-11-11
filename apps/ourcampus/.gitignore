@@ -28,6 +28,8 @@ pnpm-debug.log*
 docs/apk/*
 !docs/apk/OurCampus-1.7-显示优化.apk
 !docs/apk/OurCampus-1.11-队友图标与开屏.apk
+!docs/apk/OurCampus-1.16-校园装扮与全屏地图.apk
+!docs/apk/OurCampus-1.16-校园装扮与全屏地图.apk.sha256
 android/push.local.properties
 
 # 根仓库默认忽略视频；此文件是当前应用必需的开屏资源。
@@ -42,6 +44,7 @@ docs/screenshots/*
 !docs/screenshots/ourcampus-launcher-icon-preview.png
 !docs/screenshots/2026-10-08-new-startup-phone.png
 !docs/screenshots/2026-10-08-teammate-startup-video.png
+!docs/screenshots/2026-10-16-home-decoration-no-category.png
 
 # 本机 POI 匹配提示（含真实建筑名，仅用于 tools/harvest-tencent-poi.mjs 定位，不共享、不提交）。
 tools/poi-name-hints.local.json

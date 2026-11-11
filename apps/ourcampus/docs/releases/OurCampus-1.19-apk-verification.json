@@ -1,0 +1,31 @@
+{
+  "version_name": "1.19",
+  "version_code": 20,
+  "package_id": "cn.edu.sxau.campustwin",
+  "apk_size_bytes": 35680287,
+  "apk_sha256": "a06af4ce5a8b070f251fd1e87fac68791dda9f28934409f193c8b9cf7b40234f",
+  "signer_certificate_sha256": "501005b09c563a900b6b2b30729725306bf0af4ccabcddc2d0d64d3b842b43e0",
+  "non_debuggable": true,
+  "min_sdk": 24,
+  "target_sdk": 36,
+  "apk_entries_read": 525,
+  "web_asset_count": 25,
+  "web_assets_equal_current_dist": true,
+  "feature_strings": {
+    "聊天新消息提醒": true,
+    "打开这个地区的聊天": true,
+    "hall-region:": true,
+    "正在登记通知设备": true,
+    "添加信息照片": true,
+    "检查更新": true
+  },
+  "native_push_classes_present": true,
+  "native_public_app_id_configured": true,
+  "vivo_vendor_channel_enabled": false,
+  "configured_server_only_secrets_embedded": false,
+  "adb_device_count": 0,
+  "physical_overlay_install_verified": false,
+  "actual_push_delivery_verified": false,
+  "build": "npm run android:sync; gradlew -p android :app:assembleRelease --offline",
+  "native_url_policy_assertions": 44
+}

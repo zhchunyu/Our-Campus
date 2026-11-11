@@ -5,7 +5,7 @@
 .restaurant-review-entry small { color: #677762; font-size: 11px; line-height: 1.5; }
 .restaurant-review-entry:focus-visible { outline: 2px solid #315e4c; outline-offset: 3px; }
 
-.restaurant-review-page { position: fixed; inset: 0; z-index: 120; display: flex; justify-content: center; color: #293d33; background: #dfe6dd; isolation: isolate; font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif; }
+.restaurant-review-page { position: fixed; inset: 0; z-index: 120; display: flex; justify-content: center; color: #293d33; background: #dfe6dd; isolation: isolate; font-family: var(--font-ui); }
 .restaurant-review-page__frame { position: relative; display: flex; flex-direction: column; width: 100%; max-width: 560px; height: 100%; min-height: 0; overflow: hidden; background: #f8f9f5; animation: restaurant-review-enter 220ms ease-out; }
 .restaurant-review-page button { -webkit-tap-highlight-color: transparent; }
 .restaurant-review-page button:focus-visible, .restaurant-review-page input:focus-visible, .restaurant-review-page textarea:focus-visible, .restaurant-review-page select:focus-visible { outline: 2px solid #49765a; outline-offset: 3px; }

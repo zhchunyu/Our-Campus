@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OurCampus proposed planning response v1 (not implemented)",
+  "description": "Synthetic fixtures illustrate the proposed contract. saved=false means not committed to the personal agenda.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "kind": {
+      "const": "plan"
+    },
+    "generated_by": {
+      "enum": [
+        "auv",
+        "rules"
+      ]
+    },
+    "status": {
+      "enum": [
+        "ready_for_confirmation",
+        "needs_clarification"
+      ]
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "time_zone": {
+      "const": "Asia/Shanghai"
+    },
+    "plan_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "snapshot_token": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "context_fetched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "draft_item_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]{1,64}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "kind": {
+            "enum": [
+              "study",
+              "life",
+              "activity",
+              "service",
+              "other"
+            ]
+          },
+          "start_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "end_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "due_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "location_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "source_ref": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "enum": [
+                  "user_request",
+                  "event",
+                  "service_guide",
+                  "task"
+                ]
+              },
+              "id": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 100
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "enum": [
+                    "user_request",
+                    "free_slot",
+                    "verified_hours",
+                    "location",
+                    "preference"
+                  ]
+                },
+                "source_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "maxLength": 100
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300
+                }
+              },
+              "required": [
+                "type",
+                "source_id",
+                "text"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 8
+          },
+          "uncertainties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            },
+            "minItems": 0,
+            "maxItems": 8
+          }
+        },
+        "required": [
+          "draft_item_id",
+          "title",
+          "kind",
+          "start_at",
+          "end_at",
+          "due_at",
+          "location_id",
+          "source_ref",
+          "reasons",
+          "uncertainties"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 20
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      },
+      "minItems": 0,
+      "maxItems": 3
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "enum": [
+              "unknown_hours",
+              "unknown_travel_time",
+              "unscheduled_course",
+              "unconfirmed_calendar",
+              "route_changed",
+              "missing_place",
+              "other"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "code",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 20
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "type": {
+            "enum": [
+              "event",
+              "service_guide",
+              "user_input",
+              "timetable",
+              "task",
+              "preference"
+            ]
+          },
+          "url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri"
+          },
+          "observed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "version": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "source_id",
+          "type",
+          "url",
+          "observed_at",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 30
+    },
+    "requires_confirmation": {
+      "const": true
+    },
+    "saved": {
+      "const": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "kind",
+    "generated_by",
+    "status",
+    "text",
+    "time_zone",
+    "plan_id",
+    "snapshot_token",
+    "context_fetched_at",
+    "expires_at",
+    "items",
+    "questions",
+    "warnings",
+    "citations",
+    "requires_confirmation",
+    "saved"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "ready_for_confirmation"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshot_token": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "items": {
+            "minItems": 1
+          },
+          "questions": {
+            "maxItems": 0
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "needs_clarification"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "plan_id": {
+            "const": null
+          },
+          "snapshot_token": {
+            "const": null
+          },
+          "expires_at": {
+            "const": null
+          },
+          "items": {
+            "maxItems": 0
+          },
+          "questions": {
+            "minItems": 1
+          }
+        }
+      }
+    }
+  ]
+}

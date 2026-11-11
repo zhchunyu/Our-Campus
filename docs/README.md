@@ -4,12 +4,14 @@ OurCampus 将校园地点、同学社区与 AUV 助手放在同一个入口。�
 
 | 文档 | 内容 |
 | --- | --- |
-| [Android 下载](download.md) | 1.18 体验包、安装说明、文件校验及源码对应范围。 |
+| [Android 下载](download.md) | 1.19 体验包、安装说明、文件校验及与后续源码的区别。 |
 | [快速开始](quickstart.md) | 获取源码、填写配置、启动 Web 与构建 Android。 |
 | [系统架构](architecture.md) | 前端模块、Supabase 服务、AUV 网关与校园信息流程。 |
 | [部署说明](deployment.md) | Web 构建设置、后台配置和 Android 交付。 |
 | [开发状态](status.md) | 已有实现、后台接入记录、验收事项与后续工作。 |
 | [仓库目录](repository-layout.md) | 当前目录职责、旧路径迁移和归档入口。 |
+
+本轮复核：[1.19 安装包与近期 AI 源码](releases/2026-11-10-1.19-release-and-ai-source.md) · [贡献者与署名](../CONTRIBUTORS.md)。
 
 ## 模型与社区
 
@@ -41,4 +43,3 @@ OurCampus 将校园地点、同学社区与 AUV 助手放在同一个入口。�
 历史交接文档保留原始日期，反映当时的操作记录。当前功能范围、已部署状态与待验收事项统一见[开发状态](status.md)。
 
 [返回项目首页](../README.md)
-

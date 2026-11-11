@@ -1,0 +1,50 @@
+{
+  "fixture_type": "synthetic_data_not_a_real_student",
+  "timetable": {
+    "version": 1,
+    "semester": "2026-2027-1",
+    "termStart": "2026-08-31",
+    "dateConfirmed": true,
+    "courses": [
+      {
+        "id": "fixture-course-1",
+        "name": "高等数学",
+        "teacher": "",
+        "classroom": "待确认教室",
+        "weekday": 5,
+        "weeks": [
+          7
+        ],
+        "periods": [
+          5,
+          6
+        ],
+        "startTime": "14:00",
+        "endTime": "15:00"
+      }
+    ],
+    "unscheduled": []
+  },
+  "tasks": [],
+  "course_locations": [],
+  "butler_preferences": {
+    "time_zone": "Asia/Shanghai",
+    "goals": [],
+    "free_windows": [],
+    "quiet_enabled": true,
+    "quiet_start": "22:00",
+    "quiet_end": "08:00",
+    "important_bypass_quiet": true,
+    "blocked_topics": []
+  },
+  "notification_preferences": {
+    "favorite_location_ids": [
+      "library"
+    ],
+    "interest_keywords": [
+      "阅读"
+    ],
+    "favorite_priority": true,
+    "match_alerts": true
+  }
+}

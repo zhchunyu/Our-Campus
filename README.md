@@ -8,11 +8,11 @@
 
 连接校园地图、动态信息与个人安排的校园服务应用。
 
-[<img src="https://img.shields.io/badge/Android-1.18_体验版-176B55?style=for-the-badge&amp;logo=android&amp;logoColor=white" alt="下载 Android 1.18 体验版">](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.18)
+[<img src="https://img.shields.io/badge/Android-1.19_体验版-176B55?style=for-the-badge&amp;logo=android&amp;logoColor=white" alt="下载 Android 1.19 体验版">](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.19)
 [<img src="https://img.shields.io/badge/ModelScope-模型下载-6254A4?style=for-the-badge" alt="ModelScope 模型发布页">](https://modelscope.cn/models/chunyuuu/Qwen2.5-7B-Instruct/summary)
 [<img src="https://img.shields.io/badge/SwanLab-实验记录-2C689C?style=for-the-badge" alt="SwanLab 实验记录">](https://swanlab.cn/@zhchunyu/OurCampus-AUV-training/v1/44bg6m/overview)
 
-[安装与使用](docs/download.md) · [微信反馈群](#交流与反馈) · [快速开始](docs/quickstart.md) · [文档中心](docs/README.md) · [Issues](https://github.com/zhchunyu/Our-Campus/issues)
+[安装与使用](docs/download.md) · [微信反馈群](#交流与反馈) · [快速开始](docs/quickstart.md) · [文档中心](docs/README.md) · [贡献者与署名](CONTRIBUTORS.md) · [Issues](https://github.com/zhchunyu/Our-Campus/issues)
 
 `React` · `Vite` · `Capacitor` · `Supabase` · `Qwen / QLoRA`
 
@@ -36,13 +36,14 @@
 
 **个人情境关联。** 用户主动选择地点或课表上下文，助手经鉴权网关读取允许访问的资料，再提供相关建议。收藏、路线和订阅共同构成个人服务入口，定位由用户主动触发。
 
-## 下载 Android 1.18
+## 下载 Android 1.19 体验版
 
-**[下载 OurCampus-1.18.apk](https://github.com/zhchunyu/Our-Campus/releases/download/v1.18/OurCampus-1.18.apk)** · [版本说明与校验](docs/download.md)
+**[下载 OurCampus-1.19.apk](https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/OurCampus-1.19.apk)** · [版本说明与校验](docs/download.md)
 
-- Android 7.0 及以上；安装包约 **34.02 MiB**，版本号 **1.18 / 19**。
-- 新增每日课表、当天时间线和下一节课，修复教学周浏览重置；保留头像、个人主页与应用内更新。
-- 已核验 APK 哈希、签名和线上版本记录。1.17 可在“我的 → 应用设置 → 检查更新”升级；1.16 及更早需手动覆盖安装。源码对应与验收范围见[版本说明](docs/download.md#源码与安装包的关系)。
+- Android 7.0 及以上；安装包约 **34.03 MiB**，版本号 **1.19 / 20**。
+- 加入前台通知排队、按地区主动订阅聊天提醒和个推接入；保留社区图片、精简个人页、每日课表和头像同步。
+- APK 哈希、v2 签名及与 1.18 的证书一致性已核验。真机覆盖安装、后台送达和 vivo 离线通道仍待验收；请保留旧应用并覆盖安装。
+- GitHub 当前为公开预发布体验包，应用内更新元数据尚交由管理员接手。`main` 已继续开发 **1.20 / 21** 的 AI 上下文与相关聊天提醒，这些客户端改动未包含在本次 1.19 APK 中。详见[发布与源码记录](docs/releases/2026-11-10-1.19-release-and-ai-source.md)。
 
 ## 源码、模型与实验
 
@@ -95,8 +96,8 @@ npm run dev
   <img src="docs/assets/map-preview.png" width="300" alt="2026 年 10 月 6 日归档版本的 OurCampus 地图界面">
 </p>
 
-以上为归档版本地图截图，当前界面请以 1.18 安装包实际显示为准。
+以上为归档版本地图截图，当前界面请以 1.19 安装包实际显示为准。
 
 </details>
 
-<sub>首页与安装包发布资料复核：2026-11-04。后台系统推送、跨设备流程等具体验收范围以对应版本记录为准。</sub>
+<sub>首页与安装包发布资料复核：2026-11-10。后台部署、源码开发版本与已发布 APK 分别记录，具体验收范围见版本说明。</sub>

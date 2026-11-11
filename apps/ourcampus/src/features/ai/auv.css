@@ -12,16 +12,16 @@
 .auv-page__header { display: flex; align-items: center; flex-shrink: 0; gap: 12px; padding: calc(13px + env(safe-area-inset-top,0px)) 18px 13px; border-bottom: 1px solid #e6eadf; }
 .auv-page__header > button { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border: 1px solid #e1e5dc; border-radius: 50%; color: #315e4c; background: #fff; }
 .auv-page__header > div { flex: 1; min-width: 0; }
-.auv-page__header h1 { margin: 0 0 4px; font-size: 16px; }
-.auv-page__header span { color: #7d8976; font-size: 10px; }
+.auv-page__header h1 { margin: 0 0 4px; font-size: 18px; font-weight: 500; line-height: 1.5; }
+.auv-page__header span { color: #748173; font-size: 12px; }
 .auv-mode-switch { display: flex; gap: 5px; flex-shrink: 0; padding: 5px; margin: 13px 18px 0; border-radius: 13px; background: #edf1e8; }
 .auv-mode-switch button { flex: 1; min-height: 40px; padding: 6px; border: 0; border-radius: 10px; color: #79876d; background: transparent; font-size: 13px; }
 .auv-mode-switch button.is-active { color: #315e4c; background: #fff; box-shadow: 0 2px 7px #2f4b2e0a; font-weight: 700; }
 .auv-feed { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px; scrollbar-width: thin; }
 .auv-welcome { padding: 15px 3px 22px; }
 .auv-welcome > span { display: grid; place-items: center; width: 60px; height: 60px; border: 1px solid #dee7d5; border-radius: 20px; color: #7c9254; background: #edf3e5; }
-.auv-welcome h2 { margin: 18px 0 9px; font-size: 23px; color: #315e4c; }
-.auv-welcome > p { max-width: 330px; margin: 0; color: #829078; font-size: 12px; line-height: 1.8; }
+.auv-welcome h2 { margin: 18px 0 9px; font-size: 23px; font-weight: 500; line-height: 1.5; color: #315e4c; }
+.auv-welcome > p { max-width: 330px; margin: 0; color: #748173; font-size: 14px; line-height: 1.8; }
 .auv-welcome > div { display: grid; gap: 8px; margin-top: 20px; }
 .auv-welcome button { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 45px; padding: 11px 13px; border: 1px solid #e2e8da; border-radius: 12px; color: #5b7552; background: #fff; font-size: 12px; text-align: left; }
 .auv-login { display: grid; justify-items: center; gap: 9px; padding: 20px; border: 1px dashed #d4dfcc; border-radius: 16px; color: #748565; }

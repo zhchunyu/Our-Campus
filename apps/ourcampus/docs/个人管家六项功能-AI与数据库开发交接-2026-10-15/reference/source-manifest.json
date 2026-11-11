@@ -1,0 +1,29 @@
+{
+  "snapshot_date": "2026-10-15",
+  "repository": "CampusTwin",
+  "cloud_verified_this_turn": false,
+  "application_modified_this_turn": false,
+  "files": [
+    {
+      "repository_path": "src/data/timetable.js",
+      "sha256": "a8d93792e72ef09021e978d69a15e93a185c16a27335c34b0731e16854b2637d"
+    },
+    {
+      "repository_path": "src/data/campusServices.js",
+      "sha256": "b4b28a90909016464fb8858c363dc2be9d6b3bd7a45b3a622475dc1b106beb0f"
+    },
+    {
+      "repository_path": "src/data/campusInformation.js",
+      "sha256": "606baae3ba6f8e371286ab599b46b409265fdd67b49d19379fc671275a1e4140"
+    },
+    {
+      "repository_path": "src/data/auvClient.js",
+      "sha256": "71831cba8fef90f6995a23d117a97dc9e1f7641d408eb8ec6a2aacaa13c0bde3"
+    },
+    {
+      "repository_path": "src/features/notifications/useNotificationPreferences.js",
+      "sha256": "a821dd6ab8f268b32cfa1d16f02b8ccc5fba5192300d12523f4e324830560ce9"
+    }
+  ],
+  "previous_package_sha256": "ff4b45cfe02146426dcabaa8fd9b74a84084b98192899058815638bb4c4257a0"
+}

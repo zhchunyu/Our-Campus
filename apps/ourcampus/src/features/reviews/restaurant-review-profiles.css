@@ -1,0 +1,5 @@
+.window-review-item__avatar.profile-avatar { width: 32px; height: 32px; border-radius: 50%; }
+.window-review-item__profile { display: inline-grid; flex: 0 0 32px; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.window-review-item__profile:focus-visible { outline: 2px solid #315e4c; outline-offset: 3px; }
+.restaurant-review-profile-error { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; margin: 0; border: 1px solid #e5d5b8; border-radius: 12px; color: #80643b; background: #faf6ed; font-size: 12px; line-height: 1.6; }
+.restaurant-review-profile-error button { flex-shrink: 0; min-height: 36px; padding: 0 10px; border: 1px solid currentColor; border-radius: 8px; color: inherit; background: transparent; cursor: pointer; }

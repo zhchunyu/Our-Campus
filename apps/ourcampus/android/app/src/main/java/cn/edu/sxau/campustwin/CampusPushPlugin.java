@@ -42,6 +42,15 @@ public class CampusPushPlugin extends Plugin {
         return (Build.VERSION.SDK_INT < 33 || getPermissionState("notifications") == PermissionState.GRANTED)
             && NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
     }
+    private boolean vivoConfigured() {
+        try {
+            return configured() && getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA)
+                .metaData.getBoolean("OURCAMPUS_VIVO_PUSH_ENABLED", false);
+        } catch (Exception ignored) { return false; }
+    }
+    private boolean hasRequiredConsent() {
+        return !vivoConfigured() || preferences(getContext()).getBoolean("vivoConsent", false);
+    }
     private JSObject status() {
         SharedPreferences store = preferences(getContext());
         String installation = store.getString("installation", null);
@@ -52,14 +61,15 @@ public class CampusPushPlugin extends Plugin {
         JSObject result = new JSObject();
         result.put("platform", "android");
         result.put("configured", configured());
-        result.put("enabled", store.getBoolean("enabled", false));
+        result.put("vivoConfigured", vivoConfigured());
+        result.put("enabled", store.getBoolean("enabled", false) && hasRequiredConsent());
         result.put("permission", permitted() ? "granted" : "denied");
         result.put("installationId", installation);
         result.put("cid", store.getString("cid", ""));
         return result;
     }
     private void initializePush() {
-        if (!configured() || !permitted()) return;
+        if (!configured() || !permitted() || !hasRequiredConsent()) return;
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationChannel channel = new NotificationChannel("campus_public", "校园信息", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription("校园公共通知和订阅更新");
@@ -92,12 +102,12 @@ public class CampusPushPlugin extends Plugin {
     @PermissionCallback private void permissionResult(PluginCall call) { finishEnable(call); }
     private void finishEnable(PluginCall call) {
         if (!permitted()) { call.resolve(status()); return; }
-        preferences(getContext()).edit().putBoolean("enabled", true).apply();
+        preferences(getContext()).edit().putBoolean("enabled", true).putBoolean("vivoConsent", vivoConfigured()).apply();
         initializePush();
         call.resolve(status());
     }
     @PluginMethod public void disable(PluginCall call) {
-        preferences(getContext()).edit().putBoolean("enabled", false).apply();
+        preferences(getContext()).edit().putBoolean("enabled", false).putBoolean("vivoConsent", false).apply();
         if (configured()) PushManager.getInstance().turnOffPush(getContext());
         call.resolve(status());
     }

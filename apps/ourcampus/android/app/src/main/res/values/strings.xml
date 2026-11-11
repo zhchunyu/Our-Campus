@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">OurCampus</string>
     <string name="title_activity_main">OurCampus</string>
-    <string name="package_name">cn.edu.campus.campustwin</string>
-    <string name="custom_url_scheme">cn.edu.campus.campustwin</string>
+    <string name="package_name">cn.edu.sxau.campustwin</string>
+    <string name="custom_url_scheme">cn.edu.sxau.campustwin</string>
 </resources>

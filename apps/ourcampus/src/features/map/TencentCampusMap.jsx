@@ -3,36 +3,17 @@ import { LocateFixed, Minus, Navigation, Plus, RotateCcw } from 'lucide-react'
 import {
   getTencentCampusPosition,
   TENCENT_CAMPUS_CENTER,
-  TENCENT_CAMPUS_LABEL_BOUNDS,
-  TENCENT_CAMPUS_MAX_ZOOM,
   TENCENT_CAMPUS_MIN_ZOOM,
+  TENCENT_CAMPUS_MAX_ZOOM,
   TENCENT_CAMPUS_ZOOM,
+  TENCENT_CAMPUS_LABEL_BOUNDS,
 } from '../../data/tencentCampusGeo.js'
 import { loadTencentMapSdk, requestTencentWalkingRoute } from '../../data/tencentMapApi.js'
 import { markStartupReady } from '../../app/startup.js'
-import { COMPETITION_PRESENTATION, campusDisplayText, canShowCampusLink } from '../../data/campusPresentation.js'
+import { COMPETITION_PRESENTATION, campusDisplayText } from '../../data/campusPresentation.js'
 
 const apiKey = import.meta.env.VITE_TENCENT_MAP_KEY
 const liveLocationMarkerImage = '/assets/current-location.svg'
-
-// ── 坐标探针（临时标定工具）───────────────────────────────────────────────
-// 用途：为宿舍楼做「名称 ↔ 实测坐标」严格标定时，需要建筑的真实 GCJ-02 坐标。
-// 原理：腾讯 **JS API GL 底图渲染不消耗 WebService 的「每日调用量」配额**，
-//       所以「在底图上点建筑」就能拿到坐标，完全绕开被配额卡住的接口。
-// 开启：地址栏加参数 → http://localhost:5173/?poi-debug=1
-// 关闭：去掉参数即可；未开启时正常点击行为、界面、性能完全不受影响。
-const poiDebugEnabled = typeof window !== 'undefined' && (() => {
-  const params = new URLSearchParams(window.location.search)
-  return params.has('poi-debug') || params.get('debug') === 'poi'
-})()
-
-// 兼容 TMap.LatLng 实例与普通 {lat,lng} 字面量
-function readLatLng(value) {
-  if (!value) return null
-  const lat = Number(typeof value.getLat === 'function' ? value.getLat() : value.lat)
-  const lng = Number(typeof value.getLng === 'function' ? value.getLng() : value.lng)
-  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null
-}
 
 function normalizePoiName(value) {
   return String(value ?? '')
@@ -85,69 +66,6 @@ function isInsideCampusBounds(poiPosition, locations) {
   return lat >= minLat && lat <= maxLat && lng >= minLng && lng <= maxLng
 }
 
-function escapeHtml(value) {
-  return String(campusDisplayText(value) ?? '').replace(/[&<>"']/g, (character) => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  })[character])
-}
-
-const campusCategoryLabels = {
-  learning: '教学学习',
-  dining: '餐饮生活',
-  living: '住宿空间',
-  service: '校园服务',
-  transport: '出行节点',
-}
-
-function getCampusPoiCategory(name, location) {
-  if (location?.category && campusCategoryLabels[location.category]) return campusCategoryLabels[location.category]
-
-  const poiName = String(name ?? '')
-  if (/公寓|宿舍|住宿|家属/.test(poiName)) return campusCategoryLabels.living
-  if (/餐厅|食堂|餐饮|美食/.test(poiName)) return campusCategoryLabels.dining
-  if (/图书|教学|学院|实验|科研|教室/.test(poiName)) return campusCategoryLabels.learning
-  if (/校门|出入口|站/.test(poiName)) return campusCategoryLabels.transport
-  if (/医院|医务|服务/.test(poiName)) return campusCategoryLabels.service
-  return '校园地点'
-}
-
-function buildCampusPoiCard(name, location, events = [], lostFoundPosts = []) {
-  const placeName = escapeHtml(name || location?.name || '校园地点')
-  const category = escapeHtml(getCampusPoiCategory(name, location))
-  const openStatusLabels = { open: '开放', limited: '部分开放', closed: '暂时关闭' }
-  const crowdStatusLabels = { low: '人流较少', normal: '人流一般', busy: '当前拥挤' }
-  const statusMarkup = location
-    ? `<div class="tencent-poi-card__status"><span class="tencent-poi-card__status--${escapeHtml(location.openStatus)}">${escapeHtml(openStatusLabels[location.openStatus] ?? '状态未知')}</span><span class="tencent-poi-card__status--${escapeHtml(location.crowdStatus)}">${escapeHtml(crowdStatusLabels[location.crowdStatus] ?? '人流未知')}</span></div>`
-    : ''
-  const eventsMarkup = events.length > 0
-    ? `<div class="tencent-poi-card__events"><strong>校园动态</strong>${events.slice(0, 2).map((event) => `<p><b>${escapeHtml(event.title)}</b><span>${escapeHtml(event.impact)}</span></p>`).join('')}</div>`
-    : ''
-  const communityAction = location && lostFoundPosts.length
-    ? `<button class="tencent-poi-card__community" type="button" data-campus-poi-action="community" data-location-id="${escapeHtml(location.id)}">这里有 ${lostFoundPosts.length} 条寻找中的失物信息 · 查看</button>`
-    : ''
-  let externalUrl = ''
-  try {
-    const parsedUrl = new URL(location?.externalUrl)
-    if (parsedUrl.protocol === 'https:' || parsedUrl.protocol === 'http:') externalUrl = parsedUrl.href
-  } catch {
-    // Ignore missing or invalid external URLs.
-  }
-  const description = location?.description && !location.description.startsWith('地图标注的')
-    ? `<p class="tencent-poi-card__description">${escapeHtml(location.description)}</p>`
-    : ''
-  const websiteAction = canShowCampusLink(externalUrl)
-    ? `<a class="tencent-poi-card__website" href="${escapeHtml(externalUrl)}" target="_blank" rel="noopener noreferrer" data-campus-poi-action="external"><span>访问官网</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11 3h6v6m0-6-8 8"/><path d="M15 11v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg></a>`
-    : ''
-  const feedbackAction = location
-    ? `<button class="tencent-poi-card__feedback" type="button" data-campus-poi-action="feedback" data-location-id="${escapeHtml(location.id)}"><span>反馈地点信息</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 4h12v9H9l-4 3V4Z"/><path d="M10 6.5v3m0 2.2h.01"/></svg></button>`
-    : ''
-  const routeAction = location
-    ? `<button class="tencent-poi-card__route" type="button" data-campus-poi-action="route" data-location-id="${escapeHtml(location.id)}"><span>从当前位置规划</span><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4" /></svg></button>`
-    : ''
-
-  return `<div class="tencent-poi-card" role="dialog" aria-label="${placeName}地点详情"><div class="tencent-poi-card__topline"><span class="tencent-poi-card__marker" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 10.2c0 5-7 11-7 11s-7-6-7-11a7 7 0 1 1 14 0Z"/><circle cx="12" cy="10" r="2.2"/></svg></span><span class="tencent-poi-card__eyebrow">${category}</span><button class="tencent-poi-card__close" type="button" aria-label="关闭地点详情" data-campus-poi-action="close">×</button></div><strong class="tencent-poi-card__title">${placeName}</strong><div class="tencent-poi-card__campus"><span aria-hidden="true"></span>OurCampus · 本校区</div>${statusMarkup}${eventsMarkup}${communityAction}${description}${websiteAction}${feedbackAction}${routeAction}</div>`
-}
-
 function routeErrorMessage(error) {
   if (error?.code === 110 || error?.code === 112) return '腾讯路线接口未授权当前来源'
   if (error?.code === 121) return '腾讯路线接口今日免费额度已用完'
@@ -160,89 +78,57 @@ export function TencentCampusMap({
   locations = [],
   events = [],
   lostFoundPosts = [],
-  allLostFoundPosts = lostFoundPosts,
   selectedId = null,
   currentLocationId = null,
   livePosition = null,
   livePositionFocusToken = 0,
   routePlan = null,
   showLabels = true,
-  showTips = true,
   resetViewToken = 0,
-  onPlanRouteToLocation,
   onSelectLocation,
-  onOpenFeedback,
   onRouteStateChange,
   onUseCampusMap,
 }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const locationsRef = useRef(locations)
-  const eventsRef = useRef(events)
-  const lostFoundRef = useRef(allLostFoundPosts)
-  const layersRef = useRef({ infoWindow: null, route: null, liveLocation: null, community: null, campusLabels: null })
+  const layersRef = useRef({ route: null, liveLocation: null, community: null, campusLabels: null })
   const selectCallbackRef = useRef(onSelectLocation)
-  const routeCallbackRef = useRef(onPlanRouteToLocation)
-  const feedbackCallbackRef = useRef(onOpenFeedback)
   const routeStateCallbackRef = useRef(onRouteStateChange)
   const lastResetTokenRef = useRef(resetViewToken)
   const lastLivePositionFocusTokenRef = useRef(0)
   const [loadState, setLoadState] = useState('loading')
+  const [mapVersion, setMapVersion] = useState(0)
   const [loadError, setLoadError] = useState('')
   const [zoomLevel, setZoomLevel] = useState(TENCENT_CAMPUS_ZOOM)
   const [routeState, setRouteState] = useState({ status: 'idle', route: null, message: '' })
-  // 坐标探针记录（仅 poiDebugEnabled 时会写入）
-  const [probePoints, setProbePoints] = useState([])
-  const [probeLabel, setProbeLabel] = useState('')
-  const probeSeqRef = useRef(0)
-  // 地图点击回调在 [] 依赖的 effect 里注册，读 state 会拿到旧值，故用 ref 同步当前栋号
-  const probeLabelRef = useRef('')
 
-  routeCallbackRef.current = onPlanRouteToLocation
-  feedbackCallbackRef.current = onOpenFeedback
   routeStateCallbackRef.current = onRouteStateChange
   locationsRef.current = locations
-  eventsRef.current = events
-  lostFoundRef.current = allLostFoundPosts
   selectCallbackRef.current = onSelectLocation
-  probeLabelRef.current = probeLabel
 
   useEffect(() => {
     let disposed = false
     let map = null
-    let removePoiCardActionListener = null
 
     loadTencentMapSdk(apiKey)
       .then((TMap) => {
         if (disposed || !containerRef.current) return
-        // 拖动边界：优先用 GL 原生 LatLngBounds；SDK 版本不支持时静默降级（不设置边界），
-        // 绝不因为边界功能让整张地图起不来。
-        const campusBoundary = (() => {
-          if (!TENCENT_CAMPUS_LABEL_BOUNDS) return null
-          if (typeof TMap.LatLngBounds !== 'function' || typeof TMap.LatLng !== 'function') return null
-          try {
-            return new TMap.LatLngBounds(
-              new TMap.LatLng(TENCENT_CAMPUS_LABEL_BOUNDS.south, TENCENT_CAMPUS_LABEL_BOUNDS.west),
-              new TMap.LatLng(TENCENT_CAMPUS_LABEL_BOUNDS.north, TENCENT_CAMPUS_LABEL_BOUNDS.east),
-            )
-          } catch {
-            return null
-          }
-        })()
         map = new TMap.Map(containerRef.current, {
           center: new TMap.LatLng(TENCENT_CAMPUS_CENTER.lat, TENCENT_CAMPUS_CENTER.lng),
           zoom: TENCENT_CAMPUS_ZOOM,
-          // 锁定缩放范围：最小 14 级（再缩小校园只剩一小块），最大 20 级
           minZoom: TENCENT_CAMPUS_MIN_ZOOM,
           maxZoom: TENCENT_CAMPUS_MAX_ZOOM,
+          // 校园标注包围矩形约占可移动范围的 20%，南侧另留底部菜单避让空间。
+          boundary: new TMap.LatLngBounds(
+            new TMap.LatLng(TENCENT_CAMPUS_LABEL_BOUNDS.south, TENCENT_CAMPUS_LABEL_BOUNDS.west),
+            new TMap.LatLng(TENCENT_CAMPUS_LABEL_BOUNDS.north, TENCENT_CAMPUS_LABEL_BOUNDS.east),
+          ),
           pitch: 0,
           rotation: 0,
           viewMode: '3D',
           // 保留道路、绿地和二维建筑，底图文字统一由匿名校园标签代替。
           ...(COMPETITION_PRESENTATION ? { baseMap: { type: 'vector', features: ['base', 'building2d', 'arrow'], buildingRange: [14.5, 20] } } : {}),
-          // 锁定可拖动范围：腾讯 GL 原生 boundary，设置后拖拽/缩放都无法把地图移出该矩形。
-          // 矩形 = 全部地点标注范围 + 10% 留白（见 tencentCampusGeo.js）。
-          ...(campusBoundary ? { boundary: campusBoundary } : {}),
           draggable: true,
           scrollable: true,
           touchZoomable: true,
@@ -252,86 +138,20 @@ export function TencentCampusMap({
           showControl: false,
         })
         mapRef.current = map
+        // Fast Refresh may replace a ready map with another ready map. Notify
+        // all overlays and resize effects even when loadState stays unchanged.
+        setMapVersion((value) => value + 1)
         setZoomLevel(map.getZoom())
         map.on('zoom', () => setZoomLevel(Number(Number(map.getZoom()).toFixed(1))))
-        const infoWindow = new TMap.InfoWindow({
-          map,
-          position: new TMap.LatLng(TENCENT_CAMPUS_CENTER.lat, TENCENT_CAMPUS_CENTER.lng),
-          offset: { x: 0, y: -18 },
-          content: '<div></div>',
-          enableCustom: true,
-          zIndex: 50,
-        })
-        infoWindow.close()
-        layersRef.current.infoWindow = infoWindow
-
-        const handlePoiCardAction = (event) => {
-          const button = event.target?.closest?.('[data-campus-poi-action]')
-          if (!button) return
-          event.stopPropagation()
-          const action = button.dataset.campusPoiAction
-          if (action === 'external') return
-          event.preventDefault()
-          if (action === 'close') {
-            infoWindow.close()
-          } else if (action === 'route' && button.dataset.locationId) {
-            infoWindow.close()
-            routeCallbackRef.current?.(button.dataset.locationId)
-          } else if (action === 'feedback' && button.dataset.locationId) {
-            infoWindow.close()
-            feedbackCallbackRef.current?.(button.dataset.locationId)
-          } else if (action === 'community' && button.dataset.locationId) {
-            infoWindow.close()
-            selectCallbackRef.current?.(button.dataset.locationId)
-          }
-        }
-        const mapElement = containerRef.current
-        mapElement.addEventListener('click', handlePoiCardAction, true)
-        removePoiCardActionListener = () => mapElement.removeEventListener('click', handlePoiCardAction, true)
         map.on('click', (event) => {
-          // 【坐标探针】开启时接管点击行为：记录点击点坐标 + 该点腾讯 POI 坐标。
-          // 不走 isInsideCampusBounds 过滤，也不弹地点详情卡，避免与标定互相干扰。
-          if (poiDebugEnabled) {
-            const clicked = readLatLng(event?.latLng)
-            const poiPosition = readLatLng(event?.poi?.latLng)
-            const poiName = event?.poi?.name?.trim() || ''
-            const seq = probeSeqRef.current + 1
-            probeSeqRef.current = seq
-            setProbePoints((previous) => [...previous, {
-              seq,
-              label: probeLabelRef.current.trim(),
-              clickLat: clicked?.lat ?? null,
-              clickLng: clicked?.lng ?? null,
-              poiName,
-              poiLat: poiPosition?.lat ?? null,
-              poiLng: poiPosition?.lng ?? null,
-            }])
-            if (clicked) {
-              const poiLine = poiName ? `<br>POI：${escapeHtml(poiName)}` : '<br>POI：无（该点腾讯未返回 POI）'
-              infoWindow.setPosition(new TMap.LatLng(clicked.lat, clicked.lng))
-              infoWindow.setContent(`<div style="padding:6px 9px;font:12px/1.5 sans-serif;white-space:nowrap">#${seq}&nbsp;<b>${clicked.lat.toFixed(6)},&nbsp;${clicked.lng.toFixed(6)}</b>${poiLine}</div>`)
-              infoWindow.open()
-            }
-            return
-          }
-
           const poiName = event?.poi?.name?.trim()
           const poiPosition = event?.poi?.latLng
           if (!poiName || !poiPosition || !isInsideCampusBounds(poiPosition, locationsRef.current)) {
-            infoWindow.close()
             return
           }
 
           const locationId = findCampusLocationId(poiName, locationsRef.current)
-          const location = locationsRef.current.find((item) => item.id === locationId)
-
-          const lat = Number(typeof poiPosition.getLat === 'function' ? poiPosition.getLat() : poiPosition.lat)
-          const lng = Number(typeof poiPosition.getLng === 'function' ? poiPosition.getLng() : poiPosition.lng)
-          infoWindow.setPosition(new TMap.LatLng(lat, lng))
-          const locationEvents = location ? eventsRef.current.filter((item) => item.locationId === location.id) : []
-          const locationPosts = location ? lostFoundRef.current.filter((post) => post.locationId === location.id && post.status === 'active') : []
-          infoWindow.setContent(buildCampusPoiCard(poiName, location, locationEvents, locationPosts))
-          infoWindow.open()
+          if (locationId) selectCallbackRef.current?.(locationId)
         })
         setLoadState('ready')
         markStartupReady('map')
@@ -347,12 +167,9 @@ export function TencentCampusMap({
 
     return () => {
       disposed = true
-      removePoiCardActionListener?.()
-      const infoWindow = layersRef.current.infoWindow
       Object.values(layersRef.current).forEach((layer) => layer?.setMap?.(null))
       layersRef.current.campusLabels?.destroy?.()
-      infoWindow?.destroy?.()
-      layersRef.current = { infoWindow: null, route: null, liveLocation: null, community: null, campusLabels: null }
+      layersRef.current = { route: null, liveLocation: null, community: null, campusLabels: null }
       map?.destroy?.()
       mapRef.current = null
     }
@@ -382,21 +199,14 @@ export function TencentCampusMap({
       })
       labels.on('click', (event) => {
         const location = locationsRef.current.find((item) => item.id === event.geometry?.id)
-        const infoWindow = layersRef.current.infoWindow
-        const coordinates = getTencentCampusPosition(location)
-        if (!location || !infoWindow || !coordinates) return
-        infoWindow.setPosition(new TMap.LatLng(coordinates.lat, coordinates.lng))
-        infoWindow.setContent(buildCampusPoiCard(location.name, location,
-          eventsRef.current.filter((item) => item.locationId === location.id),
-          lostFoundRef.current.filter((item) => item.locationId === location.id && item.status === 'active')))
-        infoWindow.open()
+        if (location) selectCallbackRef.current?.(location.id)
       })
       layersRef.current.campusLabels = labels
     } else {
       layersRef.current.campusLabels.setGeometries(geometries)
     }
     layersRef.current.campusLabels.setVisible(showLabels)
-  }, [loadState, locations, selectedId, showLabels])
+  }, [loadState, mapVersion, locations, selectedId, showLabels])
 
   useEffect(() => {
     const TMap = window.TMap
@@ -426,11 +236,11 @@ export function TencentCampusMap({
       })
       layer.on('click', (event) => {
         const locationId = event.geometry?.properties?.locationId
-        if (locationId) { layersRef.current.infoWindow?.close(); selectCallbackRef.current?.(locationId) }
+        if (locationId) selectCallbackRef.current?.(locationId)
       })
       layersRef.current.community = layer
     } else layersRef.current.community.setGeometries(geometries)
-  }, [loadState, locations, events, lostFoundPosts])
+  }, [loadState, mapVersion, locations, events, lostFoundPosts])
 
   useEffect(() => {
     const TMap = window.TMap
@@ -460,7 +270,7 @@ export function TencentCampusMap({
     } else {
       layersRef.current.route.setGeometries(routeGeometries)
     }
-  }, [loadState, routeState])
+  }, [loadState, mapVersion, routeState])
 
   useEffect(() => {
     const TMap = window.TMap
@@ -492,16 +302,29 @@ export function TencentCampusMap({
       map.panTo(position, { duration: 360 })
       map.zoomTo(Math.max(Number(map.getZoom()) || TENCENT_CAMPUS_ZOOM, 17), { duration: 300 })
     }
-  }, [loadState, livePosition, livePositionFocusToken])
+  }, [loadState, mapVersion, livePosition, livePositionFocusToken])
 
   useEffect(() => {
     const map = mapRef.current
     if (loadState !== 'ready' || !map) return
+    // The detail sheet gives the map its own visible upper half. Resize before
+    // centering, so the selected label stays above the sheet.
+    const container = containerRef.current
+    map.resize(container.clientWidth, container.clientHeight)
     const focusedLocation = locations.find((location) => location.id === selectedId)
       ?? locations.find((location) => location.id === currentLocationId)
     const position = getTencentCampusPosition(focusedLocation)
     if (position) map.panTo(new window.TMap.LatLng(position.lat, position.lng), { duration: 320 })
-  }, [loadState, locations, selectedId, currentLocationId])
+  }, [loadState, mapVersion, locations, selectedId, currentLocationId])
+
+  useEffect(() => {
+    const map = mapRef.current
+    const container = containerRef.current
+    if (loadState !== 'ready' || !map || !container) return undefined
+    const observer = new ResizeObserver(() => map.resize(container.clientWidth, container.clientHeight))
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [loadState, mapVersion])
 
   useEffect(() => {
     const map = mapRef.current
@@ -510,7 +333,7 @@ export function TencentCampusMap({
     map.panTo(new window.TMap.LatLng(TENCENT_CAMPUS_CENTER.lat, TENCENT_CAMPUS_CENTER.lng), { duration: 260 })
     map.zoomTo(TENCENT_CAMPUS_ZOOM, { duration: 260 })
     map.rotateTo(0, { duration: 260 })
-  }, [loadState, resetViewToken])
+  }, [loadState, mapVersion, resetViewToken])
 
   useEffect(() => {
     if (!routePlan || routePlan.status !== 'preview') {
@@ -563,46 +386,9 @@ export function TencentCampusMap({
     return () => { active = false }
   }, [routePlan?.originId, routePlan?.destinationId, routePlan?.mode, routePlan?.status, routePlan?.blockedEdgeIds?.join(','), locations])
 
-  // 坐标探针的结果文本（可直接选中复制发回）
-  const probeText = [
-    'seq\t栋号\t腾讯POI名\tPOI坐标(lat,lng)\t点击坐标(lat,lng)',
-    ...probePoints.map((point) => [
-      point.seq,
-      point.label || '(未填)',
-      point.poiName || '(无POI)',
-      point.poiLat == null ? '—' : `${point.poiLat.toFixed(6)},${point.poiLng.toFixed(6)}`,
-      point.clickLat == null ? '—' : `${point.clickLat.toFixed(6)},${point.clickLng.toFixed(6)}`,
-    ].join('\t')),
-  ].join('\n')
-
   return (
     <div className="tencent-campus-map" aria-label="腾讯地图校园地图">
       <div className="tencent-campus-map__canvas" ref={containerRef} />
-      {poiDebugEnabled && (
-        <div className="poi-probe">
-          <div className="poi-probe__head">
-            <strong>坐标探针 · 已记录 {probePoints.length} 点</strong>
-            <span className="poi-probe__actions">
-              <button type="button" onClick={() => { setProbePoints([]); probeSeqRef.current = 0 }}>清空</button>
-              <button type="button" onClick={() => { navigator.clipboard?.writeText(probeText) }}>复制</button>
-            </span>
-          </div>
-          <p className="poi-probe__hint">
-            ① 放大到 <b>18 级以上</b>；② 在下面的框里填栋号（如 <b>18号</b>）；③ 点击该栋楼的<b>建筑中心</b>（不是文字标签）。逐个重复即可。
-          </p>
-          <label className="poi-probe__label">
-            <span>当前栋号</span>
-            <input
-              type="text"
-              value={probeLabel}
-              placeholder="例如：18号公寓楼"
-              onChange={(event) => setProbeLabel(event.target.value)}
-            />
-          </label>
-          <textarea className="poi-probe__text" readOnly value={probeText} onFocus={(event) => event.currentTarget.select()} />
-          <p className="poi-probe__foot">此工具只用免费的地图渲染，不消耗腾讯 WebService 配额。</p>
-        </div>
-      )}
       {loadState === 'loading' && (
         <div className="tencent-campus-map__state"><span className="tencent-campus-map__spinner" />正在连接腾讯地图…</div>
       )}
@@ -612,7 +398,7 @@ export function TencentCampusMap({
           <span>{loadError}</span>
           {onUseCampusMap
             ? <button type="button" onClick={onUseCampusMap}>切回校园引导图</button>
-            : <span>请检查网络后刷新页面重试。</span>}
+            : <span>请检查网络后重试。</span>}
         </div>
       )}
       {loadState === 'ready' && (
@@ -632,7 +418,6 @@ export function TencentCampusMap({
               mapRef.current?.rotateTo(0, { duration: 260 })
             }}><LocateFixed size={14} /></button>
           </div>
-          {showTips && <div className="tencent-campus-map__help">点击校园地点查看详情和路线 · 单指拖动，双指缩放或旋转</div>}
           {routeState.status === 'loading' && <div className="tencent-campus-map__route-note">正在请求腾讯步行路线…</div>}
           {routeState.status === 'success' && (
             <div className="tencent-campus-map__route-note">腾讯步行路线 · {routeState.route.distance} 米 · 约 {routeState.route.durationMinutes} 分钟</div>

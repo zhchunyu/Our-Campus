@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { MapPin } from 'lucide-react'
+import { Flower2, MapPin } from 'lucide-react'
 import { EmptyState } from '../../components/EmptyState.jsx'
 import { teamCampusMap } from '../../data/campusMap.js'
 import { COMPETITION_PRESENTATION } from '../../data/campusPresentation.js'
@@ -9,10 +9,8 @@ import { MapSearchOverlay } from './MapSearchOverlay.jsx'
 import { MapToolbar } from './MapToolbar.jsx'
 import { HotspotLegend } from '../events/HotspotLegend.jsx'
 import { projectVisibleMapContent } from './mapVisibility.js'
-import { CATEGORIES, CATEGORY_LABELS } from '../../domain/campus.js'
 import { DeviceLocationControl } from './DeviceLocationControl.jsx'
 
-const mobileCategories = Object.values(CATEGORIES)
 const hasTencentMapKey = Boolean(import.meta.env.VITE_TENCENT_MAP_KEY)
 
 export function MapWorkspace({
@@ -76,6 +74,7 @@ export function MapWorkspace({
 
   return (
     <section className="map-workspace" aria-label={`${teamCampusMap.campusName}地图工作区`}>
+      <div className="campus-map-footer-heading" aria-hidden="true"><div><small>校园漫游</small><strong>下一站，去哪里？</strong></div><Flower2 size={29} /></div>
       <MapSearchOverlay
         query={query}
         category={category}
@@ -84,21 +83,6 @@ export function MapWorkspace({
         onCategoryChange={onCategoryChange}
         onSelectResult={onSelectSearchResult}
       />
-      <div className="map-category-strip" aria-label="常用地点分类">
-        <button type="button" onClick={() => onOpenHall?.('hotspots')}>校园热点</button>
-        <button type="button" onClick={() => onOpenHall?.('lost-found')}>失物招领</button>
-        {mobileCategories.map((categoryOption) => (
-          <button
-            className={category === categoryOption ? 'is-active' : ''}
-            type="button"
-            key={categoryOption}
-            aria-pressed={category === categoryOption}
-            onClick={() => onCategoryChange(categoryOption)}
-          >
-            {CATEGORY_LABELS[categoryOption]}
-          </button>
-        ))}
-      </div>
       <MapToolbar
         open={toolbarOpen}
         activeTool={activeTool}
@@ -146,7 +130,6 @@ export function MapWorkspace({
             routePlan={displayedRoutePlan}
             showLabels={settings.showLabels}
             showStatusColors={settings.showStatusColors}
-            showTips={settings.showTips}
             resetViewToken={resetViewToken}
             onSelectLocation={onSelectLocation}
             onPlanRouteToLocation={onPlanRouteToLocation}
@@ -155,10 +138,8 @@ export function MapWorkspace({
             onUseCampusMap={COMPETITION_PRESENTATION ? undefined : () => setMapProvider('campus')}
           />
         ) : COMPETITION_PRESENTATION ? (
-          // 比赛模式：官方引导图图面印有真实楼名，不做回退展示（需要时把 COMPETITION_PRESENTATION 置 false 供开发使用）
           <div className="map-unavailable-note" role="status">
-            <MapPin size={16} />
-            <strong>地图资源暂不可用</strong>
+            <MapPin size={16} /><strong>地图资源暂不可用</strong>
             <span>请检查网络及地图配置后重试。</span>
           </div>
         ) : (

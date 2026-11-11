@@ -1,9 +1,9 @@
-import { Compass, Search, MessagesSquare, UserRound } from 'lucide-react'
+import { House, LayoutGrid, UsersRound, UserRound } from 'lucide-react'
 
 const tabs = [
-  { id: 'map', label: '首页', Icon: Compass },
-  { id: 'explore', label: '地点', Icon: Search },
-  { id: 'hall', label: '大厅', Icon: MessagesSquare },
+  { id: 'map', label: '首页', Icon: House },
+  { id: 'explore', label: '服务', Icon: LayoutGrid },
+  { id: 'hall', label: '社区', Icon: UsersRound },
   { id: 'me', label: '我的', Icon: UserRound },
 ]
 
@@ -18,7 +18,7 @@ export function MobileTabBar({ activeTab, onChange }) {
           aria-current={activeTab === id ? 'page' : undefined}
           onClick={() => onChange(id)}
         >
-          <Icon size={19} strokeWidth={activeTab === id ? 2.3 : 1.8} aria-hidden="true" />
+          <Icon size={24} strokeWidth={activeTab === id ? 2 : 1.6} aria-hidden="true" />
           <span>{label}</span>
         </button>
       ))}

@@ -1,4 +1,6 @@
-import { Capacitor, SystemBars, SystemBarsStyle } from '@capacitor/core'
+import { Capacitor, registerPlugin, SystemBars, SystemBarsStyle } from '@capacitor/core'
+
+const CampusAppearance = registerPlugin('CampusAppearance')
 
 const readyParts = new Set()
 let checkReady = () => {}
@@ -55,14 +57,19 @@ export function startStartup({ previewShell = false } = {}) {
     // React has already mounted underneath; no second app or map initialization.
     root.inert = false
     root.removeAttribute('aria-hidden')
-    if (Capacitor.getPlatform() === 'android') {
-      // Core SystemBars also repaints the native safe-area surface using the
-      // normal window background, rather than leaving the startup black there.
-      void SystemBars.setStyle({ style: SystemBarsStyle.Light })
-        .catch((error) => console.warn('Unable to restore Android system bars', error))
-    }
     overlay.classList.add('is-leaving')
-    const remove = () => overlay.remove()
+    let removed = false
+    const remove = () => {
+      if (removed) return
+      removed = true
+      overlay.remove()
+      if (Capacitor.getPlatform() === 'android') {
+        // Keep the native insets dark until the startup has fully faded out.
+        void CampusAppearance.finishStartup()
+          .then(() => SystemBars.setStyle({ style: SystemBarsStyle.Light }))
+          .catch((error) => console.warn('Unable to restore Android system bars', error))
+      }
+    }
     overlay.addEventListener('transitionend', (event) => {
       if (event.target === overlay && event.propertyName === 'opacity') remove()
     })
