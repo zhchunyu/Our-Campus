@@ -3,7 +3,7 @@ import { calculateStraightDistance, listCampusFacilities } from './campusFacilit
 import { getTencentCampusPosition } from './tencentCampusGeo.js'
 
 const locations = [
-  { id: 'canteen', name: '禾香餐厅', category: 'dining', mapPosition: { '2d': [.5, .5] } },
+  { id: 'canteen', name: '谷园餐厅', category: 'dining', mapPosition: { '2d': [.5, .5] } },
   { id: 'hospital', name: '校医院', category: 'service', mapPosition: { '2d': [.9, .9] } },
   { id: 'library', name: '图书馆', category: 'learning', mapPosition: { '2d': [.3, .3] } },
 ]

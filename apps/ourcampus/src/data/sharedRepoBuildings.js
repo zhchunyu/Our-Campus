@@ -5,7 +5,7 @@ import { ROAD_GROUND_Y, ROAD_NODES, worldToMapPosition } from './roadNetwork.js'
 const BUILDING_SOURCE = [
   { id: 'east-gate', name: '主校门', sx: 340, sy: 502, shx: 14, shy: 6, type: 'landmark', entrance: 'south', aliases: ['东门服务中心', '东门', '服务中心', '校门', '大门', '主校门'] },
   { id: 'valley', name: '智谷谷底', sx: 340, sy: 462, shx: 18, shy: 28, type: 'landmark', entrance: 'south', aliases: ['智谷', '谷底'] },
-  { id: 'library', name: '中心图书馆', sx: 340, sy: 300, shx: 32, shy: 28, type: 'landmark', entrance: 'south', aliases: ['图书馆', '中心图书馆', '主图书馆'] },
+  { id: 'library', name: '亭兰图书馆', sx: 340, sy: 300, shx: 32, shy: 28, type: 'landmark', entrance: 'south', aliases: ['图书馆', '亭兰图书馆', '主图书馆'] },
   { id: 'vertical-college', name: '垂直书院', sx: 340, sy: 246, shx: 18, shy: 18, type: 'landmark', entrance: 'south', aliases: ['书院', '垂直书院'] },
   { id: 'lecture-hall', name: '讲堂', sx: 340, sy: 165, shx: 26, shy: 18, type: 'landmark', entrance: 'south', aliases: ['大礼堂', '礼堂', '讲堂'] },
 
@@ -54,7 +54,7 @@ const CATEGORY_BY_TYPE = Object.freeze({
 
 const MODEL_ANCHOR_BY_NAME = Object.freeze({
   '主校门': 'ANCHOR_Main_Gate',
-  '中心图书馆': 'ANCHOR_Library',
+  '亭兰图书馆': 'ANCHOR_Library',
   '创新中心': 'ANCHOR_Innovation_Center',
   '演艺中心': 'ANCHOR_Performing_Arts',
   '体育场': 'ANCHOR_Stadium',
