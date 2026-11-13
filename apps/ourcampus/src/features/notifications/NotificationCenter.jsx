@@ -13,6 +13,7 @@ import { AiChatReminderPreferences, NotificationPreferences } from './Notificati
 import { HallNotificationPreferences } from './HallNotificationPreferences.jsx'
 import { getHallNotificationMessage, getCurrentHallNotificationDetail, hallNotificationRegion } from '../../data/hallNotifications.js'
 import './notifications.css'
+import '../mobile/inner-canvas.css'
 
 const time = (value) => new Date(value).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 const localTime = (value) => new Date(value - new Date(value).getTimezoneOffset() * 60000).toISOString().slice(0, 16)

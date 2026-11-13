@@ -1,3 +1,4 @@
+import './inner-canvas.css'
 import { useMemo, useState } from 'react'
 import { Check, Clock3, MapPin, Wrench } from 'lucide-react'
 import { PLACE_FEEDBACK_STATUSES, REPAIR_CATEGORY_LABELS } from '../../domain/placeFeedback.js'

@@ -12,8 +12,10 @@ import { isMemberUserId } from '../../data/memberHallMessages.js'
 import { getAvatarUrl } from '../../data/memberProfiles.js'
 import { ProfileAvatar } from '../mobile/ProfileAvatar.jsx'
 import { useMemberProfiles } from './useMemberProfiles.js'
+import { ReviewPhotoGallery } from './ReviewPhotoGallery.jsx'
 import './restaurant-real-menu.css'
 import './restaurant-review-profiles.css'
+import './restaurant-student-canvas.css'
 
 function FoodIcon({ type, size = 26 }) {
   const Icon = type === 'noodles' ? Soup : type === 'salad' ? Leaf : type === 'snack' ? Wheat : UtensilsCrossed
@@ -76,6 +78,7 @@ export function ReviewItem({ review, profile, onDelete, userId, manager, onOpenM
       </header>
       <RatingStars rating={review.rating} />
       <p>{campusDisplayText(review.content)}</p>
+      <ReviewPhotoGallery review={review} viewerId={userId} />
       {review.tags.length > 0 && <div className="window-review-item__tags">{review.tags.map((tag) => <span key={tag}>{campusDisplayText(tag)}</span>)}</div>}
       <footer>
         <button type="button" className={helpful ? 'is-active' : ''} aria-pressed={helpful} onClick={() => setHelpful((value) => !value)}><ThumbsUp size={13} />{helpful ? '已标为有用（本次）' : '觉得有用'}</button>
@@ -101,6 +104,7 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
   const [moreReviews, setMoreReviews] = useState(false)
   const [reviewBusy, setReviewBusy] = useState(false)
   const alive = useRef(true)
+  const viewerRef = useRef(userId); viewerRef.current = userId
   const examples = useMemo(() => getExampleWindowReviews(restaurant.id), [restaurant.id])
   const [localReviews, setLocalReviews] = useState(loadLocalRestaurantReviews)
   const [selectedWindowId, setSelectedWindowId] = useState(initialWindowId)
@@ -224,7 +228,14 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
     const target = windows.find((window) => window.id === draft.windowId)
     if (cloudReady && target?.cloudStored) {
       if (!userId) { onOpenLogin(); throw new Error('请先登录，再公开发布评价') }
-      try { await submitWindowCloudReview({ ...review, clientId: draft.clientId }); await refreshReviews() }
+      const actor = userId
+      try {
+        const imagePaths = draft.images?.length ? await draft.uploadPhotos() : []
+        if (!alive.current || viewerRef.current !== actor) throw new Error('账号已变化，请重新打开评价表单')
+        await submitWindowCloudReview({ ...review, authorId: actor, clientId: draft.clientId, imagePaths })
+        await refreshReviews()
+        if (viewerRef.current !== actor) throw new Error('账号已变化；刚才的评价请切回原账号查看')
+      }
       catch (error) { throw new Error(reviewServerError(error)) }
       if (!alive.current) return
       selectWindow(draft.windowId); setComposerWindowId(null); setNotice('评价已保存到云端，其他同学可以查看'); return
@@ -276,15 +287,15 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
         <header className="restaurant-review-page__header">
           <button type="button" ref={backRef} onClick={goBack} aria-label={selectedWindow ? '返回窗口列表' : '返回上一页'}><ArrowLeft size={21} /></button>
           <div><h1 id="restaurant-review-page-title">{selectedWindow ? '窗口详情' : '餐厅评价'}</h1><span>{restaurant.name}</span></div>
-          <span className="restaurant-review-page__preview">{isManager ? '管理员' : '校园食记'}</span>
+          <span className="restaurant-review-page__preview">{isManager ? '管理员' : '窗口评价'}</span>
         </header>
 
         <main className="restaurant-review-page__content" ref={contentRef}>
           {!selectedWindow ? <>
             <section className="restaurant-review-hero">
-              <span className="restaurant-review-hero__eyebrow">校园食记 / WINDOW GUIDE</span>
-              <h2>{restaurant.name}</h2><p>挑个窗口，看看同学怎么说。</p>
-              <div className="restaurant-review-hero__art" aria-hidden="true"><Soup size={56} strokeWidth={1.35} /><span>一餐一评</span></div>
+              <span className="restaurant-review-hero__eyebrow">餐厅 / REVIEWS</span>
+              <h2>{restaurant.name}</h2><p>查看窗口评分与用餐评价</p>
+              <div className="restaurant-review-hero__art" aria-hidden="true"><Soup size={56} strokeWidth={1.35} /><span>窗口评分</span></div>
               <div className="restaurant-review-hero__stats">
                 <div><strong>{summary.rating ?? '—'}<Star size={14} fill="currentColor" /></strong><span>{cloudReady ? '真实平均评分' : '暂无云端评分'}</span></div>
                 <div><strong>{windows.length}<small> 个</small></strong><span>餐厅窗口</span></div>
@@ -296,7 +307,7 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
             {isManager && <div className="restaurant-window-admin"><div><strong>窗口管理</strong><small>{catalogState === 'ready' ? '按真实名单添加窗口' : catalogError || '正在连接服务器…'}</small></div><button type="button" disabled={!canManage} onClick={() => setManagerOpen(true)}>＋ 添加窗口</button></div>}
             <div className="restaurant-window-search"><Search size={17} /><input aria-label="搜索餐厅窗口" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜窗口编号、面食、米饭…" />{query && <button type="button" aria-label="清空窗口搜索" onClick={() => setQuery('')}><X size={15} /></button>}</div>
             <div className="restaurant-window-categories" role="group" aria-label="窗口分类">{WINDOW_CATEGORIES.map((item) => <button key={item} type="button" className={category === item ? 'is-active' : ''} aria-pressed={category === item} onClick={() => setCategory(item)}>{item}</button>)}</div>
-            <div className="restaurant-review-section-heading"><h3>逛逛窗口</h3><span>{visibleWindows.length} 个选择</span></div>
+            <div className="restaurant-review-section-heading"><h3>餐厅窗口</h3><span>{visibleWindows.length} 个窗口</span></div>
             <div className="restaurant-window-grid">
               {visibleWindows.map((window) => {
                 const windowReviews = allReviews.filter((review) => review.windowId === window.id)
@@ -316,17 +327,17 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
             {canManage && selectedWindow.cloudStored && <button className="restaurant-window-delete" type="button" onClick={() => setDeleteTarget(selectedWindow)}><Trash2 size={15} />删除这个窗口</button>}
             <section className="restaurant-window-score"><div><strong>{windowSummary.rating ?? '—'}</strong><RatingStars rating={Number(windowSummary.rating ?? 0)} size={14} /><span>{windowSummary.count} 条评价</span></div><div className="restaurant-window-score__details"><span><b>{windowSummary.count ? `${windowSummary.recommended}%` : '—'}</b> 推荐评价占比</span><div><i style={{ width: `${windowSummary.recommended}%` }} /></div><small>{cloudReady ? '统计包含该窗口全部云端评价，本机历史不计入' : selectedWindow.isExample ? '统计包含示例内容，仅用于体验页面' : '统计仅包含当前设备保存的评价'}</small></div></section>
             <p className="restaurant-review-page__demo-note"><span />{cloudReady ? '公开评价按真实评分统计；可以推荐，也可以吐槽。' : selectedWindow.isExample ? '示例评价不代表真实口碑；本机发布仅当前设备可见。' : '多人评价待服务器部署，本机评价仅当前设备可见。'}</p>
-            <div className="restaurant-review-section-heading"><h3>同学怎么说</h3><select aria-label="评价排序" value={sort} onChange={(event) => setSort(event.target.value)}><option value="recent">最新评价</option><option value="high">评分从高到低</option><option value="low">评分从低到高</option></select></div>
+            <div className="restaurant-review-section-heading"><h3>用餐评价</h3><select aria-label="评价排序" value={sort} onChange={(event) => setSort(event.target.value)}><option value="recent">最新评价</option><option value="high">评分从高到低</option><option value="low">评分从低到高</option></select></div>
             <div className="restaurant-review-filters" role="group" aria-label="评价筛选">{[{ id: 'all', label: '全部' }, { id: 'recommend', label: '推荐 · 4–5 星' }, { id: 'complaint', label: '吐槽 · 1–3 星' }].map((filter) => <button type="button" key={filter.id} className={reviewFilter === filter.id ? 'is-active' : ''} aria-pressed={reviewFilter === filter.id} onClick={() => setReviewFilter(filter.id)}>{filter.label}</button>)}</div>
             <div className="window-review-list">{memberProfiles.error && <p className="restaurant-review-profile-error" role="alert"><span>{memberProfiles.error}</span><button type="button" onClick={memberProfiles.refresh}>重试</button></p>}{visibleReviews.map((review) => <ReviewItem key={review.id} review={review} profile={memberProfiles.profiles[review.authorId]} onDelete={deleteReview} userId={userId} manager={isManager} onOpenMemberProfile={onOpenMemberProfile} />)}</div>
             {moreReviews && <button className="restaurant-review-more" disabled={reviewBusy} type="button" onClick={loadMoreReviews}>{reviewBusy ? '加载中…' : '加载更多评价'}</button>}
-            {!visibleReviews.length && <div className="restaurant-reviews-empty"><MessageSquare size={28} /><strong>这里还没有这类评价</strong><p>吃过这个窗口？写下你的感受吧。</p></div>}
+            {!visibleReviews.length && <div className="restaurant-reviews-empty"><MessageSquare size={28} /><strong>暂无符合筛选条件的评价</strong><p>可切换筛选条件，或点击下方写评价。</p></div>}
           </>}
         </main>
 
-        <footer className="restaurant-review-page__footer"><span>{selectedWindow ? selectedWindow.name : '好吃的推荐，真实的感受'}<small>{cloudReady ? '登录后发布真实评价' : '目前可保存本机评价'}</small></span><button type="button" disabled={!windows.length || catalogState === 'loading'} onClick={() => { if (cloudReady && !userId) onOpenLogin(); else setComposerWindowId(selectedWindow?.id ?? windows[0]?.id) }}><PenLine size={17} />写评价<ChevronRight size={15} /></button></footer>
+        <footer className="restaurant-review-page__footer"><span>{selectedWindow ? selectedWindow.name : '选择窗口并填写评价'}<small>{cloudReady ? '登录后发布评价' : '目前可保存本机评价'}</small></span><button type="button" disabled={!windows.length || catalogState === 'loading'} onClick={() => { if (cloudReady && !userId) onOpenLogin(); else setComposerWindowId(selectedWindow?.id ?? windows[0]?.id) }}><PenLine size={17} />写评价<ChevronRight size={15} /></button></footer>
         {notice && <p className="restaurant-review-page__notice" role="status">{notice}</p>}
-        {composerWindowId && <ReviewComposer restaurant={restaurant} windows={windows} initialWindowId={composerWindowId} onClose={() => setComposerWindowId(null)} onSubmit={submitReview} cloud={cloudReady} />}
+        {composerWindowId && <ReviewComposer restaurant={restaurant} windows={windows} initialWindowId={composerWindowId} onClose={() => setComposerWindowId(null)} onSubmit={submitReview} cloud={cloudReady} userId={userId} />}
         {(managerOpen || deleteTarget) && isManager && <RestaurantWindowManager restaurant={restaurant} deletingWindow={deleteTarget} onClose={() => { setManagerOpen(false); setDeleteTarget(null) }} onSubmit={submitWindow} />}
         {photoWindow && <WindowPhotoViewer key={photoWindow.id} window={photoWindow} onClose={() => setPhotoWindow(null)} />}
       </div>

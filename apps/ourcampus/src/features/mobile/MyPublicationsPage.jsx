@@ -1,3 +1,4 @@
+import './inner-canvas.css'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ChevronRight, RefreshCw } from 'lucide-react'
 import { campusDisplayText } from '../../data/campusPresentation.js'

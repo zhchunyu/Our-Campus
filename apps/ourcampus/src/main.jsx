@@ -10,7 +10,12 @@ import './features/mobile/navigation.css'
 import './features/ai/auv.css'
 import './features/mobile/campusFreshTheme.css'
 import './features/mobile/personalHome.css'
-import './features/mobile/campusLifeTheme.css'
+import './features/mobile/canvasTheme.css'
+import './features/mobile/community-canvas.css'
+import './features/mobile/personal-canvas.css'
+import './features/mobile/inner-canvas.css'
+
+document.documentElement.classList.add('canvas-ui')
 
 const previewMode = new URLSearchParams(window.location.search).get('preview')
 document.documentElement.toggleAttribute('data-local-phone-preview', import.meta.env.DEV && previewMode === 'mobile')

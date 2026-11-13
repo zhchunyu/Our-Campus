@@ -4,7 +4,7 @@ import { isRestaurantLocation } from '../../data/restaurantReviews.js'
 export function RestaurantHallSection({ locations, onOpenReviews }) {
   const restaurants = locations.filter(isRestaurantLocation)
 
-  return <div className="community-content restaurant-hall">
+  return <div className="community-content canvas-community-content restaurant-hall">
     <div className="restaurant-hall__intro">
       <span className="restaurant-hall__intro-icon"><UtensilsCrossed size={24} aria-hidden="true" /></span>
       <div><strong>校园餐厅评价</strong><p>选一家餐厅，再看看各窗口的评价。</p></div>

@@ -56,11 +56,11 @@ describe('AUV app state handoff', () => {
 
 it('does not label an ordinary prefilled place question as timetable planning', () => {
   render({ initialDraft: '我想了解图书馆，请说明信息缺口。' })
-  expect(elements(hooks.result, 'h2')[0].props.children).toBe('你好，我是 AUV')
+  expect(elements(hooks.result, 'h2')[0].props.children).toBe('校园信息查询')
 })
 it('labels only the explicit timetable entry as planning and keeps the question short', () => {
   render({ initialPurpose: 'timetable', initialDraft: '请根据我的课表规划第11教学周。' })
-  expect(elements(hooks.result, 'h2')[0].props.children).toBe('按你的课表来规划')
+  expect(elements(hooks.result, 'h2')[0].props.children).toBe('课表规划')
   expect(elements(hooks.result, 'textarea')[0].props.value).toBe('请根据我的课表规划第11教学周。')
 })
 it('keeps the question draft after a failed request', async () => {

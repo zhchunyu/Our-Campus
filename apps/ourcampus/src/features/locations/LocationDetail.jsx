@@ -1,3 +1,4 @@
+import '../mobile/inner-canvas.css'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Activity, CalendarClock, Check, ChevronRight, ExternalLink, Flag, LockKeyhole, MapPinned, Navigation, RotateCcw, Sparkles, Star, UsersRound, UtensilsCrossed, X } from 'lucide-react'
 import { canManage, CATEGORY_LABELS, CROWD_STATUS_LABELS, OPEN_STATUS_LABELS, ROLE_LABELS } from '../../domain/campus.js'

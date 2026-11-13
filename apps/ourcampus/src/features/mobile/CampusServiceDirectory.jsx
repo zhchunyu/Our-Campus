@@ -1,3 +1,4 @@
+import './inner-canvas.css'
 import { useState } from 'react'
 import { BookOpen, BriefcaseBusiness, ExternalLink, GraduationCap, MapPin, Navigation, Phone, Search, Utensils, Wifi } from 'lucide-react'
 import { SERVICE_CATEGORIES } from '../../data/campusServices.js'

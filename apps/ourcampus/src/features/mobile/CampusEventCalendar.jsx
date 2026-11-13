@@ -1,3 +1,4 @@
+import './inner-canvas.css'
 import { useMemo, useState } from 'react'
 import { CalendarDays, MapPin, Navigation } from 'lucide-react'
 

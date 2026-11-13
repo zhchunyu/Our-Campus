@@ -40,3 +40,17 @@ describe('restaurant review author identity', () => {
     expect(html).toContain('<strong>旧昵称</strong>')
   })
 })
+
+describe('restaurant review photos', () => {
+  it('renders persisted device photos as buttons that open a photo viewer', () => {
+    const html = render({ review: { ...review, isCloud: false, images: ['data:image/jpeg;base64,YWJj', 'data:image/png;base64,YWJj'] } })
+    expect(html).toContain('aria-label="放大用餐照片 1"')
+    expect(html).toContain('aria-label="放大用餐照片 2"')
+    expect(html).toContain('src="data:image/jpeg;base64,YWJj"')
+  })
+  it('asks a guest to log in for private cloud photos instead of leaking an URL', () => {
+    const html = render({ review: { ...review, imagePaths: [`${authorId}/33333333-3333-4333-8333-333333333333.jpg`] } })
+    expect(html).toContain('登录后可查看 1 张用餐照片')
+    expect(html).not.toContain('33333333-3333-4333-8333-333333333333.jpg')
+  })
+})

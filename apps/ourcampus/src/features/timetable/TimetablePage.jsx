@@ -9,6 +9,7 @@ import { useBackLayer } from '../../app/useBackLayer.js'
 import { useTimetableNavigation } from './useTimetableNavigation.js'
 import { getTermPosition, NextClassCard, TimetableDayView, TimetableWeekNavigation } from './TimetableDayView.jsx'
 import './timetable.css'
+import '../mobile/inner-canvas.css'
 
 export function TimetablePage({ userId, cloudTimetable, cloudSynced = false, cloudReadReady = false, onSaveCloud, onClose, onAskAi }) {
   const [timetable, setTimetable] = useState(() => validTimetable(cloudTimetable) ? cloudTimetable : loadTimetable(userId))

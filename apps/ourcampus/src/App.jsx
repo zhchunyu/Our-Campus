@@ -26,6 +26,7 @@ import { campusReducer, createInitialState } from './app/campusReducer.js'
 import { LocationDetail } from './features/locations/LocationDetail.jsx'
 import { PlaceFeedbackSheet } from './features/locations/PlaceFeedbackSheet.jsx'
 import { ExplorePanel } from './features/mobile/ExplorePanel.jsx'
+import { CanvasHome } from './features/mobile/CanvasHome.jsx'
 import { HallPanel } from './features/mobile/HallPanel.jsx'
 import { LoginSheet } from './features/mobile/LoginSheet.jsx'
 import { useCampusAuth } from './features/account/useCampusAuth.js'
@@ -83,7 +84,9 @@ function App() {
     dispatch({ type: 'TOGGLE_FAVORITE_LOCATION', locationId })
     if (notificationPreferences.status === 'ready') notificationPreferences.setFavorite(locationId, enabled).catch(() => {})
   }
-  const [activeTab, setActiveTab] = useState('map')
+  const [activeTab, setActiveTab] = useState('canvas')
+  const [mapVisited, setMapVisited] = useState(false)
+  useEffect(() => { if (activeTab === 'map') setMapVisited(true) }, [activeTab])
   const [serviceSection, setServiceSection] = useState('home')
   const [hallRegionId, setHallRegionId] = useState('all')
   const [hallSection, setHallSection] = useState('chat')
@@ -175,7 +178,7 @@ function App() {
   }
   const closeLocation = () => { dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); if (!state.routePlan) restoreMapOrigin() }
   const closeRoute = () => { dispatch({ type: 'CLEAR_ROUTE' }); dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); restoreMapOrigin() }
-  useBackLayer(activeTab !== 'map', () => { setActiveTab('map'); dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); mapReturnRef.current = null }, 0)
+  useBackLayer(activeTab !== 'canvas', () => { setActiveTab('canvas'); dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); mapReturnRef.current = null }, 0)
   useBackLayer(activeTab === 'explore' && serviceSection !== 'home', () => setServiceSection('home'), 10)
   useBackLayer(activeTab === 'hall' && hallFullscreen, () => { setHallFullscreen(false); setLostFoundPublishToken(0) }, 10)
   useBackLayer(activeTab === 'map' && Boolean(state.routePlan), closeRoute, 15, false)
@@ -194,16 +197,25 @@ function App() {
   useEffect(() => {
     const focusSearch = (event) => {
       if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return
+      if (document.getElementById('root')?.inert || document.querySelector('.workspace')?.inert) return
       event.preventDefault()
-      document.querySelector('.map-search-field input')?.focus()
+      if (activeTab === 'map') document.querySelector('.map-search-field input')?.focus()
+      else {
+        setServiceSection('places')
+        setActiveTab('explore')
+        window.requestAnimationFrame(() => document.querySelector('.service-page .search-field input')?.focus())
+      }
     }
 
     window.addEventListener('keydown', focusSearch)
     return () => window.removeEventListener('keydown', focusSearch)
-  }, [])
+  }, [activeTab])
 
   const handleFullscreen = async () => {
+    rememberMapOrigin()
+    setMapVisited(true)
     setActiveTab('map')
+    await new Promise((resolve) => window.requestAnimationFrame(resolve))
     const mapWorkspace = document.querySelector('.map-workspace')
     if (!mapWorkspace) return
 
@@ -403,8 +415,10 @@ function App() {
 
       <main inert={Boolean(loginMode || informationOpen || reviewLocation || auvOpen || timetableOpen || myPublicationsOpen || visibleMemberTarget)} className={`workspace workspace--tab-${activeTab}${state.routePlan ? ' workspace--has-route' : ''}${activeTab === 'map' && selectedLocation ? ' workspace--has-detail' : ''}`}>
         <AppUpdateNotice updates={updates} covered={!startupComplete || Boolean(loginMode || informationOpen || reviewLocation || auvOpen || timetableOpen || myPublicationsOpen || visibleMemberTarget)} />
+        {activeTab === 'canvas' && <CanvasHome key={auth.user?.id ?? 'guest'} auth={auth} locations={state.locations} events={state.events} favoriteIds={state.favoriteLocationIds} unread={information.unread} onOpenMessages={() => openInformation()} onOpenMap={() => { rememberMapOrigin(); setActiveTab('map') }} onSearch={() => { setServiceSection('places'); setActiveTab('explore') }} onOpenServices={() => { setServiceSection('home'); setActiveTab('explore') }} onOpenCommunity={() => { setHallFullscreen(false); setActiveTab('hall') }} onOpenMe={() => setActiveTab('me')} onSelectLocation={handleExploreLocation} />}
+        {activeTab === 'map' && <div className="canvas-map-return"><button type="button" onClick={() => { dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); dispatch({ type: 'CLEAR_ROUTE' }); mapReturnRef.current = null; setActiveTab('canvas') }}>返回画布</button><span>校园地图</span></div>}
         <div style={{ display: 'contents' }} inert={activeTab !== 'map'} aria-hidden={activeTab !== 'map' ? true : undefined}>
-        <MapWorkspace
+        {mapVisited && <MapWorkspace
           locations={state.locations}
           visibleLocations={filteredLocations}
           events={activeHotspots}
@@ -450,7 +464,7 @@ function App() {
           onQueryChange={(query) => dispatch({ type: 'SET_QUERY', query })}
           onSelectSearchResult={handleSearchResult}
           onCategoryChange={(category) => dispatch({ type: 'SET_CATEGORY', category })}
-        />
+        />}
         </div>
 
         {activeTab === 'explore' && (
@@ -586,6 +600,7 @@ function App() {
             onSelectLocation={handleExploreLocation}
             onToggleFavorite={handleToggleFavorite}
             onPlanSavedRoute={(route) => {
+              rememberMapOrigin()
               dispatch({ type: 'PLAN_SAVED_ROUTE', routeId: route.id })
               setActiveTab('map')
             }}
@@ -636,7 +651,7 @@ function App() {
         )}
         {!(activeTab === 'hall' && hallFullscreen) && <>
           {activeTab === 'map' && <PrimaryPageActions showAssistant unread={information.unread} onOpenAssistant={() => askAi()} onOpenMessages={() => openInformation()} />}
-          <MobileTabBar activeTab={activeTab} onChange={(tab) => { mapReturnRef.current = null; setHallFullscreen(false); setLostFoundPublishToken(0); if (tab === 'explore') setServiceSection('home'); setActiveTab(tab) }} />
+          <MobileTabBar activeTab={activeTab === 'map' ? 'canvas' : activeTab} onChange={(tab) => { mapReturnRef.current = null; setHallFullscreen(false); setLostFoundPublishToken(0); if (tab === 'explore') setServiceSection('home'); setActiveTab(tab) }} />
         </>}
       </main>
       {loginMode && <LoginSheet key={loginMode} auth={auth} initialMode={loginMode} onClose={closeLogin} />}
