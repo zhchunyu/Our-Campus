@@ -6,9 +6,16 @@ import { ArrowLeft, ArrowUp, ChevronRight, LogIn, MapPin, Navigation, RotateCcw,
 import { requestAuv } from '../../data/auvClient.js'
 
 const typeLabels = { safety: '安全隐患', congestion: '人流拥挤', service: '设施与服务', notice: '校园通知' }
-const prompts = { chat: ['查询图书馆开放时间', '查看谷园餐厅服务信息', '查询校园办事入口'].map(campusDisplayText), extract: ['谷园餐厅现在排队很久', '崇学楼门前正在施工', '9号公寓楼下路灯坏了'].map(campusDisplayText) }
+function currentPlacePrompts(locations) {
+  const name = (id, fallback) => locations.find((location) => location.id === id)?.name || fallback
+  return {
+    chat: [`查询${name('library', '图书馆')}开放时间`, `查看${name('canteen', '校园餐厅')}服务信息`, '查询校园办事入口'].map(campusDisplayText),
+    extract: [`${name('canteen', '校园餐厅')}现在排队很久`, `${name('teaching-a', '教学楼')}门前正在施工`, `${name('apartment-9', '宿舍楼')}下路灯坏了`].map(campusDisplayText),
+  }
+}
 
 export function AuvAssistantPage({ auth, locations, getContext, initialLocationId = '', initialPurpose = '', initialDraft = '', onClose, onOpenLogin, onSelectLocation, onPlanRouteToLocation }) {
+  const prompts = currentPlacePrompts(locations)
   useBackLayer(true, onClose, 80)
   const [mode, setMode] = useState('chat')
   const timetablePlanning = initialPurpose === 'timetable'
