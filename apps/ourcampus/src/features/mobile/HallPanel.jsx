@@ -6,12 +6,11 @@ import { CAMPUS_HALL_REGIONS } from '../../data/campusHall.js'
 import { CampusHotspotsPanel } from './CampusHotspotsPanel.jsx'
 import { LostFoundPanel } from './LostFoundPanel.jsx'
 import { RestaurantHallSection } from './RestaurantHallSection.jsx'
-import { CampusSticker } from './CampusSticker.jsx'
 import { PostImagePicker } from './PostImagePicker.jsx'
 import { PostImageGallery } from './PostImageGallery.jsx'
 import { usePostImageDraft } from './usePostImageDraft.js'
 import { ProfileAvatar } from './ProfileAvatar.jsx'
-import { DEFAULT_PERSONAL_ARTWORK } from '../../data/personalHome.js'
+import './community-canvas.css'
 
 const COMPOSER_REGIONS = CAMPUS_HALL_REGIONS.filter((region) => region.id !== 'all')
 const REGION_LABELS = new Map(COMPOSER_REGIONS.map((region) => [region.id, region.label]))
@@ -121,27 +120,32 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
     : chat.connectionStatus === 'offline' ? '当前离线，联网后会重新同步'
     : chat.connectionStatus === 'reconnecting' ? '实时连接重试中，消息仍会定时同步'
     : '正在连接校园社区…'
+  const recentHotspots = [...hotspots]
+    .sort((left, right) => (Date.parse(right.startAt) || 0) - (Date.parse(left.startAt) || 0))
+    .slice(0, 4)
 
   return (
-    <section className={`mobile-page-panel mobile-page-panel--hall${isFullscreen ? ' mobile-page-panel--hall-fullscreen' : ''}`} style={isFullscreen && visibleViewport ? { height: visibleViewport.height, top: visibleViewport.top } : undefined} aria-label={isFullscreen ? SECTION_TITLES[activeSection] : '校园社区'}>
+    <section className={`mobile-page-panel mobile-page-panel--hall canvas-community${isFullscreen ? ' mobile-page-panel--hall-fullscreen' : ''}`} data-community-view={isFullscreen ? activeSection : 'home'} data-compact-viewport={isFullscreen && visibleViewport?.height < 560 ? 'true' : undefined} style={isFullscreen && visibleViewport ? { height: visibleViewport.height, top: visibleViewport.top } : undefined} aria-label={isFullscreen ? SECTION_TITLES[activeSection] : '校园社区'}>
       {isFullscreen ? <header className="hall-fullscreen-heading">
         <button type="button" ref={backRef} onClick={() => { if (!requestAppBack()) onCloseSection?.() }} aria-label="返回校园社区"><ArrowLeft size={21} aria-hidden="true" /></button>
         <div><h2>{SECTION_TITLES[activeSection]}</h2><p>{activeSection === 'chat' && <span className={`hall-connection-dot${chat.connectionStatus === 'live' ? ' is-live' : ''}`} aria-hidden="true" />}{activeSection === 'chat' ? chatLabel : SECTION_DESCRIPTIONS[activeSection]}</p></div>
       </header> : <>
-      <header className="organized-page-heading campus-community-heading"><div><small className="campus-page-brand" aria-hidden="true">OurCampus</small><h2>社区</h2><p>和同学聊聊，看看校园新鲜事。</p></div>
+      <header className="hall-canvas-heading"><div><small aria-hidden="true">OurCampus</small><h2>社区</h2></div>
         <div className="hall-publish"><button className="hall-publish-toggle" type="button" aria-expanded={publishMenu} aria-controls="hall-publish-menu" onClick={() => setPublishMenu((value) => !value)}><Plus size={17} />发布</button>
           {publishMenu && <div className="hall-publish-menu" id="hall-publish-menu"><button type="button" onClick={() => { setPublishMenu(false); onPublishInformation() }}><Flame size={17} />校园动态</button><button type="button" onClick={() => { setPublishMenu(false); onStartLostFound() }}><PackageSearch size={17} />失物信息</button><button type="button" onClick={() => { setPublishMenu(false); onSectionChange('restaurants') }}><UtensilsCrossed size={17} />餐厅评价</button></div>}
         </div>
         {headerActions}
       </header>
-      <div className="hall-home-content">
-        <section className="campus-community-mood" aria-label="校园生活"><div><small>在这里，遇见同频的日常</small><h3>校园里的小事，<br />都值得被看见。</h3><p>聊聊近况，也帮彼此一个小忙。</p></div><span className="campus-community-mood__art" aria-hidden="true"><img src={DEFAULT_PERSONAL_ARTWORK} alt="" /></span></section>
-        <div className="organized-section-heading"><h3>和同学一起</h3><span>分享 · 发现 · 互助</span></div>
-        <div className="hall-entry-grid" aria-label="社区功能">
-          {[{ id: 'chat', label: '校园聊天', copy: '按地区聊聊新鲜事', Icon: MessageCircle }, { id: 'hotspots', label: '校园热点', copy: '关注校园正在发生的事', Icon: Flame }, { id: 'lost-found', label: '失物招领', copy: '让丢失的物品找到归处', Icon: PackageSearch }, { id: 'restaurants', label: '餐厅评价', copy: '看看同学们怎么说', Icon: UtensilsCrossed }].map(({ id, label, copy, Icon }, index) => <button type="button" key={id} className={`hall-life-card hall-life-card--${['mint', 'sunny', 'lavender', 'coral'][index]}`} onClick={() => onSectionChange(id)}><CampusSticker Icon={Icon} tone={['mint', 'sunny', 'lavender', 'coral'][index]} /><strong>{label}</strong><small>{copy}</small><ChevronRight size={16} /></button>)}
-        </div>
-        <div className="organized-section-heading"><h3>近期校园动态</h3><button type="button" onClick={() => onSectionChange('hotspots')}>查看全部 <ChevronRight size={14} /></button></div>
-        <div className="hall-recent-list">{[...hotspots].sort((a, b) => (Date.parse(b.startAt) || 0) - (Date.parse(a.startAt) || 0)).slice(0, 3).map((event) => <button type="button" key={event.id} onClick={() => onSectionChange('hotspots')}><span className="hall-recent-dot" /><span><strong>{event.title}</strong><small><MapPin size={12} />{locations.find((location) => location.id === event.locationId)?.name ?? '校园动态'} · {event.isCloud ? '已审核发布' : '本机 / 示例'}</small></span><ChevronRight size={15} /></button>)}{!hotspots.length && <p className="organized-empty">暂时没有新动态，可以发布你发现的校园信息。</p>}</div>
+      <div className="hall-home-content hall-canvas-home">
+        <nav className="hall-canvas-index" aria-label="社区功能">
+          {[{ id: 'chat', label: '聊天', Icon: MessageCircle }, { id: 'hotspots', label: '校园动态', Icon: Flame }, { id: 'lost-found', label: '失物招领', Icon: PackageSearch }, { id: 'restaurants', label: '餐厅评价', Icon: UtensilsCrossed }].map(({ id, label, Icon }) => <button type="button" key={id} onClick={() => onSectionChange(id)}><Icon size={18} strokeWidth={1.5} aria-hidden="true" /><span>{label}</span></button>)}
+        </nav>
+        <div className="hall-canvas-section-heading"><h3>近期动态</h3><button type="button" onClick={() => onSectionChange('hotspots')}>全部动态 <ChevronRight size={14} /></button></div>
+        <div className="hall-canvas-feed">{recentHotspots.map((event) => <article className={`hall-canvas-entry${event.imagePaths?.length ? ' is-image' : ''}`} key={event.id}>
+          <PostImageGallery paths={event.imagePaths} viewerId={auth.user?.id} label="校园动态照片" />
+          <button className="hall-canvas-entry__title" type="button" onClick={() => onSectionChange('hotspots')}>{campusDisplayText(event.title)}</button>
+          <p className="hall-canvas-entry__meta"><MapPin size={12} aria-hidden="true" />{locations.find((location) => location.id === event.locationId)?.name ?? '校园动态'}<span>{event.isCloud ? '已审核发布' : '本机 / 示例'}</span></p>
+        </article>)}{!recentHotspots.length && <div className="hall-canvas-empty"><p>暂时没有校园动态。</p><button type="button" onClick={onPublishInformation}>发布校园信息</button></div>}</div>
       </div>
       </>}
 
@@ -182,7 +186,7 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
           <ol className="mobile-hall-messages" aria-live="polite">
             {messages.map((message) => (
               <li
-                className={`mobile-hall-message${message.authorId === auth.user.id ? ' is-own' : ''}`}
+                className={`mobile-hall-message${message.authorId === auth.user.id ? ' is-own' : ''}${message.imagePaths?.length ? ' has-attachments' : ''}`}
                 key={message.id}
               >
                 <article>

@@ -56,11 +56,11 @@ describe('AUV app state handoff', () => {
 
 it('does not label an ordinary prefilled place question as timetable planning', () => {
   render({ initialDraft: '我想了解图书馆，请说明信息缺口。' })
-  expect(elements(hooks.result, 'h2')[0].props.children).toBe('你好，我是 AUV')
+  expect(elements(hooks.result, 'h2')[0].props.children).toBe('校园信息查询')
 })
 it('labels only the explicit timetable entry as planning and keeps the question short', () => {
   render({ initialPurpose: 'timetable', initialDraft: '请根据我的课表规划第11教学周。' })
-  expect(elements(hooks.result, 'h2')[0].props.children).toBe('按你的课表来规划')
+  expect(elements(hooks.result, 'h2')[0].props.children).toBe('课表规划')
   expect(elements(hooks.result, 'textarea')[0].props.value).toBe('请根据我的课表规划第11教学周。')
 })
 it('keeps the question draft after a failed request', async () => {
@@ -80,4 +80,17 @@ it('keeps the AUV author label for existing event extraction replies', async () 
   render(); await send('图书馆施工')
   const authors = elements(hooks.result, 'span').filter((node) => node.props.className === 'auv-message__author').map((node) => node.props.children)
   expect(authors).toEqual(['我', 'AUV'])
+})
+
+it('builds example prompts from current place names by stable id in both modes', () => {
+  const locations = [{ id: 'library', name: '亭兰图书馆' }, { id: 'canteen', name: '谷园餐厅' }, { id: 'teaching-a', name: '崇学楼' }, { id: 'apartment-9', name: '9号公寓楼' }]
+  const promptTexts = () => elements(hooks.result, 'button').flatMap((button) => Array.isArray(button.props.children) ? button.props.children.filter((child) => typeof child === 'string') : [])
+  render({ locations })
+  expect(promptTexts()).toContain('查询亭兰图书馆开放时间')
+  expect(promptTexts()).toContain('查看谷园餐厅服务信息')
+  elements(hooks.result, 'button').find((button) => button.props.children === '事件分析').props.onClick(); render()
+  expect(promptTexts()).toEqual(expect.arrayContaining(['谷园餐厅现在排队很久', '崇学楼门前正在施工', '9号公寓楼下路灯坏了']))
+  render({ locations: locations.map((place) => place.id === 'canteen' ? { ...place, name: '当前餐厅名称' } : place) })
+  expect(promptTexts()).toContain('当前餐厅名称现在排队很久')
+  expect(promptTexts().join('')).not.toContain('禾香')
 })

@@ -1,7 +1,7 @@
 const STORAGE_PREFIX = 'ourcampus.personal-home.v1.'
 const IMAGE_PATTERN = /^data:image\/(?:jpeg|png|webp);base64,[a-z0-9+/=]+$/i
 const THEMES = new Set(['forest', 'coral', 'sunny', 'lavender'])
-export const DEFAULT_PERSONAL_ARTWORK = '/assets/personal-space/sunflower-cat-cover.png'
+export const DEFAULT_PERSONAL_ARTWORK = '/assets/personal-space/canvas-still-life.png'
 
 export const EMPTY_PERSONAL_HOME = Object.freeze({
   avatar: '',

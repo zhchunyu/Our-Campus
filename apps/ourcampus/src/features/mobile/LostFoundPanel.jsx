@@ -94,8 +94,7 @@ export function LostFoundPanel({ posts, locations, regionId, filter, onFilterCha
     finally { setSaving(false) }
   }
 
-  return <div className="community-content">
-    <div className="community-banner"><PackageSearch size={27} /><div><strong>让丢失的物品找到回家的路</strong><p>留下特征与地点，方便同学辨认。</p></div></div>
+  return <div className="community-content canvas-community-content">
     <div className="community-action-line"><span className="community-local-label">{cloudReady ? '云端信息 · 本机资料' : '云端服务待连接'}</span><button className="community-primary" type="button" disabled={saving} onClick={() => openForm()}><Plus size={15} />发布信息</button></div>
     {notice && <p className="community-notice" role="status">{notice}</p>}
     {draft && <form className="community-form" onSubmit={submit} aria-label={editingId ? '编辑失物信息' : '发布失物信息'}>

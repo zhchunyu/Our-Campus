@@ -1,3 +1,4 @@
+import './inner-canvas.css'
 import { useMemo, useState } from 'react'
 import { MapPin, Navigation, LocateFixed, Plus, Search, Utensils, HeartPulse, Trophy, Droplets, Printer, Package, Bike, PersonStanding, X } from 'lucide-react'
 import { FACILITY_TYPES } from '../../data/campusCommunity.js'

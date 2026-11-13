@@ -1,4 +1,4 @@
-import { CalendarDays, MapPin, Navigation, Flame, Users, Construction, Megaphone, Sparkles } from 'lucide-react'
+import { CalendarDays, MapPin, Navigation, Users, Construction, Megaphone, Sparkles } from 'lucide-react'
 import { PostImageGallery } from './PostImageGallery.jsx'
 import { useState } from 'react'
 import { HOTSPOT_TYPE_LABELS } from '../../domain/campus.js'
@@ -16,9 +16,8 @@ export function CampusHotspotsPanel({ events, locations, regionId, onSelectLocat
     && (regionId === 'all' || getCampusRegionId(byId.get(event.locationId)) === regionId))
     .sort((a, b) => Date.parse(b.startAt ?? 0) - Date.parse(a.startAt ?? 0))
   return (
-    <div className="community-content">
-      <div className="community-banner community-banner--hotspot"><Flame size={25} /><div><strong>看看校园正在发生什么</strong><p>活动、人流和通行信息，连接到同一张地图。</p></div></div>
-      <div className="community-action-line"><span>发现校园新情况？</span><button className="community-primary" type="button" onClick={onPublishInformation}>发布校园信息</button></div>
+    <div className="community-content canvas-community-content">
+      <div className="community-action-line"><span>活动、人流与通行信息</span><button className="community-primary" type="button" onClick={onPublishInformation}>发布校园信息</button></div>
       <div className="community-chip-strip" aria-label="热点类型">{types.map((option) => <button key={option.id} type="button" className={type === option.id ? 'is-active' : ''} aria-pressed={type === option.id} onClick={() => setType(option.id)}>{option.label}</button>)}</div>
       <div className="community-list-heading"><h3>当前动态</h3><span>{visible.length} 条</span></div>
       {visible.length ? visible.map((event) => {

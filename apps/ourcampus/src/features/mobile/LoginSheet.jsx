@@ -126,11 +126,11 @@ export function LoginSheet({ onClose, auth, initialMode = 'login' }) {
 
   return createPortal(
     <div className="mobile-login-backdrop" onMouseDown={(event) => { if (!busy && event.target === event.currentTarget) onClose() }}>
-      <section className="mobile-login-sheet" ref={dialogRef} role="dialog" aria-modal="true"
+      <section className="mobile-login-sheet student-canvas-login" ref={dialogRef} role="dialog" aria-modal="true"
         aria-labelledby="mobile-login-title" aria-busy={busy ? 'true' : undefined}>
         <div className="mobile-login-sheet__handle" aria-hidden="true" />
         <header className="mobile-login-sheet__header">
-          <div><span>OurCampus · 数字校园</span><h2 id="mobile-login-title">{TITLES[mode]}</h2></div>
+          <div><span>OurCampus / 账户</span><h2 id="mobile-login-title">{TITLES[mode]}</h2></div>
           <button className="mobile-login-sheet__close" type="button" disabled={busy} onClick={onClose} aria-label="关闭登录窗口"><X size={19} /></button>
         </header>
         {['login', 'signup'].includes(mode) && <div className="mobile-login-methods" role="group" aria-label="账号操作">

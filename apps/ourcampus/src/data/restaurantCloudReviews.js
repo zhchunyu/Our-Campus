@@ -1,5 +1,6 @@
 import { requireSupabase } from './supabaseClient.js'
 import { informationError } from './campusInformation.js'
+import { normalizePostImagePaths, safePostImagePaths } from './postImages.js'
 
 export function reviewServerError(error) {
   if (error?.code === '23505') return '你已评价这个窗口，请先撤回原评价，再发布新的用餐体验。'
@@ -7,7 +8,7 @@ export function reviewServerError(error) {
 }
 export const mapCloudReview = (r) => ({ id: r.id, windowId: r.window_id, restaurantId: r.restaurant_id,
   authorId: r.author_id, author: r.author_name, rating: r.rating, content: r.content, tags: r.tags,
-  price: r.price === null ? null : Number(r.price), createdAt: r.created_at, isExample: false, isCloud: true })
+  price: r.price === null ? null : Number(r.price), createdAt: r.created_at, imagePaths: safePostImagePaths(r.image_paths), isExample: false, isCloud: true })
 export async function loadReviewSummary(restaurantId) {
   const { data, error } = await requireSupabase().from('restaurant_review_stats').select('*').eq('restaurant_id', restaurantId)
   if (error) throw error
@@ -28,9 +29,11 @@ export async function loadWindowCloudReviews(windowId, before = null) {
   return data.map(mapCloudReview)
 }
 export async function submitWindowCloudReview(draft) {
-  const { data, error } = await requireSupabase().rpc('campus_submit_restaurant_review', { p_client_id: draft.clientId,
+  const paths = normalizePostImagePaths(draft.imagePaths ?? [], draft.authorId)
+  const { data, error } = await requireSupabase().rpc(paths.length ? 'campus_submit_restaurant_review_with_images' : 'campus_submit_restaurant_review', { p_client_id: draft.clientId,
     p_window_id: draft.windowId, p_restaurant_id: draft.restaurantId, p_rating: draft.rating, p_content: draft.content,
-    p_tags: draft.tags, p_price: draft.price })
+    p_tags: draft.tags, p_price: draft.price, ...(paths.length ? { p_image_paths: paths } : {}) })
+  if (paths.length && ['PGRST202', 'PGRST203', '42883', '42703'].includes(error?.code)) throw new Error('餐厅照片服务尚未部署，照片和文字仍保留在表单中；请稍后重试，或移除照片后发布纯文字评价。')
   if (error) throw error
   return data
 }

@@ -1,3 +1,4 @@
+import '../mobile/inner-canvas.css'
 import { campusDisplayText } from '../../data/campusPresentation.js'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -5,9 +6,16 @@ import { ArrowLeft, ArrowUp, ChevronRight, LogIn, MapPin, Navigation, RotateCcw,
 import { requestAuv } from '../../data/auvClient.js'
 
 const typeLabels = { safety: '安全隐患', congestion: '人流拥挤', service: '设施与服务', notice: '校园通知' }
-const prompts = { chat: ['图书馆开放时间知道吗？', '谷园餐厅有哪些服务信息？', '怎么查校园办事入口？'].map(campusDisplayText), extract: ['谷园餐厅现在排队很久', '崇学楼门前正在施工', '9号公寓楼下路灯坏了'].map(campusDisplayText) }
+function currentPlacePrompts(locations) {
+  const name = (id, fallback) => locations.find((location) => location.id === id)?.name || fallback
+  return {
+    chat: [`查询${name('library', '图书馆')}开放时间`, `查看${name('canteen', '校园餐厅')}服务信息`, '查询校园办事入口'].map(campusDisplayText),
+    extract: [`${name('canteen', '校园餐厅')}现在排队很久`, `${name('teaching-a', '教学楼')}门前正在施工`, `${name('apartment-9', '宿舍楼')}下路灯坏了`].map(campusDisplayText),
+  }
+}
 
 export function AuvAssistantPage({ auth, locations, getContext, initialLocationId = '', initialPurpose = '', initialDraft = '', onClose, onOpenLogin, onSelectLocation, onPlanRouteToLocation }) {
+  const prompts = currentPlacePrompts(locations)
   useBackLayer(true, onClose, 80)
   const [mode, setMode] = useState('chat')
   const timetablePlanning = initialPurpose === 'timetable'
@@ -80,7 +88,7 @@ export function AuvAssistantPage({ auth, locations, getContext, initialLocationI
       </header>
       <div className="auv-mode-switch" role="group" aria-label="AI 功能选择">{[{ id: 'chat', label: '校园建议' }, { id: 'extract', label: '事件分析' }].map((item) => <button key={item.id} type="button" disabled={busy} aria-pressed={mode === item.id} className={mode === item.id ? 'is-active' : ''} onClick={() => { setMode(item.id); setError('') }}>{item.label}</button>)}</div>
       <main className="auv-feed" ref={feedRef} aria-label="与校园助手的对话">
-        {!messages.length && !busy && <section className="auv-welcome"><span><Sparkles size={30} /></span><h2>{timetablePlanning && mode === 'chat' ? '按你的课表来规划' : '你好，我是 AUV'}</h2><p>{mode === 'extract' ? '告诉我哪里在排队、施工或出现故障，我帮你整理成事件草稿。' : timetablePlanning ? '课表会随你的问题一起关联。可以补充学习目标，发送后由 AI 结合可用课程提出安排建议。' : '可以问校园地点和服务信息，也可以聊聊你遇到的校园情况。'}</p>{(!timetablePlanning || mode !== 'chat') && <div>{prompts[mode].map((prompt) => <button type="button" key={prompt} disabled={!userId} onClick={() => setDraft(prompt)}>{prompt}<ChevronRight size={15} /></button>)}</div>}</section>}
+        {!messages.length && !busy && <section className="auv-welcome"><span><Sparkles size={30} /></span><h2>{timetablePlanning && mode === 'chat' ? '课表规划' : mode === 'extract' ? '整理事件草稿' : '校园信息查询'}</h2><p>{mode === 'extract' ? '填写地点及排队、施工或故障情况，生成待确认的事件草稿。' : timetablePlanning ? '发送时关联当前课表，可补充学习目标或时间要求。' : '输入地点、服务或校园情况，获取相关信息和建议。'}</p>{(!timetablePlanning || mode !== 'chat') && <div>{prompts[mode].map((prompt) => <button type="button" key={prompt} disabled={!userId} onClick={() => setDraft(prompt)}>{prompt}<ChevronRight size={15} /></button>)}</div>}</section>}
         {!userId && <div className="auv-login"><LogIn size={22} /><strong>登录后开始对话</strong><p>使用你已有的校园软件账号。</p><button type="button" disabled={auth.status === 'loading'} onClick={onOpenLogin}>登录 / 注册</button></div>}
         <div className="auv-messages" aria-live="polite">{messages.map((message) => <article key={message.id} className={`auv-message auv-message--${message.role}`}>
           <span className="auv-message__author">{message.role === 'user' ? '我' : (message.result.generated_by === 'auv' || message.result.generated_by === 'greeting_rule') ? 'AUV' : message.result.kind === 'emergency' ? '应急提示' : '功能提示'}</span>
@@ -94,12 +102,12 @@ export function AuvAssistantPage({ auth, locations, getContext, initialLocationI
           {message.result?.live_context_available === false && <small className="auv-context-note">当前未能取得已核实的校园动态。</small>}
           {message.result?.personal_context_available && <small className="auv-context-note">已参考当前可获取的校园发布和个人相关信息。</small>}
         </article>)}</div>
-        {busy && <><article className="auv-message auv-message--user"><span className="auv-message__author">我</span><p>{campusDisplayText(pendingText)}</p></article><p className="auv-pending" role="status"><Sparkles size={15} />AUV 正在思考，请稍候…</p></>}
+        {busy && <><article className="auv-message auv-message--user"><span className="auv-message__author">我</span><p>{campusDisplayText(pendingText)}</p></article><p className="auv-pending" role="status"><Sparkles size={15} />正在生成回复…</p></>}
         {error && <p className="auv-error" role="alert">{error} 输入内容已保留。</p>}
       </main>
       <form className={`auv-composer${timetablePlanning && mode === 'chat' ? ' auv-composer--timetable' : ''}`} onSubmit={send}>
         <label className="auv-location-label" htmlFor="auv-location">关联地点（可选）<select id="auv-location" value={locationId} disabled={!userId || busy} onChange={(event) => setLocationId(event.target.value)}><option value="">由文字匹配地点</option>{locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label>
-        <div className="auv-input-row"><label className="sr-only" htmlFor="auv-input">发送给校园助手的内容</label><textarea id="auv-input" rows={2} maxLength={1000} disabled={!userId || busy} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={mode === 'extract' ? '描述地点和发生的情况…' : '问问校园里的事…'} />{busy ? <button type="button" className="auv-send" aria-label="取消等待" onClick={cancel}><X size={21} /></button> : <button type="submit" className="auv-send" disabled={!userId || !draft.trim()} aria-label="发送给 AUV"><ArrowUp size={21} /></button>}</div>
+        <div className="auv-input-row"><label className="sr-only" htmlFor="auv-input">发送给校园助手的内容</label><textarea id="auv-input" rows={2} maxLength={1000} disabled={!userId || busy} value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={mode === 'extract' ? '描述地点和发生的情况…' : '输入校园相关问题…'} />{busy ? <button type="button" className="auv-send" aria-label="取消等待" onClick={cancel}><X size={21} /></button> : <button type="submit" className="auv-send" disabled={!userId || !draft.trim()} aria-label="发送给 AUV"><ArrowUp size={21} /></button>}</div>
         <p>AI 建议供参考；缺少数据时无法确认实时人流与开放时间。</p>
       </form>
     </div>

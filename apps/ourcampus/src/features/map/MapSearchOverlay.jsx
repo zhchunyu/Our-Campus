@@ -1,3 +1,4 @@
+import '../mobile/inner-canvas.css'
 import { MapPin, Megaphone, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react'
 import { CATEGORIES, CATEGORY_LABELS } from '../../domain/campus.js'
 

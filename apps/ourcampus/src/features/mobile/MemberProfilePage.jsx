@@ -102,7 +102,7 @@ export function MemberProfileContent({ state, onRetry, viewerId }) {
   }
   const name = profile.nickname || '校园同学'
   return <>
-    <div className="member-profile__identity"><ProfileAvatar src={getAvatarUrl(profile.avatar_path)} name={name} className="member-profile__avatar" /><div><h2>{name}</h2><p>校园成员</p></div></div>
+    <div className="member-profile__identity"><ProfileAvatar src={getAvatarUrl(profile.avatar_path)} name={name} className="member-profile__avatar" /><div><h2>{name}</h2><p>公开资料 · 校园成员</p></div></div>
     {profileError && <div className="member-profile__notice" role="alert"><span>{profileError}</span><RetryButton onRetry={onRetry} /></div>}
     <section className="member-profile__messages" aria-labelledby="member-profile-messages-title"><div className="member-profile__heading"><h3 id="member-profile-messages-title">最近的大厅发言</h3><p>最多展示 20 条未撤回的发言</p></div>
       {messagesError && <div className="member-profile__notice" role="alert"><span>{messagesError}</span><RetryButton onRetry={onRetry} /></div>}

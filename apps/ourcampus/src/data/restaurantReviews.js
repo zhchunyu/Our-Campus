@@ -1,16 +1,25 @@
 import { GUYUAN_WINDOWS } from './guyuanWindows.js'
 
 const STORAGE_KEY = 'campus-twin-restaurant-reviews-v1'
+// Keep the read/write budget identical; a successful photo save must reopen.
+export const RESTAURANT_REVIEW_STORAGE_LIMIT = 1_800_000
+export const REVIEW_PHOTO_LIMIT = 3
+export const REVIEW_PHOTO_MAX_LENGTH = 180_000
+export function normalizeReviewPhotos(images = []) {
+  if (!Array.isArray(images) || images.length > REVIEW_PHOTO_LIMIT || images.some((image) => typeof image !== 'string' || image.length > REVIEW_PHOTO_MAX_LENGTH || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(image))) throw new Error('评价最多添加 3 张压缩照片，请重新选择')
+  return [...images]
+}
+function safeReviewPhotos(images) { try { return normalizeReviewPhotos(images) } catch { return [] } }
 export const REVIEW_TAGS = ['口味好', '分量足', '性价比高', '出餐快', '排队久', '偏油', '偏咸']
 export const WINDOW_CATEGORIES = ['全部', '面食', '米饭', '轻食', '小吃', '饮品', '其他']
 
 const WINDOW_TEMPLATES = [
-  { id: 'window-01', number: '01', name: '特色面食', category: '面食', icon: 'noodles', tone: 'wheat', description: '一碗热乎的，看看同学推荐什么。', dish: '招牌面 · 示例' },
-  { id: 'window-02', number: '02', name: '家常小炒', category: '米饭', icon: 'rice', tone: 'green', description: '日常吃饭的选择，口味和分量都聊聊。', dish: '双拼盖饭 · 示例' },
-  { id: 'window-03', number: '03', name: '轻食沙拉', category: '轻食', icon: 'salad', tone: 'sage', description: '想吃清爽一点，看看搭配和性价比。', dish: '轻食套餐 · 示例' },
-  { id: 'window-04', number: '04', name: '粉面小馆', category: '面食', icon: 'noodles', tone: 'peach', description: '汤底、辣度和配料，交给同学点评。', dish: '汤粉套餐 · 示例' },
-  { id: 'window-05', number: '05', name: '风味小吃', category: '小吃', icon: 'snack', tone: 'sand', description: '加餐或解馋，分享你吃过的那一口。', dish: '小吃拼盘 · 示例' },
-  { id: 'window-06', number: '06', name: '自选套餐', category: '米饭', icon: 'rice', tone: 'rose', description: '想配什么自己选，看看大家的体验。', dish: '自选饭菜 · 示例' },
+  { id: 'window-01', number: '01', name: '特色面食', category: '面食', icon: 'noodles', tone: 'wheat', description: '面食窗口，查看评分和用餐评价。', dish: '招牌面 · 示例' },
+  { id: 'window-02', number: '02', name: '家常小炒', category: '米饭', icon: 'rice', tone: 'green', description: '米饭与炒菜窗口，查看评分和用餐评价。', dish: '双拼盖饭 · 示例' },
+  { id: 'window-03', number: '03', name: '轻食沙拉', category: '轻食', icon: 'salad', tone: 'sage', description: '轻食窗口，查看评分和用餐评价。', dish: '轻食套餐 · 示例' },
+  { id: 'window-04', number: '04', name: '粉面小馆', category: '面食', icon: 'noodles', tone: 'peach', description: '粉面窗口，查看评分和用餐评价。', dish: '汤粉套餐 · 示例' },
+  { id: 'window-05', number: '05', name: '风味小吃', category: '小吃', icon: 'snack', tone: 'sand', description: '小吃窗口，查看评分和用餐评价。', dish: '小吃拼盘 · 示例' },
+  { id: 'window-06', number: '06', name: '自选套餐', category: '米饭', icon: 'rice', tone: 'rose', description: '自选套餐窗口，查看评分和用餐评价。', dish: '自选饭菜 · 示例' },
 ]
 const EXAMPLE_COMMENTS = [
   [5, '面条口感不错，分量也挺足。喜欢清淡的可以少放一点调料。', ['口味好', '分量足'], 12],
@@ -75,10 +84,10 @@ function isValidLocalReview(review) {
 export function loadLocalRestaurantReviews() {
   try {
     const raw = globalThis.localStorage?.getItem(STORAGE_KEY)
-    if (!raw || raw.length > 500_000) return []
+    if (!raw || raw.length > RESTAURANT_REVIEW_STORAGE_LIMIT) return []
     const saved = JSON.parse(raw)
     if (saved?.version !== 1 || !Array.isArray(saved.reviews)) return []
-    return saved.reviews.filter(isValidLocalReview).slice(0, 200)
+    return saved.reviews.filter(isValidLocalReview).slice(0, 200).map((review) => ({ ...review, images: safeReviewPhotos(review.images) }))
   } catch { return [] }
 }
 
@@ -93,6 +102,7 @@ export function createLocalRestaurantReview(input) {
     restaurantId: input.restaurantId, windowId: input.windowId,
     author: [...String(input.author || '我').trim()].slice(0, 40).join('') || '我',
     rating: input.rating, content,
+    images: normalizeReviewPhotos(input.images),
     tags: [...new Set(input.tags ?? [])].slice(0, 3),
     price: price === null ? null : Math.round(price * 100) / 100,
     createdAt: new Date().toISOString(), isExample: false,
@@ -103,8 +113,10 @@ export function createLocalRestaurantReview(input) {
 
 export function saveLocalRestaurantReviews(reviews) {
   if (reviews.length > 200) throw new Error('本机评价已达 200 条，请先移除不需要的评价')
+  const serialized = JSON.stringify({ version: 1, reviews: reviews.map((review) => ({ ...review, images: normalizeReviewPhotos(review.images) })) })
+  if (serialized.length > RESTAURANT_REVIEW_STORAGE_LIMIT) throw new Error('本机照片存储空间不足，请减少照片，或先移除不需要的本机评价')
   try {
     if (!globalThis.localStorage) throw new Error('storage unavailable')
-    globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, reviews }))
+    globalThis.localStorage.setItem(STORAGE_KEY, serialized)
   } catch { throw new Error('本机保存失败，请检查浏览器存储空间后重试') }
 }

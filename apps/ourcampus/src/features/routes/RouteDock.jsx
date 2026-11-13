@@ -1,3 +1,4 @@
+import '../mobile/inner-canvas.css'
 import { campusDisplayText } from '../../data/campusPresentation.js'
 import { useEffect, useState } from 'react'
 import { ArrowRight, ArrowUpDown, ListOrdered, MapPinned, Navigation, Route, Star, X } from 'lucide-react'

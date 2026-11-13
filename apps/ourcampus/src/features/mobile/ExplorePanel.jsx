@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, ChevronRight, Flower2, MapPin, MessageCircle, Navigation, Star, Wrench } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookOpen, CalendarDays, ChevronRight, MapPin, MessageCircle, Navigation, Wrench } from 'lucide-react'
 import { LocationFilters } from '../locations/LocationFilters.jsx'
 import { LocationList } from '../locations/LocationList.jsx'
 import { CampusEventCalendar } from './CampusEventCalendar.jsx'
@@ -7,7 +7,6 @@ import { CampusServiceDirectory } from './CampusServiceDirectory.jsx'
 import { NearbyFacilitiesPanel } from './NearbyFacilitiesPanel.jsx'
 import { FacilityReportsPanel } from './FacilityReportsPanel.jsx'
 import { PLACE_FEEDBACK_TYPES } from '../../domain/placeFeedback.js'
-import { CampusSticker } from './CampusSticker.jsx'
 
 const SECTIONS = [
   { id: 'places', title: '找地点', description: '教学楼、餐厅与校园建筑', Icon: MapPin },
@@ -22,7 +21,7 @@ export function ExplorePanel({ locations, allLocations, calendarEvents = [], ser
   livePosition, deviceLocationStatus, deviceLocationMessage, onLocateDevice, role, onSubmitFacility, onReviewFacility,
   section = 'home', onSectionChange, onOpenTimetable, onOpenAssistant, onOpenRepair, onOpenRepairRecords, placeFeedback = [], onUpdateFacilityReport, headerActions }) {
   const [repairLocationId, setRepairLocationId] = useState('')
-  const heading = SECTIONS.find((item) => item.id === section)?.title ?? '服务'
+  const heading = SECTIONS.find((item) => item.id === section)?.title ?? '办事'
   return <section className={`mobile-page-panel mobile-page-panel--explore service-page${section === 'home' ? ' service-page--home' : ''}`} aria-label={heading}>
     <header className="organized-page-heading">
       {section !== 'home' && <button className="organized-back" type="button" aria-label="返回服务" onClick={() => onSectionChange('home')}><ArrowLeft size={20} /></button>}
@@ -30,11 +29,10 @@ export function ExplorePanel({ locations, allLocations, calendarEvents = [], ser
       {headerActions}
     </header>
     {section === 'home' && <>
-      <p className="campus-page-intro">校园里的事，一件件安排好。</p>
-      <button className="service-timetable-entry" type="button" onClick={onOpenTimetable}><div className="service-timetable-copy"><small>留一点时间给自己</small><strong>今天，按自己的节奏</strong><p>课程与安排，打开就知道。</p><span className="service-timetable-action">我的课表 <ArrowRight size={16} /></span></div><span className="service-schedule-art" aria-hidden="true"><CampusSticker Icon={CalendarDays} tone="mint" /><Flower2 className="service-schedule-flower" /><Star className="service-schedule-star" /></span></button>
-      <div className="organized-section-heading"><h3>校园里的大小事</h3></div>
+      <button className="service-timetable-entry" type="button" onClick={onOpenTimetable}><div className="service-timetable-copy"><small>课程与安排</small><strong>我的课表</strong><p>导入课表，或查看已保存的课程。</p><span className="service-timetable-action">打开课表 <ArrowRight size={16} /></span></div><CalendarDays size={30} strokeWidth={1.4} aria-hidden="true" /></button>
+      <div className="organized-section-heading"><h3>校园工具</h3></div>
       <div className="service-entry-grid">
-        {SECTIONS.filter(({ id }) => id !== 'directory').map(({ id, title, description, Icon }, index) => <button type="button" className={`service-life-card service-life-card--${['sunny', 'coral', 'mint', 'lavender'][index]}`} key={id} onClick={() => onSectionChange(id)}><CampusSticker Icon={Icon} tone={['sunny', 'coral', 'mint', 'lavender'][index]} /><ChevronRight className="service-life-card__arrow" size={16} /><strong>{title}</strong><small>{description}</small></button>)}
+        {SECTIONS.filter(({ id }) => id !== 'directory').map(({ id, title, description, Icon }) => <button type="button" className="service-life-card" key={id} onClick={() => onSectionChange(id)}><Icon size={24} strokeWidth={1.5} aria-hidden="true" /><ChevronRight className="service-life-card__arrow" size={16} /><strong>{title}</strong><small>{description}</small></button>)}
       </div>
       <button className="service-assistant-entry" type="button" onClick={onOpenAssistant}><span className="service-assistant-icon"><MessageCircle size={25} strokeWidth={1.65} /></span><span className="service-assistant-copy"><strong>AI 校园助手</strong><small>找地点 · 查办事 · 安排学习</small></span><ArrowRight size={19} /></button>
       <div className="organized-section-heading"><h3>办事入口</h3><span>{services.length} 项服务</span></div>

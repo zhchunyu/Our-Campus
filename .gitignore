@@ -97,3 +97,11 @@ signing.local.properties
 
 # Local ignored build/config remnants after moving the application to apps/ourcampus
 /04-应用开发/OurCampus/
+
+# Portable local build toolchains and caches
+/.tools/
+**/.npm-cache/
+/apps/ourcampus/baseline-test-results.json
+/apps/ourcampus/canvas-test-results.json
+/apps/ourcampus/.cache/
+/releases-local/

@@ -87,7 +87,7 @@ export function MePanel({
   const ordinaryFeedback = placeFeedback.filter((entry) => entry.type !== PLACE_FEEDBACK_TYPES.REPAIR)
 
   return (
-    <section className="mobile-page-panel mobile-page-panel--me" aria-label="我的主页">
+    <section className="mobile-page-panel mobile-page-panel--me student-canvas-me" aria-label="我的主页">
       <PersonalHome onOpenMemberProfile={onOpenMemberProfile} auth={auth} onBeforeLogout={onBeforeLogout} onOpenLogin={onOpenLogin} onOpenMessages={onOpenMessages} unreadCount={unreadCount} onOpenTimetable={onOpenTimetable} onOpenMyPublications={onOpenMyPublications} onOpenFavorites={(event) => revealCollection('favorites', event)} onOpenRoutes={(event) => revealCollection('routes', event)} activeCollection={activeCollection} collectionPanelId={collectionId} />
 
       {activeCollection && <section className="me-collection" id={collectionId} ref={collectionRef} aria-labelledby={collectionId + '-title'}>

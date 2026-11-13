@@ -1,0 +1,171 @@
+/* Student canvas: the member's artwork supplies color; controls stay quiet. */
+.mobile-page-panel--me.student-canvas-me { --personal-ink: #161b18; --personal-muted: #68706b; --personal-line: #dfe4df; --personal-green: #205a42; padding: calc(16px + env(safe-area-inset-top, 0px)) 20px calc(104px + env(safe-area-inset-bottom, 0px)); background: #fff; color: var(--personal-ink); }
+.student-canvas-me .personal-topbar { min-height: 48px; margin-bottom: 16px; }
+.student-canvas-me .personal-topbar strong { color: var(--personal-ink); font-size: 20px; font-weight: 550; letter-spacing: -.025em; }
+.student-canvas-me .personal-topbar span { color: var(--personal-muted); border-color: var(--personal-line); font-size: 15px; font-weight: 400; }
+.student-canvas-me .personal-topbar__actions button { border-radius: 4px; color: var(--personal-ink); }
+.student-canvas-me .personal-topbar__actions i { border-color: #fff; background: var(--personal-green); }
+.student-canvas-me .personal-home { gap: 18px; }
+.student-canvas-me .personal-cover,
+.personal-sheet .personal-cover { border-radius: 4px; background: #f2f3ef; }
+.student-canvas-me .personal-cover::before,
+.personal-sheet .personal-cover::before { display: none; }
+.personal-cover__open { position: absolute; inset: 0; z-index: 1; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+.personal-cover__open > span { position: absolute; top: 10px; left: 10px; display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 6px 9px; border-radius: 3px; color: #161b18; background: #ffffffed; font-size: 13px; }
+.student-canvas-me .personal-cover__change { z-index: 2; right: 10px; bottom: 10px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 3px; color: var(--personal-ink); background: #fffffff2; box-shadow: none; font-size: 13px; font-weight: 400; }
+.student-canvas-me .personal-identity { margin-top: -48px; padding: 0; }
+.student-canvas-me .personal-avatar { border-width: 4px; color: var(--personal-green); background: #edf1eb; box-shadow: none; font-weight: 400; }
+.student-canvas-me .personal-identity__avatar { width: 72px; height: 72px; }
+.student-canvas-me .personal-identity__row { margin-top: 12px; gap: 12px; }
+.student-canvas-me .personal-identity__row h2 { color: var(--personal-ink); font-size: 26px; font-weight: 450; line-height: 1.35; letter-spacing: -.02em; }
+.student-canvas-me .personal-identity__row p { margin-top: 9px; color: var(--personal-muted); font-size: 15px; line-height: 1.7; }
+.student-canvas-me .personal-identity__decorate { min-height: 44px; margin-top: -54px; padding: 0 13px; border: 1px solid var(--personal-line); border-radius: 4px; color: var(--personal-ink); background: #fff; font-size: 13px; font-weight: 400; }
+.student-canvas-me .personal-tags { gap: 12px; margin-top: 14px; }
+.student-canvas-me .personal-tags > span { padding: 0; border-radius: 0; color: var(--personal-green); background: none; font-size: 13px; line-height: 1.6; }
+.student-canvas-me .personal-tags > span::before { content: '#'; margin-right: 2px; }
+.student-canvas-me .personal-identity__foot { gap: 0 10px; margin-top: 13px; }
+.student-canvas-me .personal-identity__foot > span { color: var(--personal-muted); font-size: 13px; line-height: 1.6; }
+.student-canvas-me .personal-identity__foot > button:not(.personal-login-button) { min-height: 44px; color: var(--personal-green); font-size: 13px; }
+.student-canvas-me .personal-login-button { min-height: 48px; margin-top: 6px; border-radius: 4px; color: #fff; background: var(--personal-green); font-size: 15px; }
+.student-canvas-me .personal-private { padding: 18px 0 12px; border: 0; border-top: 1px solid var(--personal-line); border-bottom: 1px solid var(--personal-line); border-radius: 0; background: #fff; }
+.student-canvas-me .personal-section-label { gap: 6px; margin: 0 0 14px; color: var(--personal-muted); font-size: 13px; }
+.student-canvas-me .personal-shortcuts { gap: 0; }
+.student-canvas-me .personal-shortcuts button { min-height: 78px; gap: 11px; padding: 10px 2px; border-radius: 0; color: var(--personal-ink); background: #fff; font-size: 13px; font-weight: 400; transform: none; }
+.student-canvas-me .personal-shortcuts button + button { border-left: 1px solid var(--personal-line); }
+.student-canvas-me .personal-shortcuts button[aria-expanded=true] { background: #f0f4ef; }
+.student-canvas-me .personal-shortcuts svg { color: var(--personal-green); stroke-width: 1.5; }
+.student-canvas-me .personal-home__notice { padding: 12px 0; border-top: 1px solid var(--personal-line); border-bottom: 1px solid var(--personal-line); border-radius: 0; color: var(--personal-green); background: #fff; font-size: 13px; }
+.student-canvas-me .personal-home__notice button { min-height: 44px; }
+.student-canvas-me .me-tools { margin-top: 16px; border: 0; border-radius: 0; background: #fff; }
+.student-canvas-me .me-tools > .organized-account-menu,
+.student-canvas-me .me-tools > :is(.organized-settings, .organized-management) { border-color: var(--personal-line); border-radius: 0; }
+.student-canvas-me .me-tools > .organized-account-menu > button,
+.student-canvas-me .me-tools > :is(.organized-settings, .organized-management) > summary { min-height: 62px; padding: 15px 0; gap: 13px; color: var(--personal-ink); }
+.student-canvas-me .me-tools > .organized-account-menu strong,
+.student-canvas-me .me-tools > :is(.organized-settings, .organized-management) > summary strong { color: var(--personal-ink); font-size: 15px; font-weight: 400; }
+.student-canvas-me .me-tools :is(.organized-account-menu, .organized-settings, .organized-management) svg { color: var(--personal-green); }
+.student-canvas-me .me-tools :is(.mobile-me-card, .settings-panel, .mobile-manager-card, .app-update-settings),
+.student-canvas-me .organized-development { margin: 0; padding: 16px 0; border: 0; border-top: 1px solid var(--personal-line); border-radius: 0; background: #fff; box-shadow: none; }
+.student-canvas-me .me-tools :is(p, label, input, select, button) { font-size: 15px; }
+.student-canvas-me .me-tools :is(small, .settings-panel__hint, .app-update-settings__note) { color: var(--personal-muted); font-size: 13px; line-height: 1.65; }
+.student-canvas-me .me-tools button { min-height: 44px; border-radius: 4px; }
+.student-canvas-me .me-tools :is(input, select) { min-height: 44px; border-radius: 4px; }
+.student-canvas-me .me-tools input[type=checkbox] { min-height: 20px; }
+.student-canvas-me .me-collection { margin-top: 16px; padding: 8px 0 14px; border: 0; border-bottom: 1px solid var(--personal-line); border-radius: 0; background: #fff; }
+.student-canvas-me .me-collection__heading h3 { color: var(--personal-ink); font-size: 18px; font-weight: 500; }
+.student-canvas-me .mobile-my-collection-row { border-color: var(--personal-line); border-radius: 0; background: #fff; }
+.student-canvas-me .mobile-my-collection-row button { min-height: 48px; border-radius: 0; color: var(--personal-ink); font-size: 15px; }
+.student-canvas-me .mobile-my-collection-row__remove { min-width: 44px; }
+.student-canvas-me .mobile-my-collections__label,
+.student-canvas-me .mobile-my-collections__empty { color: var(--personal-muted); font-size: 13px; line-height: 1.7; }
+.personal-sheet-backdrop { background: #161b186b; backdrop-filter: none; }
+.personal-sheet { --personal-ink: #161b18; --personal-muted: #68706b; --personal-line: #dfe4df; --personal-green: #205a42; border: 0; border-radius: 8px 8px 0 0; color: var(--personal-ink); background: #fff; box-shadow: none; }
+.personal-sheet--preview { border-radius: 0; }
+.personal-sheet .personal-sheet__header { min-height: 72px; padding: 16px 20px 12px; border-bottom: 1px solid var(--personal-line); }
+.personal-sheet .personal-sheet__header h2 { color: var(--personal-ink); font-size: 23px; font-weight: 500; }
+.personal-sheet .personal-sheet__header > button { border-radius: 4px; color: var(--personal-ink); }
+.personal-sheet .personal-sheet__scroll { padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 0px)); }
+.personal-sheet .personal-avatar { box-shadow: none; color: var(--personal-green); background: #edf1eb; font-weight: 400; }
+.personal-sheet .personal-sheet__photo-actions { gap: 12px; }
+.personal-sheet .personal-sheet__photo-actions label,
+.personal-sheet .personal-account__avatar label { min-height: 48px; border-radius: 4px; border-color: var(--personal-line); color: var(--personal-green); font-size: 14px; font-weight: 400; }
+.personal-sheet .personal-sheet__text-actions { flex-wrap: wrap; gap: 0 18px; }
+.personal-sheet .personal-sheet__text-actions button,
+.personal-sheet .personal-account__remove { min-height: 44px; color: #8e493c; font-size: 13px; }
+.personal-sheet .personal-sheet__hint { margin: 10px 0 16px; color: var(--personal-muted); font-size: 13px; line-height: 1.7; }
+.personal-sheet .personal-focus label { color: var(--personal-muted); font-size: 13px; }
+.personal-sheet .personal-focus input { min-height: 44px; accent-color: var(--personal-green); }
+.personal-sheet .personal-sheet__group { gap: 14px; margin-top: 0; padding: 22px 0; border: 0; border-top: 1px solid var(--personal-line); border-radius: 0; background: #fff; }
+.personal-sheet .personal-sheet__group h3 { color: var(--personal-ink); font-size: 18px; font-weight: 500; }
+.personal-sheet .personal-sheet__group > label { gap: 10px; color: var(--personal-ink); font-size: 15px; }
+.personal-sheet .personal-sheet__group > label small { color: var(--personal-muted); font-size: 13px; }
+.personal-sheet .personal-sheet__group input[type=text],
+.personal-sheet .personal-account__nickname input { min-height: 48px; padding: 0 12px; border-color: var(--personal-line); border-radius: 4px; color: var(--personal-ink); background: #fff; font-size: 16px; }
+.personal-sheet .personal-theme-choice { min-height: 76px; gap: 10px; }
+.personal-sheet .personal-theme-choice > span { width: 32px; height: 32px; border-width: 0; border-radius: 4px; }
+.personal-sheet .personal-theme-choice.is-active > span { outline-color: var(--personal-ink); outline-offset: 4px; }
+.personal-sheet .personal-theme-choice small { color: var(--personal-muted); font-size: 13px; }
+.personal-sheet .personal-motion-options button { min-height: 86px; padding: 14px; border-color: var(--personal-line); border-radius: 4px; color: var(--personal-ink); background: #fff; font-size: 15px; }
+.personal-sheet .personal-motion-options button.is-active { border-color: var(--personal-green); background: #f4f6f2; }
+.personal-sheet .personal-motion-options small,
+.personal-sheet .personal-sheet__privacy small { color: var(--personal-muted); font-size: 13px; line-height: 1.65; }
+.personal-sheet .personal-sheet__privacy p { color: var(--personal-ink); font-size: 15px; }
+.personal-sheet .personal-sheet__footer { padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px)); border-color: var(--personal-line); }
+.personal-sheet .personal-sheet__footer button { min-height: 48px; border: 1px solid var(--personal-line); border-radius: 4px; color: var(--personal-ink); background: #fff; font-size: 15px; font-weight: 400; }
+.personal-sheet .personal-sheet__footer button:last-child { border-color: var(--personal-green); color: #fff; background: var(--personal-green); }
+.personal-sheet .personal-sheet__notice { border-radius: 4px; font-size: 13px; line-height: 1.7; }
+.personal-sheet .personal-account { gap: 0; }
+.personal-sheet .personal-account__avatar,
+.personal-sheet .personal-account__nickname,
+.personal-sheet .personal-account__email { padding: 20px 0; border: 0; border-bottom: 1px solid var(--personal-line); border-radius: 0; background: #fff; }
+.personal-sheet .personal-account__avatar { gap: 12px; }
+.personal-sheet .personal-account__avatar .personal-avatar { width: 54px; height: 54px; }
+.personal-sheet .personal-account__avatar strong { font-size: 15px; font-weight: 400; }
+.personal-sheet .personal-account__avatar small,
+.personal-sheet .personal-account__nickname > label,
+.personal-sheet .personal-account__email small { color: var(--personal-muted); font-size: 13px; line-height: 1.65; }
+.personal-sheet .personal-account__nickname { gap: 12px; }
+.personal-sheet .personal-account__nickname button { min-height: 48px; padding-inline: 12px; border-radius: 4px; background: var(--personal-green); font-size: 13px; }
+.personal-sheet .personal-account__email { font-size: 15px; }
+.personal-sheet .personal-account__logout { margin-top: 28px; border-color: var(--personal-line); border-radius: 4px; font-size: 15px; }
+.personal-local-avatar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 14px 0; border-top: 1px solid #dfe4df; border-bottom: 1px solid #dfe4df; border-radius: 0; background: #fff; }
+.personal-local-avatar p { flex: 1; min-width: 140px; margin: 0; color: #68706b; font-size: 13px; line-height: 1.7; }
+.personal-local-avatar button { min-height: 44px; border: 0; color: #205a42; background: #fff; font-size: 13px; }
+.personal-sheet .personal-discard { padding: 18px; border-color: var(--personal-line); border-radius: 4px; background: #fff; box-shadow: 0 6px 24px #161b1820; }
+.personal-sheet .personal-discard p { color: var(--personal-ink); font-size: 15px; line-height: 1.7; }
+.personal-sheet .personal-discard button { min-height: 44px; border-radius: 4px; font-size: 14px; }
+.personal-sheet.member-profile { --member-ink: #161b18; --member-muted: #68706b; background: #fff; }
+.member-profile .member-profile__header { padding-top: calc(12px + env(safe-area-inset-top, 0px)); border-color: #dfe4df; background: #fff; }
+.member-profile .member-profile__header h1 { font-size: 18px; font-weight: 500; }
+.member-profile .member-profile__identity { gap: 18px; padding: 12px 0 28px; border-bottom: 1px solid #dfe4df; }
+.member-profile .member-profile__avatar { width: 72px; height: 72px; border: 0; box-shadow: none; font-size: 28px; }
+.member-profile .member-profile__identity h2 { color: #161b18; font-size: 27px; font-weight: 450; }
+.member-profile .member-profile__identity p { color: #68706b; font-size: 13px; }
+.member-profile .member-profile__messages { border: 0; border-radius: 0; background: #fff; }
+.member-profile .member-profile__heading { padding: 25px 0 16px; border-color: #dfe4df; }
+.member-profile .member-profile__heading h3 { font-size: 18px; font-weight: 500; }
+.member-profile .member-profile__heading p { color: #68706b; font-size: 13px; line-height: 1.65; }
+.member-profile .member-profile__message-list { padding: 0; }
+.member-profile .member-profile__message-list li { padding: 20px 0; }
+.member-profile .member-profile__message-list li + li { border-color: #dfe4df; }
+.member-profile .member-profile__message-list li > div { color: #68706b; font-size: 13px; }
+.member-profile .member-profile__message-list li span { padding: 0; border-radius: 0; color: #205a42; background: none; }
+.member-profile .member-profile__message-list li p { margin-top: 12px; color: #161b18; font-size: 15px; line-height: 1.8; }
+.member-profile .member-profile__state { color: #205a42; }
+.member-profile .member-profile__state strong { color: #161b18; font-size: 16px; font-weight: 400; }
+.member-profile .member-profile__state p { color: #68706b; font-size: 15px; line-height: 1.7; }
+.member-profile .member-profile__notice { border-radius: 4px; font-size: 13px; }
+.member-profile .member-profile__retry { min-height: 44px; border-color: #dfe4df; border-radius: 4px; color: #205a42; font-size: 13px; }
+.mobile-login-backdrop { background: #161b186b; backdrop-filter: none; }
+.mobile-login-sheet.student-canvas-login { gap: 20px; width: min(100%, 540px); padding: 12px 20px calc(20px + env(safe-area-inset-bottom, 0px)); border: 0; border-radius: 8px 8px 0 0; color: #161b18; background: #fff; box-shadow: none; }
+.student-canvas-login .mobile-login-sheet__header > div > span { color: #68706b; font-size: 13px; font-weight: 400; }
+.student-canvas-login .mobile-login-sheet__header h2 { margin-top: 10px; color: #161b18; font-size: 26px; font-weight: 450; }
+.student-canvas-login .mobile-login-sheet__close { flex-basis: 44px; width: 44px; height: 44px; border-radius: 4px; color: #161b18; background: #fff; }
+.student-canvas-login .mobile-login-methods { gap: 20px; padding: 0; border-bottom: 1px solid #dfe4df; border-radius: 0; background: #fff; }
+.student-canvas-login .mobile-login-methods button { min-height: 48px; padding: 8px 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: #68706b; background: #fff; font-size: 15px; font-weight: 400; }
+.student-canvas-login .mobile-login-methods button.is-active { border-bottom-color: #205a42; color: #205a42; background: #fff; box-shadow: none; }
+.student-canvas-login .mobile-login-fields { gap: 18px; }
+.student-canvas-login .mobile-login-field { gap: 10px; }
+.student-canvas-login .mobile-login-field > span { color: #161b18; font-size: 15px; font-weight: 400; }
+.student-canvas-login .mobile-login-field > span svg { color: #68706b; }
+.student-canvas-login .mobile-login-field input { min-height: 50px; padding: 0 12px; border-color: #dfe4df; border-radius: 4px; color: #161b18; background: #fff; font-size: 16px; }
+.student-canvas-login .mobile-login-field input::placeholder { color: #68706b; font-size: 15px; }
+.student-canvas-login .mobile-login-field input:focus { border-color: #205a42; box-shadow: none; outline: 1px solid #205a42; }
+.student-canvas-login .mobile-login-field > small { font-size: 13px; line-height: 1.65; }
+.student-canvas-login .mobile-login-text-action { min-height: 44px; margin-top: -8px; color: #205a42; font-size: 13px; font-weight: 400; }
+.student-canvas-login .mobile-login-notice { padding: 12px 0; border-top: 1px solid #dfe4df; border-bottom: 1px solid #dfe4df; border-radius: 0; color: #68706b; background: #fff; font-size: 13px; line-height: 1.7; }
+.student-canvas-login .mobile-login-submit { min-height: 50px; border-radius: 4px; color: #fff; background: #205a42; font-size: 15px; font-weight: 400; box-shadow: none; }
+.student-canvas-login .mobile-login-sheet__footer { align-items: center; gap: 8px; color: #68706b; font-size: 13px; }
+.student-canvas-login .mobile-login-sheet__footer button { min-height: 44px; color: #205a42; font-size: 13px; font-weight: 400; }
+.personal-cover-viewer-backdrop { position: fixed; inset: 0; z-index: 700; display: flex; justify-content: center; background: #161b186b; }
+.personal-cover-viewer { display: flex; flex-direction: column; width: min(100%, 600px); min-height: 0; color: #161b18; background: #fff; }
+.personal-cover-viewer > header { display: grid; grid-template-columns: 76px 1fr 76px; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px; border-bottom: 1px solid #dfe4df; }
+.personal-cover-viewer header button { display: flex; align-items: center; gap: 5px; min-height: 44px; padding: 0; border: 0; color: #161b18; background: #fff; font-size: 15px; }
+.personal-cover-viewer h2 { margin: 0; text-align: center; font-size: 18px; font-weight: 500; }
+.personal-cover-viewer__image { display: flex; flex: 1; align-items: center; justify-content: center; min-height: 0; padding: 20px 0; overflow: auto; background: #f4f5f2; }
+.personal-cover-viewer__image img { display: block; width: 100%; max-height: 100%; object-fit: contain; }
+.personal-cover-viewer > p { display: flex; align-items: start; gap: 8px; margin: 0; padding: 18px 20px calc(18px + env(safe-area-inset-bottom, 0px)); color: #68706b; font-size: 13px; line-height: 1.7; }
+.personal-cover-viewer > p svg { flex: 0 0 auto; margin-top: 3px; }
+.personal-cover-viewer button:focus-visible { outline: 2px solid #205a42; outline-offset: 3px; }
+@media (min-width: 761px) { .personal-sheet { border-radius: 8px; } .personal-cover-viewer-backdrop { align-items: center; } .personal-cover-viewer { height: min(900px, 94dvh); border-radius: 4px; overflow: hidden; } }
+@media (max-width: 360px) { .mobile-page-panel--me.student-canvas-me { padding-inline: 16px; } .student-canvas-me .personal-identity__row h2 { font-size: 24px; } .personal-sheet .personal-account__avatar { gap: 8px; } .personal-sheet .personal-account__avatar label { padding-inline: 8px; } }
