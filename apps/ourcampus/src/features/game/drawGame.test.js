@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addFeed, applyCorrectGuess, formatClock, rankPlayers, remainingSeconds } from './drawGame.js'
+import { addFeed, applyCorrectGuess, formatClock, rankPlayers, remainingSeconds, REACTION_EMOJI, REACTION_KINDS } from './drawGame.js'
 import { DRAW_WORDS, isCorrectGuess, maskWord, normalizeGuess, pickWord } from './words.js'
 
 describe('draw game words', () => {
@@ -59,5 +59,12 @@ describe('draw game helpers', () => {
     expect(formatClock(0)).toBe('0:00')
     expect(remainingSeconds(1000, 0)).toBe(1)
     expect(remainingSeconds(0, 5000)).toBe(0)
+  })
+
+  it('exposes the three reactions with their emoji', () => {
+    expect(REACTION_KINDS).toEqual(['like', 'egg', 'bomb'])
+    expect(REACTION_EMOJI.like).toBe('👍')
+    expect(REACTION_EMOJI.egg).toBe('🥚')
+    expect(REACTION_EMOJI.bomb).toBe('💣')
   })
 })

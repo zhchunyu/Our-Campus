@@ -5,6 +5,8 @@ export const FEED_LIMIT = 8
 export const MAX_GUESS_LENGTH = 24
 export const DRAW_COLORS = Object.freeze(['#2f3b32', '#d0563f', '#2f6fb0', '#c9a227', '#7b5ea7'])
 export const CANVAS_SIZE = 600
+export const REACTION_KINDS = Object.freeze(['like', 'egg', 'bomb'])
+export const REACTION_EMOJI = Object.freeze({ like: '👍', egg: '🥚', bomb: '💣' })
 
 export function formatClock(seconds) {
   const safe = Math.max(0, Math.floor(seconds))

@@ -3,7 +3,7 @@ import { Eraser, Play, RotateCcw, Send, Users } from 'lucide-react'
 import { getAvatarUrl } from '../../data/memberProfiles.js'
 import { DrawCanvas } from './DrawCanvas.jsx'
 import { useDrawGame } from './useDrawGame.js'
-import { DRAW_COLORS, ROUND_SECONDS, formatClock, rankPlayers, remainingSeconds } from './drawGame.js'
+import { DRAW_COLORS, REACTION_EMOJI, REACTION_KINDS, ROUND_SECONDS, formatClock, rankPlayers, remainingSeconds } from './drawGame.js'
 import './drawGame.css'
 
 const WIDTHS = [
@@ -11,6 +11,8 @@ const WIDTHS = [
   { value: 7, label: '中' },
   { value: 12, label: '粗' },
 ]
+
+const REACTION_LABELS = { like: '点赞', egg: '扔鸡蛋', bomb: '扔炸弹' }
 
 const STATUS_TEXT = {
   idle: '未连接',
@@ -32,6 +34,9 @@ export function DrawGamePanel({ regionId, regionLabel, auth, onOpenLogin }) {
   const [color, setColor] = useState(DRAW_COLORS[0])
   const [width, setWidth] = useState(7)
   const [tick, setTick] = useState(() => Date.now())
+  const [targetId, setTargetId] = useState(null)
+  const [fx, setFx] = useState(null)
+  const [cooling, setCooling] = useState(false)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -41,10 +46,28 @@ export function DrawGamePanel({ regionId, regionLabel, auth, onOpenLogin }) {
 
   useEffect(() => { setDraft('') }, [game.phase, game.roundNo])
 
+  useEffect(() => {
+    const reaction = game.lastReaction
+    if (!reaction) return undefined
+    setFx(reaction)
+    const timer = setTimeout(() => setFx(null), 900)
+    return () => clearTimeout(timer)
+  }, [game.lastReaction])
+
+  useEffect(() => {
+    if (!targetId) return
+    if (!game.players.some((player) => player.user_id === targetId)) setTargetId(null)
+  }, [game.players, targetId])
+
+  useEffect(() => {
+    if (!cooling) return undefined
+    const timer = setTimeout(() => setCooling(false), 800)
+    return () => clearTimeout(timer)
+  }, [cooling])
+
   const remaining = remainingSeconds(game.endsAt, tick)
   const progress = game.phase === 'playing' ? Math.min(100, Math.max(0, (remaining / ROUND_SECONDS) * 100)) : 0
   const ranking = useMemo(() => rankPlayers(game.players, game.scores), [game.players, game.scores])
-  const myScore = game.scores?.[user?.id] ?? 0
 
   if (!user) {
     return (
@@ -57,6 +80,10 @@ export function DrawGamePanel({ regionId, regionLabel, auth, onOpenLogin }) {
       </section>
     )
   }
+
+  const roster = game.players.length ? game.players : [{ user_id: user.id, name: user.name, avatar_url: user.avatarUrl, joined_at: 0 }]
+  const target = targetId ?? game.drawerId ?? roster[0]?.user_id ?? null
+  const reactions = game.reactions ?? {}
 
   const submitGuess = (event) => {
     event.preventDefault()
@@ -73,14 +100,59 @@ export function DrawGamePanel({ regionId, regionLabel, auth, onOpenLogin }) {
   const showReveal = game.phase === 'reveal'
 
   return (
-    <section className="draw-game" aria-label="你画我猜">
+    <section className={`draw-game${fx?.kind === 'bomb' ? ' is-shaking' : ''}`} aria-label="你画我猜">
       <header className="draw-game__head">
         <div>
           <h3>你画我猜 · {regionLabel}</h3>
           <p><span className={`draw-game__dot draw-game__dot--${game.status === 'live' ? 'live' : 'wait'}`} />{STATUS_TEXT[game.status] ?? '未连接'} · 第 {game.roundNo || 0} 局</p>
         </div>
-        <span className="draw-game__count" title="牌桌在线人数"><Users size={13} />{game.players.length || 1}</span>
+        <span className="draw-game__count" title="牌桌在线人数"><Users size={13} />{roster.length}</span>
       </header>
+
+      <div className="draw-game__players" role="group" aria-label="在线玩家">
+        {roster.map((player) => {
+          const score = game.scores?.[player.user_id] ?? 0
+          const counts = reactions[player.user_id] ?? {}
+          const isDrawer = player.user_id === game.drawerId
+          const isTarget = player.user_id === target
+          const received = [counts.egg ? `🥚${counts.egg}` : '', counts.bomb ? `💣${counts.bomb}` : '', counts.like ? `👍${counts.like}` : ''].filter(Boolean).join(' ')
+          return (
+            <button
+              key={player.user_id}
+              type="button"
+              className={`draw-game__player${isTarget ? ' is-target' : ''}${isDrawer ? ' is-drawer' : ''}${fx?.target === player.user_id ? ' is-hit' : ''}`}
+              aria-pressed={isTarget}
+              aria-label={`${player.name}，${score} 分${isDrawer ? '，正在画' : ''}`}
+              onClick={() => setTargetId(player.user_id)}
+            >
+              <span className="draw-game__avatar">
+                {player.avatar_url ? <img src={player.avatar_url} alt="" /> : <i aria-hidden="true">{[...String(player.name ?? '同')][0]}</i>}
+                {isDrawer && <b className="draw-game__drawer-badge">画</b>}
+              </span>
+              <strong>{player.user_id === user.id ? '我' : player.name}</strong>
+              <small>{score} 分</small>
+              {received && <em className="draw-game__received">{received}</em>}
+              {fx?.target === player.user_id && <span key={fx.id} className={`draw-game__fx draw-game__fx--${fx.kind}`} aria-hidden="true">{REACTION_EMOJI[fx.kind]}</span>}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="draw-game__reactions" role="group" aria-label="互动">
+        {REACTION_KINDS.map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            className="draw-game__reaction"
+            disabled={game.status !== 'live' || !target || cooling}
+            onClick={() => { if (game.sendReaction(kind, target)) setCooling(true) }}
+            aria-label={REACTION_LABELS[kind]}
+          >
+            <span aria-hidden="true">{REACTION_EMOJI[kind]}</span>{REACTION_LABELS[kind]}
+          </button>
+        ))}
+        <small className="draw-game__reaction-target">对 {roster.find((player) => player.user_id === target)?.name ?? '…'}</small>
+      </div>
 
       <div className="draw-game__stage">
         <DrawCanvas
@@ -171,17 +243,6 @@ export function DrawGamePanel({ regionId, regionLabel, auth, onOpenLogin }) {
           <button type="button" className="draw-game__ghost" onClick={game.endRound}>结束本局</button>
         </div>
       )}
-
-      <footer className="draw-game__scores">
-        <span>本局得分</span>
-        <div>
-          <span className="draw-game__me">我 {myScore}</span>
-          {ranking.filter((player) => player.user_id !== user.id).slice(0, 5).map((player) => (
-            <span key={player.user_id}>{player.name} {game.scores?.[player.user_id] ?? 0}</span>
-          ))}
-          {ranking.length === 0 && <span>等你来开第一局</span>}
-        </div>
-      </footer>
     </section>
   )
 }

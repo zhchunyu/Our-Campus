@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../../data/supabaseClient.js'
 import { isCorrectGuess, pickWord } from './words.js'
-import { MAX_GUESS_LENGTH, ROUND_SECONDS, addFeed, applyCorrectGuess } from './drawGame.js'
+import { MAX_GUESS_LENGTH, REACTION_KINDS, ROUND_SECONDS, addFeed, applyCorrectGuess } from './drawGame.js'
 
 const EMPTY_STATE = {
   status: 'idle',
@@ -18,6 +18,8 @@ const EMPTY_STATE = {
   revealed: '',
   roundNo: 0,
   drawerLeft: false,
+  reactions: {},
+  lastReaction: null,
   error: '',
 }
 
@@ -127,6 +129,33 @@ export function useDrawGame({ roomId, user, enabled = true }) {
     broadcast('guess', { id: entry.id, by: userId, name: nameRef.current, text })
   }, [broadcast, userId])
 
+  const lastReactionAt = useRef(0)
+  const applyReaction = useCallback((reaction) => {
+    if (!reaction?.target || !REACTION_KINDS.includes(reaction.kind)) return
+    setState((current) => {
+      const counts = current.reactions[reaction.target] ?? {}
+      return {
+        ...current,
+        reactions: {
+          ...current.reactions,
+          [reaction.target]: { ...counts, [reaction.kind]: (counts[reaction.kind] ?? 0) + 1 },
+        },
+        lastReaction: { ...reaction, at: Date.now() },
+      }
+    })
+  }, [])
+
+  const sendReaction = useCallback((kind, targetId) => {
+    if (!userId || !targetId || !REACTION_KINDS.includes(kind)) return false
+    const now = Date.now()
+    if (now - lastReactionAt.current < 700) return false
+    lastReactionAt.current = now
+    const reaction = { id: crypto.randomUUID(), kind, target: targetId, from: userId, fromName: nameRef.current }
+    applyReaction(reaction)
+    broadcast('reaction', reaction)
+    return true
+  }, [applyReaction, broadcast, userId])
+
   useEffect(() => {
     setState(EMPTY_STATE)
     gameRef.current = { phase: 'lobby', drawerId: null, drawerName: '', word: '', endsAt: 0, scores: {}, roundNo: 0, solved: false }
@@ -227,6 +256,16 @@ export function useDrawGame({ roomId, user, enabled = true }) {
         strokesRef.current = payload.strokes.map(sanitizeStroke).filter(Boolean)
         update({ strokes: strokesRef.current })
       })
+      .on('broadcast', { event: 'reaction' }, ({ payload }) => {
+        if (!payload?.target || !REACTION_KINDS.includes(payload.kind)) return
+        applyReaction({
+          id: String(payload.id ?? `r-${Date.now()}`),
+          kind: payload.kind,
+          target: String(payload.target),
+          from: payload.from,
+          fromName: String(payload.fromName ?? '同学'),
+        })
+      })
       .on('presence', { event: 'sync' }, () => {
         const raw = Object.values(channel.presenceState()).flat()
         const seen = new Map()
@@ -268,7 +307,7 @@ export function useDrawGame({ roomId, user, enabled = true }) {
       try { channel.untrack?.() } catch { /* 通道已关闭时忽略 */ }
       supabase.removeChannel(channel)
     }
-  }, [broadcast, displayName, enabled, roomId, userId, user?.avatarUrl])
+  }, [applyReaction, broadcast, displayName, enabled, roomId, userId, user?.avatarUrl])
 
   return {
     ...state,
@@ -276,6 +315,7 @@ export function useDrawGame({ roomId, user, enabled = true }) {
     startRound,
     endRound,
     sendGuess,
+    sendReaction,
     sendStroke,
     clearBoard,
   }
