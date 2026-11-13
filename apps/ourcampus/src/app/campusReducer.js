@@ -99,6 +99,11 @@ function mergePersistedLocations(locations, persistedLocations) {
         .filter((field) => Object.prototype.hasOwnProperty.call(persisted, field))
         .map((field) => [field, persisted[field]]),
     )
+    // 2026-11-12：地图恢复真实地名后，自动生成的详情文案以仓库数据为准，避免旧缓存里残留旧称；
+    // 管理员自己填写的说明（不以自动文案开头）仍然保留。
+    if (typeof runtimePatch.description === 'string' && /^(地图标注的|校园导览图标注的)/.test(runtimePatch.description)) {
+      delete runtimePatch.description
+    }
     return { ...location, ...runtimePatch }
   })
 }
@@ -107,12 +112,15 @@ function refreshExpiredDemoEventWindows(persistedEvents, demoEvents, now) {
   const demoEventsById = new Map(demoEvents.map((event) => [event.id, event]))
 
   return persistedEvents.map((event) => {
-    if (event?.status !== 'active' || isHotspotActiveAt(event, now)) return event
-
+    if (!event || typeof event !== 'object') return event
     const demoEvent = demoEventsById.get(event.id)
-    if (!demoEvent || !isHotspotActiveAt(demoEvent, now)) return event
+    // 2026-11-12：示例热点沿用仓库里的新地名文案；用户自己发布的热点保持原样。
+    const restored = demoEvent ? { ...event, title: demoEvent.title, impact: demoEvent.impact } : event
+    if (restored.status !== 'active' || isHotspotActiveAt(restored, now)) return restored
 
-    return { ...event, startAt: demoEvent.startAt, endAt: demoEvent.endAt }
+    if (!demoEvent || !isHotspotActiveAt(demoEvent, now)) return restored
+
+    return { ...restored, startAt: demoEvent.startAt, endAt: demoEvent.endAt }
   })
 }
 

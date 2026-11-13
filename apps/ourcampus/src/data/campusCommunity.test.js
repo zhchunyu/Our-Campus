@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { COMMUNITY_STORAGE_KEY, LOCAL_AUTHOR_ID, MAX_LOCAL_POSTS, createDemoLostFoundPosts, createFacilityContribution, createLostFoundPost, filterLostFoundPosts, getCampusRegionId, isLocalPhoto, loadCommunityState, reviewFacilityContribution, saveCommunityState, updateLostFoundStatus } from './campusCommunity.js'
 
-const locations = [{ id: 'library', name: '图书馆', category: 'learning' }, { id: 'canteen', name: '禾香餐厅', category: 'dining' }]
+const locations = [{ id: 'library', name: '图书馆', category: 'learning' }, { id: 'canteen', name: '谷园餐厅', category: 'dining' }]
 const now = new Date('2026-10-03T04:00:00Z')
 const input = { type: 'lost', title: ' 蓝伞 ', description: ' 灰色挂绳 ', contact: ' 领取点：图书馆 ', locationId: 'library', locationDetail: '一楼', occurredAt: '2026-10-03T03:00:00Z', image: '' }
 const create = (overrides = {}) => createLostFoundPost({ ...input, ...overrides }, locations, null, now)

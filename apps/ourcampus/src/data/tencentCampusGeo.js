@@ -8,7 +8,7 @@ export const TENCENT_CAMPUS_ZOOM = 17
 export const TENCENT_CAMPUS_MIN_ZOOM = 14
 export const TENCENT_CAMPUS_MAX_ZOOM = 20
 
-// 由西校门、牌楼、明德楼、教学主楼和实验大楼的腾讯 POI 坐标校准。
+// 由西校门、牌楼、崇学楼、教学主楼和实验大楼的腾讯 POI 坐标校准。
 // 输入是校园引导图原图像素位置，输出为腾讯地图使用的 GCJ-02 坐标。
 const IMAGE_TO_GCJ02 = Object.freeze({
   lngX: 0.000007751548461,
