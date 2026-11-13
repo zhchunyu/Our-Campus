@@ -18,12 +18,10 @@ import './features/mobile/inner-canvas.css'
 document.documentElement.classList.add('canvas-ui')
 
 const previewMode = new URLSearchParams(window.location.search).get('preview')
-document.documentElement.toggleAttribute('data-local-phone-preview', import.meta.env.DEV && previewMode === 'mobile')
-const shouldShowPhonePreview = import.meta.env.DEV
-  && (previewMode === 'phone' || (
-    !window.matchMedia('(pointer: coarse)').matches
-    && !previewMode
-  ))
+// 电脑浏览器默认进入手机同尺寸预览；显式 ?preview=phone 在开发和生产构建里都生效。
+const shouldShowPhonePreview = previewMode === 'phone'
+  || (import.meta.env.DEV && !previewMode && !window.matchMedia('(pointer: coarse)').matches)
+document.documentElement.toggleAttribute('data-local-phone-preview', previewMode === 'mobile')
 
 startStartup({ previewShell: shouldShowPhonePreview })
 

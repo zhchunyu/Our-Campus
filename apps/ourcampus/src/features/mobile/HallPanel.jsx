@@ -1,11 +1,12 @@
 import { campusDisplayText } from '../../data/campusPresentation.js'
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, ChevronRight, Flame, LogIn, MapPin, MessageCircle, PackageSearch, Plus, Send, UtensilsCrossed } from 'lucide-react'
+import { ArrowLeft, ChevronRight, Flame, LogIn, MapPin, MessageCircle, PackageSearch, Palette, Plus, Send, UtensilsCrossed } from 'lucide-react'
 import { describeServerError } from '../../data/supabaseClient.js'
 import { CAMPUS_HALL_REGIONS } from '../../data/campusHall.js'
 import { CampusHotspotsPanel } from './CampusHotspotsPanel.jsx'
 import { LostFoundPanel } from './LostFoundPanel.jsx'
 import { RestaurantHallSection } from './RestaurantHallSection.jsx'
+import { DrawGamePanel } from '../game/DrawGamePanel.jsx'
 import { PostImagePicker } from './PostImagePicker.jsx'
 import { PostImageGallery } from './PostImageGallery.jsx'
 import { usePostImageDraft } from './usePostImageDraft.js'
@@ -14,8 +15,8 @@ import './community-canvas.css'
 
 const COMPOSER_REGIONS = CAMPUS_HALL_REGIONS.filter((region) => region.id !== 'all')
 const REGION_LABELS = new Map(COMPOSER_REGIONS.map((region) => [region.id, region.label]))
-const SECTION_TITLES = { chat: '校园聊天', hotspots: '校园热点', 'lost-found': '失物招领', restaurants: '餐厅评价' }
-const SECTION_DESCRIPTIONS = { hotspots: '查看校园最新动态', 'lost-found': '查看寻物与招领信息', restaurants: '查看餐厅、窗口与同学评价' }
+const SECTION_TITLES = { chat: '校园聊天', hotspots: '校园热点', 'lost-found': '失物招领', restaurants: '餐厅评价', draw: '你画我猜' }
+const SECTION_DESCRIPTIONS = { hotspots: '查看校园最新动态', 'lost-found': '查看寻物与招领信息', restaurants: '查看餐厅、窗口与同学评价', draw: '一个人画，其他人猜' }
 
 export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMessage, activeSection, onSectionChange, isFullscreen = false, onCloseSection, locations, hotspots, posts, lostFoundFilter, onLostFoundFilterChange, onSubmitPost, onPostStatusChange, onDeletePost, onSelectLocation, onPlanRouteToLocation, onOpenRestaurantReviews, showLostFound, onLostFoundMapChange, auth, chat, onOpenLogin, information, onPublishInformation, onSubmitAsInformation, onStartLostFound, lostFoundPublishToken = 0, onAskAi, headerActions, onOpenMemberProfile }) {
   const [draft, setDraft] = useState('')
@@ -138,7 +139,7 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
       </header>
       <div className="hall-home-content hall-canvas-home">
         <nav className="hall-canvas-index" aria-label="社区功能">
-          {[{ id: 'chat', label: '聊天', Icon: MessageCircle }, { id: 'hotspots', label: '校园动态', Icon: Flame }, { id: 'lost-found', label: '失物招领', Icon: PackageSearch }, { id: 'restaurants', label: '餐厅评价', Icon: UtensilsCrossed }].map(({ id, label, Icon }) => <button type="button" key={id} onClick={() => onSectionChange(id)}><Icon size={18} strokeWidth={1.5} aria-hidden="true" /><span>{label}</span></button>)}
+          {[{ id: 'chat', label: '聊天', Icon: MessageCircle }, { id: 'hotspots', label: '校园动态', Icon: Flame }, { id: 'lost-found', label: '失物招领', Icon: PackageSearch }, { id: 'restaurants', label: '餐厅评价', Icon: UtensilsCrossed }, { id: 'draw', label: '你画我猜', Icon: Palette }].map(({ id, label, Icon }) => <button type="button" key={id} onClick={() => onSectionChange(id)}><Icon size={18} strokeWidth={1.5} aria-hidden="true" /><span>{label}</span></button>)}
         </nav>
         <div className="hall-canvas-section-heading"><h3>近期动态</h3><button type="button" onClick={() => onSectionChange('hotspots')}>全部动态 <ChevronRight size={14} /></button></div>
         <div className="hall-canvas-feed">{recentHotspots.map((event) => <article className={`hall-canvas-entry${event.imagePaths?.length ? ' is-image' : ''}`} key={event.id}>
@@ -171,6 +172,7 @@ export function HallPanel({ messages, selectedRegionId, onRegionChange, onSendMe
         <LostFoundPanel posts={posts} locations={locations} regionId={selectedRegionId} filter={lostFoundFilter} onFilterChange={onLostFoundFilterChange} onRegionChange={onRegionChange} onSubmitPost={onSubmitPost} onStatusChange={onPostStatusChange} onDeletePost={onDeletePost} onSelectLocation={onSelectLocation} onPlanRouteToLocation={onPlanRouteToLocation} showMapMarkers={showLostFound} onMapMarkersChange={onLostFoundMapChange} currentUserId={auth.user?.id} cloudReady={information.status === 'ready'} publishToken={lostFoundPublishToken} />
       </div>
       {activeSection === 'restaurants' && <div className="community-scroll"><RestaurantHallSection locations={locations} onOpenReviews={onOpenRestaurantReviews} /></div>}
+      {activeSection === 'draw' && <div className="community-scroll"><DrawGamePanel regionId={selectedRegionId} regionLabel={selectedRegionId === 'all' ? '全部地区' : (REGION_LABELS.get(selectedRegionId) ?? '校园')} auth={auth} onOpenLogin={onOpenLogin} /></div>}
 
       {activeSection === 'chat' && <>
       <section className="mobile-hall-feed" ref={feedRef} onScroll={(event) => { const feed = event.currentTarget; followingLatest.current = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 64 }} aria-label="校园聊天消息">

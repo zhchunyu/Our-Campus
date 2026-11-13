@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 const previewUrl = new URL(window.location.href)
 previewUrl.searchParams.set('preview', 'mobile')
 // Keep email-confirmation/recovery fragments when the desktop shell opens its phone iframe.
-const previewIframePath = `/${previewUrl.search}${previewUrl.hash}`
+const basePath = `${(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/')}`
+const previewIframePath = `${basePath}${previewUrl.search}${previewUrl.hash}`
 
 const getPreviewScale = () => Math.max(
   0.2,
@@ -36,6 +37,7 @@ export function PhonePreviewShell() {
           </div>
         </div>
       </div>
+      <p className="phone-preview-caption">电脑预览 · 430 × 880 · 与手机显示一致</p>
     </main>
   )
 }

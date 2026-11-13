@@ -7,6 +7,10 @@
 
 * text=auto eol=lf
 
+# ---- Windows 批处理：必须是 CRLF，否则 cmd.exe 会拆错行、中文变乱码 ----
+*.cmd   text eol=crlf
+*.bat   text eol=crlf
+
 # ---- 文本：明确按文本处理，参与 diff ----
 *.md    text
 *.py    text

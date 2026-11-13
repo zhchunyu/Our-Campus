@@ -1,0 +1,63 @@
+/* 你画我猜：沿用社区页的奶白 + 森林绿，画布保持正方形。 */
+.draw-game { display: flex; flex-direction: column; gap: 12px; padding: 2px 0 6px; }
+.draw-game__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.draw-game__head h3 { margin: 0; color: #26362c; font-size: 16px; font-weight: 700; }
+.draw-game__head p { display: flex; align-items: center; gap: 6px; margin: 4px 0 0; color: #7a847b; font-size: 11px; }
+.draw-game__dot { width: 7px; height: 7px; border-radius: 50%; background: #c9c9c0; }
+.draw-game__dot--live { background: #3fa87c; box-shadow: 0 0 0 3px #3fa87c22; }
+.draw-game__count { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border: 1px solid #eae9e1; border-radius: 12px; color: #5d6a60; background: #fff; font-size: 11px; }
+
+.draw-game__stage { position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border: 1px solid #eae9e1; border-radius: 22px; background: #fff; }
+.draw-game__canvas { display: block; width: 100%; height: 100%; }
+.draw-game__overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 22px; text-align: center; background: #faf8f4eb; backdrop-filter: blur(2px); }
+.draw-game__overlay h4 { margin: 0; color: #26362c; font-size: 17px; font-weight: 700; }
+.draw-game__overlay p { margin: 0; max-width: 240px; color: #7a847b; font-size: 12px; line-height: 1.7; }
+.draw-game__overlay--result { justify-content: flex-end; padding-bottom: 20px; background: linear-gradient(180deg, #faf8f400 0%, #faf8f4d9 46%, #faf8f4fa 78%); backdrop-filter: none; }
+.draw-game__overlay--result h4 { font-size: 20px; }
+.draw-game__primary { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; padding: 10px 18px; border: 0; border-radius: 14px; color: #fff; background: #13674f; font-size: 13px; font-weight: 600; box-shadow: 0 6px 14px #13674f28; }
+.draw-game__primary:active { transform: scale(.98); }
+
+.draw-game__word { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid #eae9e1; border-radius: 16px; background: #fff; }
+.draw-game__word small { color: #8a948b; font-size: 11px; }
+.draw-game__word strong { flex: 1; color: #26362c; font-size: 18px; font-weight: 700; letter-spacing: .16em; }
+.draw-game__mask { letter-spacing: .22em; color: #4a5c50; }
+.draw-game__timer-text { color: #7a847b; font-size: 12px; font-variant-numeric: tabular-nums; }
+.draw-game__timer { height: 5px; margin: -6px 2px 0; overflow: hidden; border-radius: 3px; background: #ecebe4; }
+.draw-game__timer span { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3fa87c, #13674f); transition: width 400ms linear; }
+
+.draw-game__feed { display: flex; flex-direction: column; gap: 6px; max-height: 132px; margin: 0; padding: 10px 14px; overflow-y: auto; border: 1px solid #eae9e1; border-radius: 16px; background: #fff; list-style: none; }
+.draw-game__feed li { color: #5d6a60; font-size: 12px; line-height: 1.6; }
+.draw-game__feed li strong { color: #26362c; font-weight: 650; }
+.draw-game__feed li.is-correct { color: #13674f; font-weight: 600; }
+.draw-game__feed-empty { color: #a1a9a2; }
+
+.draw-game__guess { display: flex; gap: 8px; }
+.draw-game__guess input { flex: 1; min-height: 42px; padding: 0 14px; border: 1px solid #e3e1d8; border-radius: 14px; background: #fff; color: #26362c; font-size: 14px; }
+.draw-game__guess input:focus { border-color: #13674f; outline: none; }
+.draw-game__guess button { display: inline-flex; align-items: center; gap: 4px; padding: 0 16px; border: 0; border-radius: 14px; color: #fff; background: #13674f; font-size: 13px; }
+.draw-game__guess button:disabled { background: #c8cfc9; }
+
+.draw-game__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.draw-game__colors { display: flex; gap: 7px; }
+.draw-game__color { width: 24px; height: 24px; border: 2px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px #dcdcd3; }
+.draw-game__color.is-active { box-shadow: 0 0 0 2px #13674f; }
+.draw-game__widths { display: flex; gap: 4px; }
+.draw-game__widths button { min-width: 34px; padding: 5px 8px; border: 1px solid #e3e1d8; border-radius: 10px; background: #fff; color: #5d6a60; font-size: 11px; }
+.draw-game__widths button.is-active { border-color: #13674f; color: #13674f; font-weight: 650; }
+.draw-game__ghost { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; padding: 6px 10px; border: 1px solid #e3e1d8; border-radius: 10px; background: #fff; color: #5d6a60; font-size: 11px; }
+.draw-game__ghost + .draw-game__ghost { margin-left: 0; }
+
+.draw-game__scores { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 16px; background: #f1f5f0; }
+.draw-game__scores > span { color: #7a847b; font-size: 11px; }
+.draw-game__scores > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.draw-game__scores > div span { padding: 3px 8px; border-radius: 9px; background: #fff; color: #4a5c50; font-size: 11px; }
+.draw-game__scores .draw-game__me { color: #13674f; font-weight: 650; }
+
+.draw-game--gate { padding: 8px 0; }
+.draw-game__gate { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 34px 22px; text-align: center; border: 1px dashed #dcdcd3; border-radius: 20px; background: #fff; }
+.draw-game__gate h3 { margin: 0; color: #26362c; font-size: 17px; }
+.draw-game__gate p { margin: 0; max-width: 260px; color: #7a847b; font-size: 12px; line-height: 1.7; }
+
+/* 社区首页的入口索引原本是四列，加入「你画我猜」后改成五列。
+   用元素选择器提高优先级，避免被后加载的 community-canvas.css 覆盖。 */
+.canvas-community nav.hall-canvas-index { grid-template-columns: repeat(5, minmax(0, 1fr)); }

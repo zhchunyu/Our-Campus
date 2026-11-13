@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:desktop": "node scripts/start-desktop-preview.mjs",
     "ai:serve": "node --env-file=.env.local scripts/serve-auv.mjs",
     "build": "vite build",
     "build:pages": "npm run build && node scripts/prepare-pages.mjs",
