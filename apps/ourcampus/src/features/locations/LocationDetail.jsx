@@ -36,7 +36,7 @@ function formatUpdatedAt(value) {
   }).format(date)
 }
 
-export function LocationDetail({ location, events = [], lostFoundPosts = [], onOpenLostFound, onOpenReviews, role, isFavorite = false, onToggleFavorite, onUpdate, onClose, onPlanRoute, onSubmitFeedback, onAskAi }) {
+export function LocationDetail({ location, events = [], lostFoundPosts = [], onOpenLostFound, onOpenReviews, role, isFavorite = false, onToggleFavorite, onUpdate, onClose, onPlanRoute, onSubmitFeedback, onViewRecords, onAskAi }) {
   const [draft, setDraft] = useState(() => editableValues(location))
   const [showFeedbackSheet, setShowFeedbackSheet] = useState(false)
   const titleId = useId()
@@ -186,6 +186,7 @@ export function LocationDetail({ location, events = [], lostFoundPosts = [], onO
         location={location}
         onClose={() => setShowFeedbackSheet(false)}
         onSubmitFeedback={onSubmitFeedback}
+        onViewRecords={onViewRecords ? id => { setShowFeedbackSheet(false); onViewRecords(id) } : undefined}
       />
     )}
     </>

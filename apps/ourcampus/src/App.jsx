@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { Compass, LayoutGrid, Radio } from 'lucide-react'
 import { createLocalCampusDataSource } from './data/campusDataSource.js'
-import { loadPersistedState, savePersistedState } from './data/appStorage.js'
+import { loadPersonalRecords, savePersonalRecords, loadPersistedState, savePersistedState } from './data/appStorage.js'
 import { buildAuvContext } from './data/auvContext.js'
 import { loadTimetable } from './data/timetable.js'
 import { teamCampusMap } from './data/campusMap.js'
@@ -27,6 +27,8 @@ import { LocationDetail } from './features/locations/LocationDetail.jsx'
 import { PlaceFeedbackSheet } from './features/locations/PlaceFeedbackSheet.jsx'
 import { ExplorePanel } from './features/mobile/ExplorePanel.jsx'
 import { CanvasHome } from './features/mobile/CanvasHome.jsx'
+import { rememberRecentPlace } from './features/mobile/dailyHome.js'
+import { RouteOriginSheet } from './features/routes/RouteOriginSheet.jsx'
 import { HallPanel } from './features/mobile/HallPanel.jsx'
 import { LoginSheet } from './features/mobile/LoginSheet.jsx'
 import { useCampusAuth } from './features/account/useCampusAuth.js'
@@ -64,6 +66,17 @@ function App() {
   )
   const [storedState, dispatch] = useReducer(campusReducer, initialState)
   const auth = useCampusAuth()
+  const personalOwner = auth.user?.id ?? null
+  const personalRecordsReady = auth.status !== 'loading' && storedState.personalRecordsOwner === personalOwner
+  const [collectionSaveError, setCollectionSaveError] = useState(false)
+  useEffect(() => {
+    if (auth.status === 'loading') return
+    dispatch({ type: 'SET_PERSONAL_RECORDS', ownerId: personalOwner, records: loadPersonalRecords(personalOwner) })
+  }, [personalOwner, auth.status])
+  useEffect(() => {
+    if (!personalRecordsReady) return
+    setCollectionSaveError(!savePersonalRecords(personalOwner, { favoriteLocationIds: storedState.favoriteLocationIds, savedRoutes: storedState.savedRoutes }))
+  }, [personalOwner, personalRecordsReady, storedState.favoriteLocationIds, storedState.savedRoutes])
   const updates = useAppUpdates()
   const [startupComplete, setStartupComplete] = useState(() => !document.getElementById('app-startup'))
   useEffect(() => {
@@ -78,7 +91,7 @@ function App() {
   const notificationPreferences = useNotificationPreferences(auth.user?.id)
   const displayLocations = useMemo(() => storedState.locations.map(campusDisplayRecord), [storedState.locations])
   const displayEvents = useMemo(() => [...storedState.events, ...information.events].map(campusDisplayRecord), [storedState.events, information.events])
-  const state = { ...storedState, locations: displayLocations, events: displayEvents }
+  const state = { ...storedState, locations: displayLocations, events: displayEvents, favoriteLocationIds: personalRecordsReady ? storedState.favoriteLocationIds : [], savedRoutes: personalRecordsReady ? storedState.savedRoutes : [], routePlan: personalRecordsReady ? storedState.routePlan : null }
   const handleToggleFavorite = (locationId) => {
     const enabled = !state.favoriteLocationIds.includes(locationId)
     dispatch({ type: 'TOGGLE_FAVORITE_LOCATION', locationId })
@@ -88,6 +101,11 @@ function App() {
   const [mapVisited, setMapVisited] = useState(false)
   useEffect(() => { if (activeTab === 'map') setMapVisited(true) }, [activeTab])
   const [serviceSection, setServiceSection] = useState('home')
+  const [exploreVisited, setExploreVisited] = useState(false)
+  const [hallVisited, setHallVisited] = useState(false)
+  useEffect(() => { if (activeTab === 'explore') setExploreVisited(true); if (activeTab === 'hall') setHallVisited(true) }, [activeTab])
+  const [initialChatMessageId, setInitialChatMessageId] = useState(null)
+  const chatReturnRef = useRef(null)
   const [hallRegionId, setHallRegionId] = useState('all')
   const [hallSection, setHallSection] = useState('chat')
   const [hallFullscreen, setHallFullscreen] = useState(false)
@@ -99,22 +117,21 @@ function App() {
   const closeMemberProfile = useCallback(() => setMemberTarget(null), [])
   useEffect(() => { setMemberTarget(null) }, [auth.user?.id])
   const [informationOpen, setInformationOpen] = useState(false)
+  const [myPublicationsOpen, setMyPublicationsOpen] = useState(false)
   const [informationSeed, setInformationSeed] = useState(null)
   const [informationTab, setInformationTab] = useState('messages')
+  const [informationReportTarget, setInformationReportTarget] = useState(null)
   const [noticeId, setNoticeId] = useState(null)
-  const openInformation = useCallback((seed = null, tab = 'messages') => { setMemberTarget(null); setInformationSeed(seed ? { userId: auth.user?.id ?? null, draft: seed } : null); setInformationTab(seed ? 'publish' : tab); setNoticeId(null); setInformationOpen(true) }, [auth.user?.id])
+  const openInformation = useCallback((seed = null, tab = 'messages', reportId = null) => { setInformationReportTarget(reportId ? { ownerId: auth.user?.id ?? null, id: reportId } : null); setMemberTarget(null); setInformationSeed(seed ? { userId: auth.user?.id ?? null, draft: seed } : null); setInformationTab(seed ? 'publish' : tab); setNoticeId(null); setInformationOpen(true) }, [auth.user?.id])
   const closeInformation = useCallback(() => { setInformationOpen(false); setNoticeId(null); setInformationSeed(null) }, [])
-  const openChatFromNotice = useCallback((regionId) => {
-    if (typeof regionId !== 'string' || !regionId) return
-    closeInformation()
-    setMemberTarget(null)
-    setLostFoundPublishToken(0)
-    setHallRegionId(regionId)
-    setHallSection('chat')
-    setHallFullscreen(true)
-    setActiveTab('hall')
+  const openChatFromNotice = useCallback((regionId, messageId = null, source = null) => {
+    chatReturnRef.current = { ownerId: auth.user?.id ?? null, activeTab, selectedId: state.selectedId, serviceSection, hallSection, hallFullscreen, myPublicationsOpen, informationTab: source?.tab ?? informationTab, noticeId: source && Object.hasOwn(source, 'noticeId') ? source.noticeId : noticeId }
+    closeInformation(); setMyPublicationsOpen(false); setMemberTarget(null); setLostFoundPublishToken(0)
+    if (typeof regionId === 'string' && regionId) setHallRegionId(regionId)
+    setInitialChatMessageId(typeof messageId === 'string' ? messageId : null)
+    setHallSection('chat'); setHallFullscreen(true); setActiveTab('hall')
     dispatch({ type: 'CLEAR_SELECTED_LOCATION' })
-  }, [closeInformation])
+  }, [closeInformation, auth.user?.id, activeTab, state.selectedId, serviceSection, hallSection, hallFullscreen, myPublicationsOpen, informationTab, noticeId])
   const openNotice = useCallback((id) => { setMemberTarget(null); setInformationSeed(null); setInformationTab('messages'); setNoticeId(id); setInformationOpen(true) }, [])
   const push = useCampusPush(auth.user?.id, openNotice)
   const communityPosts = useMemo(() => {
@@ -127,7 +144,6 @@ function App() {
   const openPlaceFeedback = (locationId, type = PLACE_FEEDBACK_TYPES.CROWD) => { setFeedbackInitialType(type); setFeedbackLocationId(locationId) }
   const [reviewLocationId, setReviewLocationId] = useState(null)
   const [reviewWindowId, setReviewWindowId] = useState(null)
-  const [myPublicationsOpen, setMyPublicationsOpen] = useState(false)
   const [myPublicationsFilter, setMyPublicationsFilter] = useState('all')
   const [myPublicationsRefresh, setMyPublicationsRefresh] = useState(0)
   const closeMyPublications = useCallback(() => setMyPublicationsOpen(false), [])
@@ -135,7 +151,9 @@ function App() {
   const [auvOpen, setAuvOpen] = useState(false)
   const [auvSeed, setAuvSeed] = useState(null)
   const [timetableOpen, setTimetableOpen] = useState(false)
-  const closeTimetable = useCallback(() => setTimetableOpen(false), [])
+  const [timetableRevision, setTimetableRevision] = useState(0)
+  const [pendingRouteDestinationId, setPendingRouteDestinationId] = useState(null)
+  const closeTimetable = useCallback(() => { setTimetableOpen(false); setTimetableRevision(value => value + 1) }, [])
   const closeAuv = useCallback(() => setAuvOpen(false), [])
   const askAi = (prompt = '') => { setAuvSeed({ userId: auth.user?.id ?? null, prompt }); setAuvOpen(true) }
   const [devicePosition, setDevicePosition] = useState(null)
@@ -167,20 +185,30 @@ function App() {
   const closeLogin = useCallback(() => setLoginMode(null), [])
   const mapReturnRef = useRef(null)
   const rememberMapOrigin = () => {
-    if (activeTab !== 'map') mapReturnRef.current = { activeTab, serviceSection, hallSection, hallFullscreen }
+    if (activeTab !== 'map' || timetableOpen || reviewLocationId || informationOpen || auvOpen || myPublicationsOpen) mapReturnRef.current = { ownerId: auth.user?.id ?? null, activeTab, selectedId: state.selectedId, previous: activeTab === 'map' ? mapReturnRef.current : null, serviceSection, hallSection, hallFullscreen, timetableOpen, reviewLocationId, reviewWindowId, informationOpen, informationTab, noticeId, auvOpen, myPublicationsOpen }
   }
   const restoreMapOrigin = () => {
     const origin = mapReturnRef.current
-    mapReturnRef.current = null
-    if (!origin) return
+    mapReturnRef.current = origin?.previous ?? null
+    if (!origin || origin.ownerId !== (auth.user?.id ?? null)) return
     setActiveTab(origin.activeTab); setServiceSection(origin.serviceSection)
     setHallSection(origin.hallSection); setHallFullscreen(origin.hallFullscreen)
+    setTimetableOpen(Boolean(origin.timetableOpen)); setReviewLocationId(origin.reviewLocationId || null); setReviewWindowId(origin.reviewWindowId || null)
+    setInformationOpen(Boolean(origin.informationOpen)); setInformationTab(origin.informationTab || 'messages'); setNoticeId(origin.noticeId || null)
+    setAuvOpen(Boolean(origin.auvOpen)); setMyPublicationsOpen(Boolean(origin.myPublicationsOpen))
+    if (origin.activeTab === 'map' && origin.selectedId) dispatch({ type: 'SELECT_LOCATION', locationId: origin.selectedId })
   }
+  const closeHallSection = () => {
+    const origin = chatReturnRef.current; chatReturnRef.current = null; setInitialChatMessageId(null)
+    if (origin && origin.ownerId === (auth.user?.id ?? null)) { setActiveTab(origin.activeTab); setServiceSection(origin.serviceSection); setHallSection(origin.hallSection); setHallFullscreen(origin.hallFullscreen); setMyPublicationsOpen(Boolean(origin.myPublicationsOpen)); setInformationTab(origin.informationTab); setNoticeId(origin.noticeId); setInformationOpen(true); if (origin.selectedId) dispatch({ type: 'SELECT_LOCATION', locationId: origin.selectedId }) }
+    else { setHallFullscreen(false); setLostFoundPublishToken(0) }
+  }
+  useEffect(() => { setPendingRouteDestinationId(null); mapReturnRef.current = null; chatReturnRef.current = null; setInitialChatMessageId(null) }, [auth.user?.id])
   const closeLocation = () => { dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); if (!state.routePlan) restoreMapOrigin() }
   const closeRoute = () => { dispatch({ type: 'CLEAR_ROUTE' }); dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); restoreMapOrigin() }
   useBackLayer(activeTab !== 'canvas', () => { setActiveTab('canvas'); dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); mapReturnRef.current = null }, 0)
   useBackLayer(activeTab === 'explore' && serviceSection !== 'home', () => setServiceSection('home'), 10)
-  useBackLayer(activeTab === 'hall' && hallFullscreen, () => { setHallFullscreen(false); setLostFoundPublishToken(0) }, 10)
+  useBackLayer(activeTab === 'hall' && hallFullscreen, closeHallSection, 10)
   useBackLayer(activeTab === 'map' && Boolean(state.routePlan), closeRoute, 15, false)
   useBackLayer(activeTab === 'map' && Boolean(state.selectedId), closeLocation, 20)
   useEffect(() => { if (auth.user && noticeId) setInformationOpen(true) }, [auth.user?.id, noticeId])
@@ -262,7 +290,9 @@ function App() {
   }
 
   const handleExploreLocation = (locationId) => {
+    if (!state.locations.some(place => place.id === locationId)) return
     rememberMapOrigin()
+    rememberRecentPlace(auth.user?.id, locationId, state.locations)
     dispatch({ type: 'SELECT_LOCATION', locationId })
     dispatch({ type: 'SET_QUERY', query: '' })
     dispatch({ type: 'SET_CATEGORY', category: 'all' })
@@ -281,16 +311,18 @@ function App() {
   }
 
   const handlePlanRouteToLocation = (destinationId) => {
-    rememberMapOrigin()
-    dispatch({
-      type: 'PLAN_ROUTE',
-      originId: state.currentLocationId ?? 'east-gate',
-      destinationId,
-    })
-    dispatch({ type: 'SET_QUERY', query: '' })
-    dispatch({ type: 'SET_CATEGORY', category: 'all' })
-    setActiveTab('map')
+    if (!state.locations.some(place => place.id === destinationId)) return
+    rememberMapOrigin(); rememberRecentPlace(auth.user?.id, destinationId, state.locations)
+    setTimetableOpen(false); setReviewLocationId(null); setReviewWindowId(null); setInformationOpen(false); setAuvOpen(false); setMyPublicationsOpen(false)
+    setPendingRouteDestinationId(destinationId)
   }
+  const confirmRouteOrigin = (originId) => {
+    if (!pendingRouteDestinationId || !state.locations.some(place => place.id === originId)) return
+    dispatch({ type: 'PLAN_ROUTE', originId, destinationId: pendingRouteDestinationId })
+    dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); dispatch({ type: 'SET_QUERY', query: '' }); dispatch({ type: 'SET_CATEGORY', category: 'all' })
+    setPendingRouteDestinationId(null); setActiveTab('map')
+  }
+  const cancelRouteOrigin = () => { setPendingRouteDestinationId(null); if (activeTab !== 'map' || mapReturnRef.current?.activeTab === 'map') restoreMapOrigin() }
 
   const handleLocateDevice = async () => {
     aiLocation.current = { ownerId: auth.user?.id ?? null, locationId: null }
@@ -366,11 +398,11 @@ function App() {
     if (input.syncToCloud) {
       if (!auth.user) { openLogin(); throw new Error('请先登录，再提交云端反馈') }
       const kind = ['construction', 'closure', 'crowd'].includes(input.type) ? input.type : input.type === 'facility-repair' ? 'repair' : 'feedback'
-      await submitCampusReport({ clientId: input.clientId, kind, title: input.title || `${state.locations.find((l) => l.id === input.locationId)?.name || '校园地点'}反馈`,
+      const submittedReport = await submitCampusReport({ clientId: input.clientId, kind, title: input.title || `${state.locations.find((l) => l.id === input.locationId)?.name || '校园地点'}反馈`,
         body: input.description, locationId: input.locationId, details: { repair_category: input.repairCategory || '', reported_end_at: input.reportedEndAt || null,
           crowd_status: input.crowdStatus || '', open_status: input.openStatus || '', suggested_description: input.suggestedDescription || '' } })
       await information.refresh()
-      return { cloud: true }
+      return { cloud: true, reportId: typeof submittedReport === 'string' ? submittedReport : submittedReport?.id ?? null }
     }
     dispatch({ type: 'SUBMIT_PLACE_FEEDBACK', feedback: createPlaceFeedback(input) })
     return { cloud: false }
@@ -413,10 +445,10 @@ function App() {
         </div>
       </header>
 
-      <main inert={Boolean(loginMode || informationOpen || reviewLocation || auvOpen || timetableOpen || myPublicationsOpen || visibleMemberTarget)} className={`workspace workspace--tab-${activeTab}${state.routePlan ? ' workspace--has-route' : ''}${activeTab === 'map' && selectedLocation ? ' workspace--has-detail' : ''}`}>
+      <main inert={Boolean(loginMode || informationOpen || reviewLocation || auvOpen || timetableOpen || myPublicationsOpen || visibleMemberTarget || pendingRouteDestinationId)} className={`workspace workspace--tab-${activeTab}${state.routePlan ? ' workspace--has-route' : ''}${activeTab === 'map' && selectedLocation ? ' workspace--has-detail' : ''}`}>
         <AppUpdateNotice updates={updates} covered={!startupComplete || Boolean(loginMode || informationOpen || reviewLocation || auvOpen || timetableOpen || myPublicationsOpen || visibleMemberTarget)} />
-        {activeTab === 'canvas' && <CanvasHome key={auth.user?.id ?? 'guest'} auth={auth} locations={state.locations} events={state.events} favoriteIds={state.favoriteLocationIds} unread={information.unread} onOpenMessages={() => openInformation()} onOpenMap={() => { rememberMapOrigin(); setActiveTab('map') }} onSearch={() => { setServiceSection('places'); setActiveTab('explore') }} onOpenServices={() => { setServiceSection('home'); setActiveTab('explore') }} onOpenCommunity={() => { setHallFullscreen(false); setActiveTab('hall') }} onOpenMe={() => setActiveTab('me')} onSelectLocation={handleExploreLocation} />}
-        {activeTab === 'map' && <div className="canvas-map-return"><button type="button" onClick={() => { dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); dispatch({ type: 'CLEAR_ROUTE' }); mapReturnRef.current = null; setActiveTab('canvas') }}>返回画布</button><span>校园地图</span></div>}
+        {activeTab === 'canvas' && <CanvasHome key={auth.user?.id ?? 'guest'} auth={auth} locations={state.locations} events={state.events} favoriteIds={state.favoriteLocationIds} unread={information.unread} livePosition={devicePosition} timetableRevision={timetableRevision} onOpenTimetable={() => setTimetableOpen(true)} onOpenMessages={() => openInformation()} onOpenMap={() => { rememberMapOrigin(); setActiveTab('map') }} onSearch={(query = '') => { dispatch({ type: 'SET_QUERY', query }); setServiceSection('places'); setActiveTab('explore') }} onOpenServices={(section = 'home') => { setServiceSection(section); setActiveTab('explore') }} onOpenCommunity={() => { setInitialChatMessageId(null); chatReturnRef.current = null; setHallSection('hotspots'); setHallFullscreen(true); setActiveTab('hall') }} onSelectLocation={handleExploreLocation} />}
+        {activeTab === 'map' && <div className="canvas-map-return"><button type="button" onClick={() => { dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); dispatch({ type: 'CLEAR_ROUTE' }); if (mapReturnRef.current) restoreMapOrigin(); else setActiveTab('canvas') }}>返回上一页</button><span>校园地图</span></div>}
         <div style={{ display: 'contents' }} inert={activeTab !== 'map'} aria-hidden={activeTab !== 'map' ? true : undefined}>
         {mapVisited && <MapWorkspace
           locations={state.locations}
@@ -467,11 +499,11 @@ function App() {
         />}
         </div>
 
-        {activeTab === 'explore' && (
-          <ExplorePanel
+        {(exploreVisited || activeTab === 'explore') && <div style={{ display: activeTab === 'explore' ? 'contents' : 'none' }} inert={activeTab !== 'explore'} aria-hidden={activeTab !== 'explore' ? true : undefined}><ExplorePanel
             headerActions={<PrimaryPageActions unread={information.unread} onOpenMessages={() => openInformation()} />}
             section={serviceSection}
             onSectionChange={setServiceSection}
+            onOpenRestaurantReviews={setReviewLocationId}
             onOpenTimetable={() => setTimetableOpen(true)}
             onOpenAssistant={() => askAi()}
             onOpenRepair={(locationId) => openPlaceFeedback(locationId, PLACE_FEEDBACK_TYPES.REPAIR)}
@@ -501,10 +533,10 @@ function App() {
               dispatch({ type: 'SET_QUERY', query: '' })
               dispatch({ type: 'SET_CATEGORY', category: 'all' })
             }}
-          />
-        )}
-        {activeTab === 'hall' && (
-          <HallPanel
+          /></div>}
+        {(hallVisited || activeTab === 'hall') && <div style={{ display: activeTab === 'hall' ? 'contents' : 'none' }} inert={activeTab !== 'hall'} aria-hidden={activeTab !== 'hall' ? true : undefined}><HallPanel
+            key={auth.user?.id ?? 'guest'}
+            initialMessageId={initialChatMessageId}
             onOpenMemberProfile={openMemberProfile}
             headerActions={<PrimaryPageActions unread={information.unread} onOpenMessages={() => openInformation()} />}
             messages={chat.messages}
@@ -519,8 +551,8 @@ function App() {
             onSubmitAsInformation={(message) => openInformation({ kind: 'notice', title: message.content.slice(0, 60), body: message.content, sourceMessageId: message.id, details: { image_paths: message.imagePaths ?? [] } })}
             activeSection={hallSection}
             isFullscreen={hallFullscreen}
-            onCloseSection={() => { setHallFullscreen(false); setLostFoundPublishToken(0) }}
-            onSectionChange={(section) => { setLostFoundPublishToken(0); setHallRegionId('all'); setHallLostFoundFilter('all'); setHallSection(section); setHallFullscreen(true) }}
+            onCloseSection={closeHallSection}
+            onSectionChange={(section) => { chatReturnRef.current = null; setInitialChatMessageId(null); setLostFoundPublishToken(0); setHallRegionId('all'); setHallLostFoundFilter('all'); setHallSection(section); setHallFullscreen(true) }}
             onStartLostFound={() => { setHallRegionId('all'); setHallLostFoundFilter('all'); setHallSection('lost-found'); setHallFullscreen(true); setLostFoundPublishToken((value) => value + 1) }}
             lostFoundPublishToken={lostFoundPublishToken}
             onAskAi={askAi}
@@ -537,8 +569,7 @@ function App() {
             onOpenRestaurantReviews={setReviewLocationId}
             showLostFound={state.settings.showLostFound}
             onLostFoundMapChange={(showLostFound) => dispatch({ type: 'SET_SETTINGS', changes: { showLostFound } })}
-          />
-        )}
+          /></div>}
         {activeTab === 'routes' && (
           <TripPanel
             locations={state.locations}
@@ -595,6 +626,7 @@ function App() {
             onUpdateFacilityReport={(feedbackId, status) => dispatch({ type: 'SET_FACILITY_REPORT_STATUS', feedbackId, status })}
             favoriteLocationIds={state.favoriteLocationIds}
             savedRoutes={state.savedRoutes}
+            collectionSaveError={collectionSaveError}
             lostFoundCount={communityPosts.filter((p) => p.authorId === LOCAL_AUTHOR_ID || p.authorId === auth.user?.id).length}
             onOpenMyLostFound={() => handleOpenHall('lost-found', true)}
             onSelectLocation={handleExploreLocation}
@@ -622,6 +654,7 @@ function App() {
             onPlanRoute={handlePlanRouteFromDetail}
             onUpdate={(changes) => dispatch({ type: 'UPDATE_LOCATION_STATUS', locationId: selectedLocation.id, changes })}
             onSubmitFeedback={handleSubmitPlaceFeedback}
+            onViewRecords={(id) => { setFeedbackLocationId(null); openInformation(null, 'reports', id) }}
             onAskAi={askAi}
           />
         )}
@@ -632,6 +665,7 @@ function App() {
             initialType={feedbackInitialType}
             onClose={() => setFeedbackLocationId(null)}
             onSubmitFeedback={handleSubmitPlaceFeedback}
+            onViewRecords={(id) => { setFeedbackLocationId(null); openInformation(null, 'reports', id) }}
           />
         )}
         {activeTab === 'map' && state.routePlan && (
@@ -651,16 +685,17 @@ function App() {
         )}
         {!(activeTab === 'hall' && hallFullscreen) && <>
           {activeTab === 'map' && <PrimaryPageActions showAssistant unread={information.unread} onOpenAssistant={() => askAi()} onOpenMessages={() => openInformation()} />}
-          <MobileTabBar activeTab={activeTab === 'map' ? 'canvas' : activeTab} onChange={(tab) => { mapReturnRef.current = null; setHallFullscreen(false); setLostFoundPublishToken(0); if (tab === 'explore') setServiceSection('home'); setActiveTab(tab) }} />
+          <MobileTabBar activeTab={activeTab === 'map' ? 'explore' : activeTab} onChange={(tab) => { mapReturnRef.current = null; chatReturnRef.current = null; setInitialChatMessageId(null); setHallFullscreen(false); setLostFoundPublishToken(0); dispatch({ type: 'CLEAR_ROUTE' }); dispatch({ type: 'CLEAR_SELECTED_LOCATION' }); setActiveTab(tab) }} />
         </>}
       </main>
+      {pendingRouteDestinationId && <RouteOriginSheet locations={state.locations} destinationId={pendingRouteDestinationId} devicePosition={devicePosition} deviceLocationStatus={deviceLocationStatus} deviceLocationMessage={deviceLocationMessage} onLocate={handleLocateDevice} onConfirm={confirmRouteOrigin} onClose={cancelRouteOrigin} />}
       {loginMode && <LoginSheet key={loginMode} auth={auth} initialMode={loginMode} onClose={closeLogin} />}
-      {myPublicationsOpen && <MyPublicationsPage key={`${auth.user?.id ?? 'guest'}:${myPublicationsFilter}`} initialFilter={myPublicationsFilter} userId={auth.user?.id} reports={information.reports} posts={communityPosts} feedbacks={state.placeFeedback} locations={state.locations} refreshToken={myPublicationsRefresh} covered={informationOpen || Boolean(reviewLocation)} onClose={closeMyPublications} onRefresh={information.refresh} onOpenCloudReports={() => openInformation(null, 'reports')} onOpenMyLostFound={() => { closeMyPublications(); handleOpenHall('lost-found', true) }} onOpenReview={(restaurantId, windowId) => { setReviewWindowId(windowId); setReviewLocationId(restaurantId) }} onOpenFeedback={() => { closeMyPublications(); setServiceSection('repair'); setActiveTab('explore') }} onSelectLocation={(id) => { closeMyPublications(); handleExploreLocation(id) }} />}
+      {myPublicationsOpen && <MyPublicationsPage key={`${auth.user?.id ?? 'guest'}:${myPublicationsFilter}`} initialFilter={myPublicationsFilter} userId={auth.user?.id} reports={information.reports} posts={communityPosts} feedbacks={state.placeFeedback} locations={state.locations} refreshToken={myPublicationsRefresh} covered={informationOpen || Boolean(reviewLocation)} onClose={closeMyPublications} onRefresh={information.refresh} onOpenCloudReports={(id) => openInformation(null, 'reports', id)} onOpenMyLostFound={() => { closeMyPublications(); handleOpenHall('lost-found', true) }} onOpenReview={(restaurantId, windowId) => { setReviewWindowId(windowId); setReviewLocationId(restaurantId) }} onOpenFeedback={() => { closeMyPublications(); setServiceSection('repair'); setActiveTab('explore') }} onSelectLocation={(id) => { closeMyPublications(); handleExploreLocation(id) }} />}
       {visibleMemberTarget && !loginMode && <MemberProfilePage key={`${visibleMemberTarget.viewerId}:${visibleMemberTarget.userId}`} userId={visibleMemberTarget.userId} viewerId={visibleMemberTarget.viewerId} onClose={closeMemberProfile} />}
       <CampusNoticeBanner userId={auth.user?.id} information={information} covered={informationOpen || Boolean(loginMode) || auvOpen || Boolean(visibleMemberTarget)} onOpen={openNotice} />
-      {informationOpen && <NotificationCenter onOpenChat={openChatFromNotice} key={`${auth.user?.id ?? 'guest'}:${informationTab}`} auth={auth} information={information} push={push} preferences={notificationPreferences} favoriteIds={state.favoriteLocationIds} locations={state.locations} initialTab={informationTab} initialDraft={informationDraftForUser(informationSeed, auth.user?.id)} noticeId={noticeId} onClose={closeInformation} onOpenLogin={() => { setInformationOpen(false); openLogin() }} onSelectLocation={(id) => { closeInformation(); closeMyPublications(); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { closeInformation(); closeMyPublications(); handlePlanRouteToLocation(id) }} />}
-      {reviewLocation && <RestaurantReviewsPage onOpenMemberProfile={openMemberProfile} key={`${reviewLocation.id}:${auth.user?.id ?? 'guest'}:${reviewWindowId ?? ''}`} restaurant={reviewLocation} initialWindowId={reviewWindowId} authorName={auth.profile?.nickname ?? '我'} role={auth.role} userId={auth.user?.id} onOpenLogin={openLogin} onClose={closeRestaurantReviews} />}
-      {timetableOpen && <TimetablePage key={auth.user?.id ?? 'guest'} userId={auth.user?.id} onClose={closeTimetable} onAskAi={(prompt) => { setTimetableOpen(false); setAuvSeed({ userId: auth.user?.id ?? null, prompt, source: 'timetable' }); setAuvOpen(true) }} />}
+      {informationOpen && <NotificationCenter initialReportId={informationReportTarget?.ownerId === (auth.user?.id ?? null) ? informationReportTarget?.id : null} onOpenChat={openChatFromNotice} key={`${auth.user?.id ?? 'guest'}:${informationTab}`} auth={auth} information={information} push={push} preferences={notificationPreferences} favoriteIds={state.favoriteLocationIds} locations={state.locations} initialTab={informationTab} initialDraft={informationDraftForUser(informationSeed, auth.user?.id)} noticeId={noticeId} onClose={closeInformation} onOpenLogin={() => { setInformationOpen(false); openLogin() }} onSelectLocation={(id) => { closeInformation(); closeMyPublications(); handleExploreLocation(id) }} onPlanRouteToLocation={(id) => { closeInformation(); closeMyPublications(); handlePlanRouteToLocation(id) }} />}
+      {reviewLocation && <RestaurantReviewsPage onPlanRouteToLocation={(id, windowId) => { handlePlanRouteToLocation(id); if (windowId && mapReturnRef.current) mapReturnRef.current.reviewWindowId = windowId }} onOpenMemberProfile={openMemberProfile} key={`${reviewLocation.id}:${auth.user?.id ?? 'guest'}:${reviewWindowId ?? ''}`} restaurant={reviewLocation} initialWindowId={reviewWindowId} authorName={auth.profile?.nickname ?? '我'} role={auth.role} userId={auth.user?.id} onOpenLogin={(windowId) => { if (typeof windowId === 'string') setReviewWindowId(windowId); openLogin() }} onClose={closeRestaurantReviews} />}
+      {timetableOpen && <TimetablePage key={auth.user?.id ?? 'guest'} userId={auth.user?.id} locations={state.locations} onSelectLocation={(id) => { handleExploreLocation(id); setTimetableOpen(false) }} onClose={closeTimetable} onAskAi={(prompt) => { setTimetableOpen(false); setAuvSeed({ userId: auth.user?.id ?? null, prompt, source: 'timetable' }); setAuvOpen(true) }} />}
       {auvOpen && <AuvAssistantPage initialPurpose={auvSeed?.userId === (auth.user?.id ?? null) ? auvSeed?.source ?? '' : ''} initialDraft={auvSeed?.userId === (auth.user?.id ?? null) ? auvSeed?.prompt ?? '' : ''} auth={auth} locations={state.locations} initialLocationId={state.selectedId ?? ''} getContext={() => buildAuvContext({
         locations: state.locations,
         manualLocationId: aiLocation.current.ownerId === (auth.user?.id ?? null) && aiLocation.current.locationId === state.currentLocationId ? state.currentLocationId : null,

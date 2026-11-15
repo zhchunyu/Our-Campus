@@ -99,4 +99,4 @@
 
 /* 社区首页的入口索引原本是四列，加入「你画我猜」后改成五列。
    用元素选择器提高优先级，避免被后加载的 community-canvas.css 覆盖。 */
-.canvas-community nav.hall-canvas-index { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.canvas-community nav.hall-canvas-index { grid-template-columns: repeat(2, minmax(0, 1fr)); }

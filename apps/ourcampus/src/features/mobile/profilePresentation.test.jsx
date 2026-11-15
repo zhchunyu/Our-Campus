@@ -29,11 +29,11 @@ describe('shared public profile presentation', () => {
   it('does not present the old local avatar as an already synced account avatar', () => {
     const legacy = 'data:image/jpeg;base64,bG9jYWwtYXZhdGFy'
     vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ avatar: legacy, bio: '仅本机签名' }) })
-    const html = renderToStaticMarkup(<PersonalHome auth={{ user: { id: userId }, profile: { user_id: userId, nickname: '同学', avatar_path: null } }} />)
+    const html = renderToStaticMarkup(<PersonalHome auth={{ user: { id: userId }, profile: { user_id: userId, nickname: '同学', avatar_path: null } }} onOpenMemberProfile={() => {}} />)
     const identity = html.match(/<span[^>]*personal-identity__avatar[^>]*>[\s\S]*?<\/span>/)?.[0] ?? ''
     expect(identity).not.toContain(legacy)
     expect(html).toContain('同步本机头像')
-    expect(html).toContain('查看公开主页')
+    expect(html).toContain('真实访客预览')
   })
 })
 

@@ -72,7 +72,7 @@ function isSavedAdminAction(value) {
     && (value.after === null || isRecord(value.after))
 }
 
-function isSavedRoute(value) {
+export function isSavedRoute(value) {
   return isRecord(value)
     && typeof value.id === 'string'
     && typeof value.originId === 'string'
@@ -125,18 +125,69 @@ export function loadPersistedState() {
   }
 }
 
+function personalStorageKey(ownerId) {
+  if (ownerId === null) return 'ourcampus.personal-collections.v1.device'
+  return typeof ownerId === 'string' && ownerId.length > 0 && ownerId.length <= 256
+    ? `ourcampus.personal-collections.v1.account.${encodeURIComponent(ownerId)}`
+    : null
+}
+
+function validPersonalRecords(value) {
+  return isRecord(value)
+    && Array.isArray(value.favoriteLocationIds) && value.favoriteLocationIds.every(id => typeof id === 'string')
+    && Array.isArray(value.savedRoutes) && value.savedRoutes.every(isSavedRoute)
+}
+
+export function loadPersonalRecords(ownerId = null) {
+  const empty = { ownerId, scope: ownerId === null ? 'device' : 'account', favoriteLocationIds: [], savedRoutes: [] }
+  const key = personalStorageKey(ownerId)
+  const storage = getStorage()
+  if (!key || !storage) return empty
+  try {
+    const raw = storage.getItem(key)
+    if (raw !== null) {
+      if (raw.length > 500000) return empty
+      const saved = JSON.parse(raw)
+      if (saved?.schemaVersion !== 1 || saved.ownerId !== ownerId || !validPersonalRecords(saved)) return empty
+      return { ...empty, favoriteLocationIds: [...new Set(saved.favoriteLocationIds)], savedRoutes: saved.savedRoutes }
+    }
+    // Records without an owner remain device records. Logging in never claims them.
+    const legacy = ownerId === null ? loadPersistedState() : null
+    return legacy ? { ...empty, favoriteLocationIds: legacy.favoriteLocationIds, savedRoutes: legacy.savedRoutes } : empty
+  } catch {
+    return empty
+  }
+}
+
+export function savePersonalRecords(ownerId, records) {
+  const key = personalStorageKey(ownerId)
+  const storage = getStorage()
+  if (!key || !storage || !validPersonalRecords(records)) return false
+  try {
+    const serialized = JSON.stringify({ schemaVersion: 1, ownerId, favoriteLocationIds: [...new Set(records.favoriteLocationIds)], savedRoutes: records.savedRoutes })
+    if (serialized.length > 500000) return false
+    storage.setItem(key, serialized)
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function savePersistedState(state) {
   const storage = getStorage()
   if (!storage) return
 
+  // Scoped collections have their own keys; retain, but never replace, ownerless
+  // legacy device entries in the shared settings snapshot.
+  const deviceRecords = Object.hasOwn(state, 'personalRecordsOwner') ? loadPersistedState() : state
   const payload = {
     schemaVersion: CURRENT_SCHEMA_VERSION,
     mapProfile: 'shared-3d-main',
     locations: state.locations,
     events: state.events,
     placeFeedback: state.placeFeedback ?? [],
-    favoriteLocationIds: state.favoriteLocationIds ?? [],
-    savedRoutes: state.savedRoutes ?? [],
+    favoriteLocationIds: deviceRecords?.favoriteLocationIds ?? [],
+    savedRoutes: deviceRecords?.savedRoutes ?? [],
     adminHistory: state.adminHistory,
     settings: state.settings,
     role: state.role,

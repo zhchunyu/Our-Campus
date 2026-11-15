@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { NextClassCard, TimetableDayView, TimetableWeekNavigation } from './TimetableDayView.jsx'
+import { NextClassCard, TimetableDayView, TimetableWeekNavigation, CourseLocationControl } from './TimetableDayView.jsx'
 const course = { id: 'math', name: '高等数学', teacher: '任课教师', classroom: '教学楼201', weekday: 1, weeks: [9], periods: [1, 2], startTime: '08:00', endTime: '09:40' }
 const timetable = { version: 1, semester: '2026-2027-1', termStart: '2026-08-31', dateConfirmed: true, courses: [course], unscheduled: [] }
 const monday = new Date('2026-10-26T01:00:00Z')
@@ -61,5 +61,39 @@ describe('daily course presentation from real calendar occurrences', () => {
     expect(html).toContain('这天没有已排课程')
     expect(html).not.toContain('今天空闲')
     expect(next(table)).toContain('另有 1 门课程未排时间')
+  })
+})
+
+describe('course to campus building', () => {
+  const locations = [{ id: 'teaching-a', name: '崇学楼', category: 'learning' }, { id: 'library', name: '图书馆', category: 'learning' }]
+  const known = { ...course, classroom: '崇学楼203' }
+  it('keeps the original room and offers its real building in next and day course views', () => {
+    const props = { locations, onSelectLocation: () => {} }
+    const table = { ...timetable, courses: [known] }
+    for (const html of [render(<NextClassCard timetable={table} now={monday} {...props} />), render(<TimetableDayView timetable={table} week={9} weekday={1} now={monday} {...props} />)]) {
+      expect(html).toContain('崇学楼203')
+      expect(html).toContain('找教室')
+      expect(html).toContain('室内位置请核对')
+    }
+  })
+  it('selects only the matched building ID when the course action is used', () => {
+    const selected = []
+    const element = CourseLocationControl({ course: known, locations, onSelectLocation: id => selected.push(id) })
+    element.props.children[0].props.onClick()
+    expect(selected).toEqual(['teaching-a'])
+  })
+  it('requires an explicit building selection for an unknown room and never overwrites that room', () => {
+    const unknown = { ...course, classroom: '201（教务待确认）' }
+    const html = render(<TimetableDayView timetable={{ ...timetable, courses: [unknown] }} week={9} weekday={1} now={monday} locations={locations} onSelectLocation={() => {}} />)
+    expect(html).toContain('201（教务待确认）')
+    expect(html).toContain('选择上课建筑')
+    expect(html).toContain('无法可靠匹配建筑')
+    expect(html).toContain('请选择校园建筑')
+    expect(html).not.toContain('找教室')
+  })
+  it('keeps legacy callers readable without offering an unavailable campus action', () => {
+    const html = render(<TimetableDayView timetable={timetable} week={9} weekday={1} now={monday} />)
+    expect(html).toContain('教学楼201')
+    expect(html).not.toContain('选择上课建筑')
   })
 })

@@ -84,6 +84,8 @@ export function TencentCampusMap({
   livePositionFocusToken = 0,
   routePlan = null,
   showLabels = true,
+  forceCampusLabels = false,
+  initialZoom = TENCENT_CAMPUS_ZOOM,
   resetViewToken = 0,
   onSelectLocation,
   onRouteStateChange,
@@ -100,7 +102,7 @@ export function TencentCampusMap({
   const [loadState, setLoadState] = useState('loading')
   const [mapVersion, setMapVersion] = useState(0)
   const [loadError, setLoadError] = useState('')
-  const [zoomLevel, setZoomLevel] = useState(TENCENT_CAMPUS_ZOOM)
+  const [zoomLevel, setZoomLevel] = useState(initialZoom)
   const [routeState, setRouteState] = useState({ status: 'idle', route: null, message: '' })
 
   routeStateCallbackRef.current = onRouteStateChange
@@ -116,7 +118,7 @@ export function TencentCampusMap({
         if (disposed || !containerRef.current) return
         map = new TMap.Map(containerRef.current, {
           center: new TMap.LatLng(TENCENT_CAMPUS_CENTER.lat, TENCENT_CAMPUS_CENTER.lng),
-          zoom: TENCENT_CAMPUS_ZOOM,
+          zoom: initialZoom,
           minZoom: TENCENT_CAMPUS_MIN_ZOOM,
           maxZoom: TENCENT_CAMPUS_MAX_ZOOM,
           // 校园标注包围矩形约占可移动范围的 20%，南侧另留底部菜单避让空间。
@@ -178,7 +180,7 @@ export function TencentCampusMap({
   useEffect(() => {
     const TMap = window.TMap
     const map = mapRef.current
-    if (!COMPETITION_PRESENTATION || loadState !== 'ready' || !TMap || !map) return
+    if ((!COMPETITION_PRESENTATION && !forceCampusLabels) || loadState !== 'ready' || !TMap || !map) return
     const geometries = locations.flatMap((location) => {
       const coordinates = getTencentCampusPosition(location)
       return coordinates ? [{
@@ -192,7 +194,7 @@ export function TencentCampusMap({
         id: 'campus-anonymous-labels', map, isStopPropagation: true,
         collisionOptions: { sameSource: true },
         styles: { campus: new TMap.LabelStyle({
-          color: '#34584e', strokeColor: '#fff', strokeWidth: 3, size: 13,
+          color: '#10283f', strokeColor: '#fff', strokeWidth: 3, size: forceCampusLabels ? 15 : 13,
           alignment: 'center', verticalAlignment: 'middle',
         }) },
         geometries,
@@ -206,7 +208,7 @@ export function TencentCampusMap({
       layersRef.current.campusLabels.setGeometries(geometries)
     }
     layersRef.current.campusLabels.setVisible(showLabels)
-  }, [loadState, mapVersion, locations, selectedId, showLabels])
+  }, [loadState, mapVersion, locations, selectedId, showLabels, forceCampusLabels])
 
   useEffect(() => {
     const TMap = window.TMap

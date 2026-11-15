@@ -1,8 +1,8 @@
 import { campusDisplayText } from '../../data/campusPresentation.js'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowLeft, ArrowUpRight, ChevronRight, Leaf, MessageSquare, PenLine, Search, Soup, Star, ThumbsUp, Trash2, UtensilsCrossed, Wheat, X, ZoomIn, ZoomOut } from 'lucide-react'
-import { createLocalRestaurantReview, getExampleWindowReviews, getRestaurantWindows, loadLocalRestaurantReviews, saveLocalRestaurantReviews, summarizeReviews, WINDOW_CATEGORIES } from '../../data/restaurantReviews.js'
+import { ArrowLeft, ArrowUpRight, ChevronRight, Leaf, MessageSquare, Navigation, PenLine, Search, Soup, Star, ThumbsUp, Trash2, UtensilsCrossed, Wheat, X, ZoomIn, ZoomOut } from 'lucide-react'
+import { createLocalRestaurantReview, getRestaurantWindows, loadLocalRestaurantReviews, saveLocalRestaurantReviews, summarizeReviews, WINDOW_CATEGORIES } from '../../data/restaurantReviews.js'
 import { ReviewComposer } from './ReviewComposer.jsx'
 import { RestaurantWindowManager } from './RestaurantWindowManager.jsx'
 import { addRestaurantWindow, deleteRestaurantWindow, loadRestaurantWindows } from '../../data/restaurantWindows.js'
@@ -26,7 +26,7 @@ function WindowCardArt({ window }) {
   const [photoFailed, setPhotoFailed] = useState(false)
   const hasPhoto = window.photo && !photoFailed
   return <div className={`restaurant-window-card__art${hasPhoto ? ' restaurant-window-card__art--photo' : ''}`}>
-    {hasPhoto ? <><img src={window.photo} alt={`${window.name}现场招牌`} loading="lazy" decoding="async" onError={() => setPhotoFailed(true)} /><span className="restaurant-window-card__photo-badge">实拍<small>{window.floor}</small></span></> : <><span>{window.numberVerified === false ? '实拍' : window.number}<small>{window.numberVerified === false ? window.floor : '号窗口'}</small></span><FoodIcon type={window.icon} size={42} /></>}
+    {hasPhoto ? <><img src={window.photo} alt={`${window.name}现场招牌`} loading="lazy" decoding="async" onError={() => setPhotoFailed(true)} /><span className="restaurant-window-card__photo-badge">实拍<small>{window.floor}</small></span></> : <><span>{window.numberVerified === false ? '现场窗口' : window.number}<small>{window.numberVerified === false ? window.floor : '号窗口'}</small></span><FoodIcon type={window.icon} size={42} /></>}
     {window.isExample && <i>示例</i>}
   </div>
 }
@@ -88,8 +88,13 @@ export function ReviewItem({ review, profile, onDelete, userId, manager, onOpenM
   )
 }
 
-export function RestaurantReviewsPage({ restaurant, authorName = '我', role = 'visitor', userId, onOpenLogin, onOpenMemberProfile, onClose, initialWindowId = null }) {
-  const [windows, setWindows] = useState(() => getRestaurantWindows(restaurant.id))
+export function RestaurantRouteAction({ locationId, windowId, onPlanRouteToLocation }) {
+  if (!locationId || !onPlanRouteToLocation) return null
+  return <button className="restaurant-route-action" type="button" onClick={() => windowId ? onPlanRouteToLocation(locationId, windowId) : onPlanRouteToLocation(locationId)}><Navigation size={19} /><span>去这里<small>确认起点后规划路线</small></span><ChevronRight size={17} /></button>
+}
+
+export function RestaurantReviewsPage({ restaurant, authorName = '我', role = 'visitor', userId, onOpenLogin, onOpenMemberProfile, onPlanRouteToLocation, onClose, initialWindowId = null }) {
+  const [windows, setWindows] = useState(() => getRestaurantWindows(restaurant.id).filter((window) => !window.isExample))
   const [catalogState, setCatalogState] = useState('loading')
   const [catalogError, setCatalogError] = useState('')
   const [managerOpen, setManagerOpen] = useState(false)
@@ -105,7 +110,6 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
   const [reviewBusy, setReviewBusy] = useState(false)
   const alive = useRef(true)
   const viewerRef = useRef(userId); viewerRef.current = userId
-  const examples = useMemo(() => getExampleWindowReviews(restaurant.id), [restaurant.id])
   const [localReviews, setLocalReviews] = useState(loadLocalRestaurantReviews)
   const [selectedWindowId, setSelectedWindowId] = useState(initialWindowId)
   const [composerWindowId, setComposerWindowId] = useState(null)
@@ -134,7 +138,7 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
   useBackLayer(true, goBack, 60)
   const selectedWindow = windows.find((window) => window.id === selectedWindowId) ?? null
   const restaurantLocalReviews = localReviews.filter((review) => review.restaurantId === restaurant.id && windows.some((window) => window.id === review.windowId))
-  const allReviews = [...cloudReviews, ...restaurantLocalReviews, ...examples.filter((review) => windows.some((window) => window.isExample && window.id === review.windowId))]
+  const allReviews = [...cloudReviews, ...restaurantLocalReviews]
   const cloudReady = reviewState === 'ready' && catalogState === 'ready'
   const summary = cloudReady ? { count: cloudStats.reduce((sum, s) => sum + s.count, 0), rating: cloudStats.length ? (cloudStats.reduce((sum, s) => sum + s.ratingSum, 0) / cloudStats.reduce((sum, s) => sum + s.count, 0)).toFixed(1) : null } : summarizeReviews(allReviews)
   const windowReviews = selectedWindow ? allReviews.filter((review) => review.windowId === selectedWindow.id) : []
@@ -286,23 +290,24 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
       <div className="restaurant-review-page__frame">
         <header className="restaurant-review-page__header">
           <button type="button" ref={backRef} onClick={goBack} aria-label={selectedWindow ? '返回窗口列表' : '返回上一页'}><ArrowLeft size={21} /></button>
-          <div><h1 id="restaurant-review-page-title">{selectedWindow ? '窗口详情' : '餐厅评价'}</h1><span>{restaurant.name}</span></div>
+          <div><h1 id="restaurant-review-page-title">{selectedWindow ? '窗口详情' : '餐厅与窗口'}</h1><span>{restaurant.name}</span></div>
           <span className="restaurant-review-page__preview">{isManager ? '管理员' : '窗口评价'}</span>
         </header>
 
         <main className="restaurant-review-page__content" ref={contentRef}>
           {!selectedWindow ? <>
             <section className="restaurant-review-hero">
-              <span className="restaurant-review-hero__eyebrow">餐厅 / REVIEWS</span>
-              <h2>{restaurant.name}</h2><p>查看窗口评分与用餐评价</p>
+              <span className="restaurant-review-hero__eyebrow">校园 · 吃饭</span>
+              <h2>{restaurant.name}</h2><p>找窗口、看菜单，再看看同学怎么说。</p>
               <div className="restaurant-review-hero__art" aria-hidden="true"><Soup size={56} strokeWidth={1.35} /><span>窗口评分</span></div>
               <div className="restaurant-review-hero__stats">
-                <div><strong>{summary.rating ?? '—'}<Star size={14} fill="currentColor" /></strong><span>{cloudReady ? '真实平均评分' : '暂无云端评分'}</span></div>
+                <div><strong>{summary.rating ?? '—'}<Star size={14} fill="currentColor" /></strong><span>{summary.count ? cloudReady ? '云端平均评分' : '本机平均评分' : '暂无评分'}</span></div>
                 <div><strong>{windows.length}<small> 个</small></strong><span>餐厅窗口</span></div>
                 <div><strong>{cloudReady ? summary.count : restaurantLocalReviews.length}<small> 条</small></strong><span>{cloudReady ? '云端评价' : '本机评价'}</span></div>
               </div>
             </section>
-            <p className="restaurant-review-page__demo-note"><span />{catalogState === 'loading' ? '正在加载餐厅窗口…' : catalogState === 'ready' ? (cloudReady ? '真实窗口与云端评价。现场标价仅作参考，以当日菜单为准。' : '窗口名单已加载；多人评价等待服务器部署。') : restaurant.id === 'canteen' ? `这 6 个窗口位于${campusDisplayText('谷园')}一层，来自你提供的现场照片；现场编号待确认。服务器导入后可同步公开评价。` : '暂时展示示例窗口，真实窗口名单尚未加载。'}</p>
+            <RestaurantRouteAction locationId={restaurant.id} onPlanRouteToLocation={onPlanRouteToLocation} />
+            <p className="restaurant-review-page__demo-note"><span />{catalogState === 'loading' ? '正在加载真实窗口…' : catalogState === 'ready' ? (cloudReady ? '真实窗口与云端评价。现场标价仅作参考，以当日菜单为准。' : '窗口名单已加载；云端评价暂不可用，本机评价仍可查看。') : restaurant.id === 'canteen' ? `这 6 个窗口位于${campusDisplayText('谷园')}一层，来自已收录的现场照片；现场编号待确认。云端评价暂不可用。` : '真实窗口名单暂不可用，请稍后重试。'}</p>
             {reviewError && <p className="restaurant-review-page__demo-note" role="status">{reviewError}<button type="button" onClick={refreshReviews}>重试</button></p>}
             {isManager && <div className="restaurant-window-admin"><div><strong>窗口管理</strong><small>{catalogState === 'ready' ? '按真实名单添加窗口' : catalogError || '正在连接服务器…'}</small></div><button type="button" disabled={!canManage} onClick={() => setManagerOpen(true)}>＋ 添加窗口</button></div>}
             <div className="restaurant-window-search"><Search size={17} /><input aria-label="搜索餐厅窗口" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜窗口编号、面食、米饭…" />{query && <button type="button" aria-label="清空窗口搜索" onClick={() => setQuery('')}><X size={15} /></button>}</div>
@@ -318,15 +323,16 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
                 </button>
               })}
             </div>
-            {!visibleWindows.length && <div className="restaurant-reviews-empty"><Search size={27} /><strong>{windows.length ? '没有找到这个窗口' : '还没有收录窗口'}</strong><p>{windows.length ? '试试窗口编号或其他分类。' : isManager ? '点击上方“添加窗口”，录入真实名单。' : '管理员收录真实窗口后，就可以查看和评价了。'}</p>{windows.length > 0 && <button type="button" onClick={() => { setQuery(''); setCategory('全部') }}>查看全部窗口</button>}</div>}
+            {!visibleWindows.length && <div className="restaurant-reviews-empty" role="status"><Search size={27} /><strong>{catalogState === 'loading' && !windows.length ? '正在加载真实窗口' : windows.length ? '没有找到这个窗口' : '还没有收录窗口'}</strong><p>{catalogState === 'loading' && !windows.length ? '窗口名单加载后会显示在这里。' : windows.length ? '试试窗口编号或其他分类。' : isManager ? '点击上方“添加窗口”，录入真实名单。' : '管理员收录真实窗口后，就可以查看和评价了。'}</p>{windows.length > 0 && <button type="button" onClick={() => { setQuery(''); setCategory('全部') }}>查看全部窗口</button>}</div>}
             <p className="restaurant-review-page__bottom-note">窗口按餐厅分别收录。</p>
           </> : <>
-            <section className={`restaurant-window-intro restaurant-window-intro--${selectedWindow.tone}`}><div className="restaurant-window-intro__icon"><FoodIcon type={selectedWindow.icon} size={34} /></div><div><span>{selectedWindow.numberVerified === false ? `现场窗口 · ${selectedWindow.floor}` : `${selectedWindow.number} 号窗口`}{selectedWindow.isExample && ' · 示例'}</span><h2>{selectedWindow.name}</h2><p>{selectedWindow.description}</p></div></section>
             <WindowPhoto key={selectedWindow.photo || selectedWindow.id} window={selectedWindow} onOpen={() => setPhotoWindow(selectedWindow)} />
-            {selectedWindow.menu?.length > 0 && <section className="restaurant-real-menu"><div><h3>现场菜单参考</h3><small>按你提供的照片录入 · 价格以现场为准</small></div>{selectedWindow.menu.map(([name, price]) => <p key={name}><span>{name}</span><strong>¥{price}</strong></p>)}</section>}
+            <section className={`restaurant-window-intro restaurant-window-intro--${selectedWindow.tone}${selectedWindow.photo ? ' restaurant-window-intro--photographed' : ''}`}><div className="restaurant-window-intro__icon"><FoodIcon type={selectedWindow.icon} size={34} /></div><div><span>{selectedWindow.numberVerified === false ? `现场窗口 · ${selectedWindow.floor}` : `${selectedWindow.number} 号窗口`}</span><h2>{selectedWindow.name}</h2><p>{selectedWindow.description}</p></div></section>
+            {selectedWindow.menu?.length > 0 && <section className="restaurant-real-menu"><div><h3>现场菜单参考</h3><small>根据现场照片整理 · 价格以窗口当日标价为准</small></div>{selectedWindow.menu.map(([name, price]) => <p key={name}><span>{name}</span><strong>¥{price}</strong></p>)}</section>}
+            <RestaurantRouteAction locationId={restaurant.id} windowId={selectedWindow.id} onPlanRouteToLocation={onPlanRouteToLocation} />
             {canManage && selectedWindow.cloudStored && <button className="restaurant-window-delete" type="button" onClick={() => setDeleteTarget(selectedWindow)}><Trash2 size={15} />删除这个窗口</button>}
-            <section className="restaurant-window-score"><div><strong>{windowSummary.rating ?? '—'}</strong><RatingStars rating={Number(windowSummary.rating ?? 0)} size={14} /><span>{windowSummary.count} 条评价</span></div><div className="restaurant-window-score__details"><span><b>{windowSummary.count ? `${windowSummary.recommended}%` : '—'}</b> 推荐评价占比</span><div><i style={{ width: `${windowSummary.recommended}%` }} /></div><small>{cloudReady ? '统计包含该窗口全部云端评价，本机历史不计入' : selectedWindow.isExample ? '统计包含示例内容，仅用于体验页面' : '统计仅包含当前设备保存的评价'}</small></div></section>
-            <p className="restaurant-review-page__demo-note"><span />{cloudReady ? '公开评价按真实评分统计；可以推荐，也可以吐槽。' : selectedWindow.isExample ? '示例评价不代表真实口碑；本机发布仅当前设备可见。' : '多人评价待服务器部署，本机评价仅当前设备可见。'}</p>
+            <section className="restaurant-window-score"><div><strong>{windowSummary.rating ?? '—'}</strong>{windowSummary.count ? <RatingStars rating={Number(windowSummary.rating)} size={14} /> : <span>暂无评分</span>}<span>{windowSummary.count} 条评价</span></div><div className="restaurant-window-score__details"><span><b>{windowSummary.count ? `${windowSummary.recommended}%` : '—'}</b> 推荐评价占比</span><div><i style={{ width: `${windowSummary.recommended}%` }} /></div><small>{cloudReady ? '统计包含该窗口全部云端评价，本机历史不计入' : '统计仅包含当前设备保存的评价'}</small></div></section>
+            <p className="restaurant-review-page__demo-note"><span />{cloudReady ? '公开评价按真实评分统计；可以推荐，也可以吐槽。' : '云端评价暂不可用，本机评价仅当前设备可见。'}</p>
             <div className="restaurant-review-section-heading"><h3>用餐评价</h3><select aria-label="评价排序" value={sort} onChange={(event) => setSort(event.target.value)}><option value="recent">最新评价</option><option value="high">评分从高到低</option><option value="low">评分从低到高</option></select></div>
             <div className="restaurant-review-filters" role="group" aria-label="评价筛选">{[{ id: 'all', label: '全部' }, { id: 'recommend', label: '推荐 · 4–5 星' }, { id: 'complaint', label: '吐槽 · 1–3 星' }].map((filter) => <button type="button" key={filter.id} className={reviewFilter === filter.id ? 'is-active' : ''} aria-pressed={reviewFilter === filter.id} onClick={() => setReviewFilter(filter.id)}>{filter.label}</button>)}</div>
             <div className="window-review-list">{memberProfiles.error && <p className="restaurant-review-profile-error" role="alert"><span>{memberProfiles.error}</span><button type="button" onClick={memberProfiles.refresh}>重试</button></p>}{visibleReviews.map((review) => <ReviewItem key={review.id} review={review} profile={memberProfiles.profiles[review.authorId]} onDelete={deleteReview} userId={userId} manager={isManager} onOpenMemberProfile={onOpenMemberProfile} />)}</div>
@@ -335,7 +341,7 @@ export function RestaurantReviewsPage({ restaurant, authorName = '我', role = '
           </>}
         </main>
 
-        <footer className="restaurant-review-page__footer"><span>{selectedWindow ? selectedWindow.name : '选择窗口并填写评价'}<small>{cloudReady ? '登录后发布评价' : '目前可保存本机评价'}</small></span><button type="button" disabled={!windows.length || catalogState === 'loading'} onClick={() => { if (cloudReady && !userId) onOpenLogin(); else setComposerWindowId(selectedWindow?.id ?? windows[0]?.id) }}><PenLine size={17} />写评价<ChevronRight size={15} /></button></footer>
+        <footer className="restaurant-review-page__footer">{onPlanRouteToLocation && <button className="restaurant-footer-route" type="button" onClick={() => selectedWindow ? onPlanRouteToLocation(restaurant.id, selectedWindow.id) : onPlanRouteToLocation(restaurant.id)}><Navigation size={17} />去这里</button>}<span>{selectedWindow ? selectedWindow.name : '选择窗口并填写评价'}<small>{cloudReady ? '登录后发布评价' : '目前可保存本机评价'}</small></span><button type="button" disabled={!windows.length || catalogState === 'loading'} onClick={() => { if (cloudReady && !userId) onOpenLogin(selectedWindow?.id ?? windows[0]?.id); else setComposerWindowId(selectedWindow?.id ?? windows[0]?.id) }}><PenLine size={17} />写评价<ChevronRight size={15} /></button></footer>
         {notice && <p className="restaurant-review-page__notice" role="status">{notice}</p>}
         {composerWindowId && <ReviewComposer restaurant={restaurant} windows={windows} initialWindowId={composerWindowId} onClose={() => setComposerWindowId(null)} onSubmit={submitReview} cloud={cloudReady} userId={userId} />}
         {(managerOpen || deleteTarget) && isManager && <RestaurantWindowManager restaurant={restaurant} deletingWindow={deleteTarget} onClose={() => { setManagerOpen(false); setDeleteTarget(null) }} onSubmit={submitWindow} />}

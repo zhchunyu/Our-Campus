@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import * as reviews from './RestaurantReviewsPage.jsx'
 
 vi.mock('../../app/useBackLayer.js', () => ({ useBackLayer: () => {} }))
+vi.mock('react-dom', () => ({ createPortal: (content) => content }))
 vi.mock('../../data/memberProfiles.js', () => ({ getAvatarUrl: (path) => path ? `https://campus.test/${path}` : '', listMemberProfiles: vi.fn() }))
 
 const authorId = '22222222-2222-4222-8222-222222222222'
@@ -52,5 +53,49 @@ describe('restaurant review photos', () => {
     const html = render({ review: { ...review, imagePaths: [`${authorId}/33333333-3333-4333-8333-333333333333.jpg`] } })
     expect(html).toContain('登录后可查看 1 张用餐照片')
     expect(html).not.toContain('33333333-3333-4333-8333-333333333333.jpg')
+  })
+})
+
+describe('restaurant route handoff', () => {
+  it('hands the real restaurant location ID to origin confirmation', () => {
+    expect(reviews.RestaurantRouteAction).toBeTypeOf('function')
+    const onPlanRouteToLocation = vi.fn()
+    const action = reviews.RestaurantRouteAction({ locationId: 'canteen', onPlanRouteToLocation })
+    action.props.onClick()
+    expect(onPlanRouteToLocation).toHaveBeenCalledExactlyOnceWith('canteen')
+    const html = renderToStaticMarkup(action)
+    expect(html).toContain('去这里')
+    expect(html).toContain('确认起点后规划路线')
+    expect(html).not.toMatch(/距你|当前位置|分钟到达/)
+  })
+
+  it('does not offer a route when no callback or location is available', () => {
+    expect(reviews.RestaurantRouteAction).toBeTypeOf('function')
+    expect(reviews.RestaurantRouteAction({ locationId: 'canteen' })).toBeNull()
+    expect(reviews.RestaurantRouteAction({ onPlanRouteToLocation: vi.fn() })).toBeNull()
+  })
+})
+
+describe('real restaurant catalog', () => {
+  it('shows an empty catalog rather than invented windows and ratings for an uncollected restaurant', () => {
+    vi.stubGlobal('document', { body: {} })
+    try {
+      const html = renderToStaticMarkup(<reviews.RestaurantReviewsPage restaurant={{ id: 'uncollected-restaurant', name: '待收录餐厅' }} onClose={() => {}} />)
+      expect(html).toContain('正在加载真实窗口')
+      expect(html).not.toMatch(/特色面食|家常小炒|轻食沙拉|粉面小馆|风味小吃|自选套餐/)
+      expect(html).toContain('暂无评分')
+    } finally { vi.unstubAllGlobals() }
+  })
+
+  it('keeps the real window photo and menu while distinguishing no ratings from a zero-star rating', () => {
+    vi.stubGlobal('document', { body: {} })
+    try {
+      const html = renderToStaticMarkup(<reviews.RestaurantReviewsPage restaurant={{ id: 'canteen', name: '谷园餐厅' }} initialWindowId="b126e080-1008-4000-8000-000000000001" onClose={() => {}} />)
+      expect(html).toContain('assets/restaurants/guyuan/dieyiwan.jpg')
+      expect(html).toContain('葱油面')
+      expect(html).toContain('¥4')
+      expect(html).toContain('暂无评分')
+      expect(html).not.toContain('aria-label="0 星"')
+    } finally { vi.unstubAllGlobals() }
   })
 })
