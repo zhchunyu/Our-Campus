@@ -2,53 +2,64 @@ import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CanvasHome } from './CanvasHome.jsx'
-import { DEFAULT_PERSONAL_ARTWORK, savePersonalHome } from '../../data/personalHome.js'
+import { savePersonalHome } from '../../data/personalHome.js'
+import { saveTimetable } from '../../data/timetable.js'
 
-const imageA = 'data:image/jpeg;base64,YWJj'
-const imageB = 'data:image/png;base64,ZGVm'
-const locations = [{ id: 'library', name: '图书馆' }, { id: 'canteen', name: '餐厅' }]
+const locations = [{ id: 'library', name: '图书馆' }, { id: 'canteen', name: '谷园餐厅' }, { id: 'learning', name: '崇学楼' }]
+const course = { id: 'math', name: '高等数学', teacher: '老师', classroom: '崇学楼203', weekday: 1, weeks: [2], periods: [1, 2], startTime: '08:00', endTime: '09:40' }
+const timetable = { version: 1, semester: '2026-2027-1', courses: [course], unscheduled: [], termStart: '2026-11-09', dateConfirmed: true }
 const render = (userId = 'student-a', props = {}) => renderToStaticMarkup(<CanvasHome auth={{ user: userId ? { id: userId } : null }} locations={locations} events={[]} {...props} />)
-let values
 
 beforeEach(() => {
-  vi.useFakeTimers()
-  vi.setSystemTime(new Date('2026-11-13T04:00:00Z'))
-  values = new Map()
-  vi.stubGlobal('localStorage', { getItem: (key) => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) })
+  vi.useFakeTimers(); vi.setSystemTime(new Date('2026-11-15T04:00:00Z'))
+  const values = new Map()
+  vi.stubGlobal('localStorage', { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) })
 })
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers() })
 
-describe('canvas home account content', () => {
-  it('reloads the same account cover and crop when the home tab is mounted again after saving', () => {
-    savePersonalHome('student-a', { cover: imageA, coverX: 20, coverY: 30 })
-    expect(render()).toContain(`src="${imageA}"`)
-    savePersonalHome('student-a', { cover: imageB, coverX: 75, coverY: 10 })
-    const returnedHome = render()
-    expect(returnedHome).toContain(`src="${imageB}"`)
-    expect(returnedHome).toContain('object-position:75% 10%')
-    expect(returnedHome).not.toContain(`src="${imageA}"`)
+describe('Along daily home', () => {
+  it('keeps private decorative covers off the daily task surface', () => {
+    const privateImage = 'data:image/jpeg;base64,YWJj'
+    savePersonalHome('student-a', { cover: privateImage })
+    const html = render()
+    expect(html).not.toContain(privateImage)
+    expect(html).toContain('校园地点预览')
+    expect(html).toContain('搜地点、餐厅或办事')
   })
-
-  it('keeps a saved cover and section arrangement separate for the next account and guest', () => {
-    savePersonalHome('student-a', { cover: imageA })
-    values.set('ourcampus.canvas-order.v1.student-a', JSON.stringify(['places', 'events', 'space']))
-    const owner = render('student-a')
-    expect(owner.indexOf('canvas-section--places')).toBeLessThan(owner.indexOf('canvas-section--space'))
-    for (const nextUser of ['student-b', null]) {
-      const html = render(nextUser)
-      expect(html).not.toContain(`src="${imageA}"`)
-      expect(html).toContain(`src="${DEFAULT_PERSONAL_ARTWORK}"`)
-      expect(html.indexOf('canvas-section--space')).toBeLessThan(html.indexOf('canvas-section--places'))
+  it('shows the next scheduled course across the Sunday/Monday boundary', () => {
+    saveTimetable('student-a', timetable)
+    const html = render()
+    expect(html).toContain('高等数学')
+    expect(html).toContain('08:00')
+    expect(html).toContain('11/16')
+    expect(html).toContain('崇学楼203')
+    expect(html).toContain('找教室')
+  })
+  it('does not show a previous account course to another account or guest', () => {
+    saveTimetable('student-a', timetable)
+    for (const user of ['student-b', null]) {
+      const html = render(user)
+      expect(html).not.toContain('高等数学')
+      expect(html).toContain('导入课表')
     }
   })
-
-  it('does not offer a map action for a campus announcement with no matching place', () => {
-    const base = { status: 'active', startAt: '2026-11-13T03:00:00Z', endAt: '2026-11-14T03:00:00Z', isCloud: true }
-    const html = render('student-a', { events: [{ ...base, id: 'notice', title: '全校通知', locationId: null }] })
-    expect(html).toContain('全校通知')
-    expect(html).not.toContain('canvas-place-link')
-    const located = render('student-a', { events: [{ ...base, id: 'event', title: '阅读活动', locationId: 'library' }] })
-    expect(located).toContain('canvas-place-link')
-    expect(located).toContain('图书馆</button>')
+  it('asks for calibration instead of pretending an unconfirmed calendar has no classes', () => {
+    saveTimetable('student-a', { ...timetable, dateConfirmed: false })
+    const html = render()
+    expect(html).toContain('校准教学周')
+    expect(html).not.toContain('今天无课')
+    expect(html).not.toContain('08:00')
+  })
+  it('does not invent a next course after the last scheduled occurrence', () => {
+    saveTimetable('student-a', { ...timetable, courses: [{ ...course, weeks: [1] }] })
+    const html = render()
+    expect(html).toContain('暂无后续课表安排')
+    expect(html).not.toContain('今天无课')
+  })
+  it('keeps demo events out of the real home activity feed', () => {
+    const base = { status: 'active', startAt: '2026-11-15T03:00:00Z', endAt: '2026-11-16T03:00:00Z' }
+    const html = render('student-a', { events: [{ ...base, id: 'demo', title: '不是真实活动', isDemo: true }, { ...base, id: 'real', title: '正式发布活动', isCloud: true }] })
+    expect(html).not.toContain('不是真实活动')
+    expect(html).toContain('正式发布活动')
   })
 })

@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="OurCampus 重构设计阶段档案：8步走查、26组页面范围、5条任务链与3套方向。沿途方向已经选定并实施。">
+<title>整款软件重构设计档案 · 沿途已选定 | OurCampus</title>
+<style>
+:root { --paper:#f8f8f4;--surface:#fff;--ink:#272e2a;--secondary:#4e5951;--muted:#657066;--line:#dfe4dd;--accent:#2e5140;--note:#f3ede3;--note-ink:#725334;--width:1160px; }
+* { box-sizing:border-box; }
+html { scroll-behavior:auto; }
+body { margin:0;background:var(--paper);color:var(--ink);font:15px/1.85 "Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;overflow-wrap:anywhere; }
+a { color:var(--accent);text-underline-offset:4px; }
+a:hover { text-decoration-thickness:2px; }
+a:focus-visible,[tabindex]:focus-visible { outline:2px solid var(--accent);outline-offset:5px; }
+img { display:block;max-width:100%;height:auto; }
+p,h1,h2,h3,h4,figure { margin:0; }
+code { padding:1px 5px;background:#edf0e9;border-radius:4px;font-size:.9em; }
+ul,ol { padding-left:1.3em; }
+li+li { margin-top:8px; }
+.page { width:min(var(--width),calc(100% - 64px));margin:auto; }
+.masthead { display:flex;align-items:center;justify-content:space-between;gap:20px;padding:30px 0 20px;border-bottom:1px solid var(--line);font-size:13px;color:var(--muted); }
+.masthead strong { color:var(--ink);font-size:19px;letter-spacing:-.02em; }
+.hero { padding:42px 0 28px; }
+.section-kicker { display:block;font-size:12px;letter-spacing:.12em;color:var(--muted); }
+h1 { margin:12px 0 18px;font-size:clamp(29px,4.6vw,46px);line-height:1.35;font-weight:550;letter-spacing:-.035em; }
+.hero-meta { color:var(--secondary); }
+.status { margin:24px 0 20px;padding:18px 20px;border-left:3px solid var(--note-ink);background:var(--note);color:var(--note-ink); }
+.status strong { display:block;margin-bottom:6px;font-size:17px; }
+.status p { max-width:86ch; }
+.summary { display:flex;flex-wrap:wrap;gap:12px 30px;padding:17px 0 22px; }
+.summary span { font-size:13px;color:var(--muted); }
+.summary b { margin-right:5px;font-size:24px;line-height:1;color:var(--ink);font-weight:550;font-variant-numeric:tabular-nums; }
+.toc { display:flex;gap:8px 24px;flex-wrap:wrap;padding:18px 0 24px;border-block:1px solid var(--line);font-size:14px; }
+.toc a { text-decoration:none; }
+main>section { padding:52px 0 16px;scroll-margin-top:20px; }
+.section-head { display:flex;align-items:baseline;gap:16px;margin-bottom:20px; }
+.section-head>span { color:var(--muted);font-size:13px; }
+h2 { font-size:27px;line-height:1.4;font-weight:550;letter-spacing:-.025em; }
+h3 { font-size:18px;line-height:1.55;font-weight:550; }
+h4 { font-size:16px;font-weight:550; }
+.intro { max-width:92ch;color:var(--secondary);margin-bottom:26px; }
+.walk-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 24px; }
+.walk-item header { display:flex;align-items:baseline;gap:10px;margin-bottom:14px; }
+.number { font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted); }
+.walk-item h3 { font-size:17px; }
+.evidence-link { display:flex;justify-content:center;padding:16px 0;background:#ecefe8;overflow:hidden;border-radius:12px; }
+.evidence-link img { width:156px;border-radius:9px;box-shadow:0 4px 18px #1a28121a; }
+.walk-item p { font-size:13px;line-height:1.8;color:var(--secondary); }
+.walk-item .label { margin:16px 0 3px;font-size:11px;letter-spacing:.08em;color:var(--muted); }
+.walk-item .judgment { margin-top:12px;color:var(--accent); }
+.subsection { margin-top:34px;padding-top:24px;border-top:1px solid var(--line); }
+.subsection h3 { margin-bottom:12px; }
+.reading-note { margin:24px 0 0;color:var(--muted);font-size:13px; }
+.table-wrap { overflow:auto;background:var(--surface);border-radius:12px; }
+table { width:100%;border-collapse:collapse;min-width:760px;font-size:14px;line-height:1.75; }
+caption { text-align:left;padding:18px 18px 14px;color:var(--secondary);font-size:13px; }
+thead th { text-align:left;padding:12px 18px;background:#ecefe8;color:var(--secondary);font-size:12px;font-weight:500; }
+tbody th,tbody td { padding:15px 18px;text-align:left;vertical-align:top;border-top:1px solid #edf0ea; }
+tbody th { width:18%;font-weight:500; }
+tbody td:nth-child(2) { width:38%; }
+tbody td:nth-child(3) { width:44%;color:var(--secondary); }
+.row-number { display:inline-block;min-width:25px;font-size:11px;color:var(--muted);font-weight:400; }
+.entry-list { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;list-style:none;padding:0;margin:0 0 30px; }
+.entry-list li+li { margin-top:0; }
+.entry-list h4 { color:var(--accent);margin-bottom:8px; }
+.entry-list p { font-size:13px;line-height:1.8;color:var(--secondary); }
+.entry-list .entry-limit { margin-top:10px;color:var(--muted); }
+.chains { display:grid;gap:28px; }
+.chain { padding:24px 0 0;border-top:1px solid var(--line); }
+.chain-heading { display:flex;align-items:baseline;gap:15px; }
+.flow { margin:13px 0 11px;padding:14px 17px;border-left:3px solid var(--accent);background:#eef1e9;font-size:15px;line-height:1.9; }
+.chain>p:last-child { color:var(--secondary);font-size:14px; }
+.account-note { margin-top:30px;padding:20px;background:var(--surface);border-radius:12px; }
+.account-note h3 { margin-bottom:8px; }
+.account-note p { font-size:14px;color:var(--secondary); }
+.concept { margin-top:34px; }
+.concept figcaption { display:grid;grid-template-columns:155px minmax(0,1fr);gap:20px;align-items:start;margin-bottom:16px; }
+.concept h3 { margin-top:3px;font-size:24px; }
+.concept figcaption p { font-size:13px;color:var(--secondary); }
+.concept>a { display:block;background:var(--surface);border-radius:12px;overflow:hidden; }
+.concept img { width:100%; }
+.boundary-grid { display:grid;grid-template-columns:1fr 1fr;gap:34px; }
+.boundary-grid h3 { margin-bottom:12px; }
+.boundary-grid ul { margin:0; }
+.boundary-grid li { font-size:14px;color:var(--secondary); }
+.motion-list { display:grid;gap:13px;padding:0;list-style:none; }
+.motion-list li { display:grid;grid-template-columns:112px minmax(0,1fr);gap:15px;margin:0; }
+.motion-list strong { font-weight:500;color:var(--ink); }
+.references { display:grid;grid-template-columns:1fr 1fr;gap:20px 32px;list-style:none;padding:0; }
+.references p { margin-top:6px;font-size:13px;color:var(--secondary); }
+.source-files { display:flex;flex-wrap:wrap;gap:10px 24px;margin-top:18px;font-size:13px; }
+footer { margin-top:48px;padding:25px 0 36px;border-top:1px solid var(--line);font-size:12px;color:var(--muted); }
+@media(max-width:1000px) { .walk-grid { grid-template-columns:repeat(2,minmax(0,1fr));gap:34px 28px; } .entry-list { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:640px) { .page { width:calc(100% - 36px); } .masthead { padding-top:20px;align-items:flex-start; } .masthead span { text-align:right; } .hero { padding-top:28px; } h1 { font-size:30px; } h2 { font-size:23px; } .section-head { gap:10px; } main>section { padding-top:38px; } .walk-grid { gap:32px 18px; } .evidence-link { padding:10px 0; } .evidence-link img { width:min(132px,88%); } .walk-item h3 { font-size:15px; } .entry-list,.boundary-grid,.references { grid-template-columns:1fr; } .concept figcaption { grid-template-columns:1fr;gap:9px; } .concept h3 { font-size:21px; } .summary { gap:12px 20px; } .summary b { font-size:22px; } .motion-list li { grid-template-columns:1fr;gap:2px; } .status { padding:15px; } }
+@media print { body { background:#fff;font-size:11pt; } .page { width:100%; } .toc { display:none; } .hero { padding-top:20px; } main>section { padding-top:30px; } .walk-grid { grid-template-columns:repeat(4,minmax(0,1fr));gap:18px; } .evidence-link img { width:110px; } .table-wrap { overflow:visible; } table { min-width:0;font-size:9pt; } thead { display:table-header-group; } .concept { break-inside:avoid; } .concept figcaption { grid-template-columns:120px 1fr; } a { color:inherit; } }
+</style>
+</head>
+<body>
+<div class="page">
+<header class="masthead"><strong>OurCampus</strong><span>设计审阅文档<br>2026年11月15日</span></header>
+<div class="hero">
+<span class="section-kicker">全局流程与视觉方向 · 待确认</span>
+<h1>整款软件重构审阅稿</h1>
+<p class="hero-meta">以学生上课、吃饭、办事、交流和个人展示为主线。走查基线：main <code>45c52f7</code>，390 × 844 未登录本地预览。</p>
+<div class="status" role="note"><strong>设计阶段档案 · 沿途方向已选定</strong><p>本页保留设计阶段的走查与三套静态方向图。后续应用实现与主要流程已经完成；实际验证范围、截图和发布边界见 <a href="../../releases/2026-11-15-along-system-preview.md">整套应用预览记录</a>。原签名尚缺，暂无新的 Android 安装包。</p></div>
+<div class="summary" aria-label="本轮审阅范围"><span><b>8</b>步实际走查</span><span><b>26</b>组页面范围</span><span><b>5</b>条任务链</span><span><b>3</b>套成组方向图</span></div>
+</div>
+<nav class="toc" aria-label="报告目录"><a href="#walkthrough">01 实际走查</a><a href="#scope">02 页面范围</a><a href="#chains">03 任务链</a><a href="#concepts">04 成组方向图</a><a href="#boundaries">05 边界与参考</a></nav>
+<main>
+<section id="walkthrough" aria-labelledby="walk-title">
+<div class="section-head"><span>01</span><h2 id="walk-title">8步实际走查</h2></div>
+<p class="intro">8 张图片均为本轮浏览器实截图。观察重点是学生完成任务时的入口、下一步与返回位置；另对照当前代码核查已登录能力，不把截图外的能力视为实测通过。</p>
+<div class="walk-grid"><article class="walk-item" data-walk="1">
+  <header><span class="number">01</span><h3>打开首页</h3></header>
+  <a class="evidence-link" href="evidence/01-home.jpg" aria-label="查看第1步完整实截图：1 打开首页"><img src="evidence/01-home.jpg" width="390" height="844" alt="第1步本轮实截图：1 打开首页" loading="lazy"></a>
+  <p class="label">本轮观察</p><p>首屏约三分之一展示默认静物封面；“本周”没有课程安排；个人封面与地图并列</p><p class="label judgment">改动判断</p><p>高优先：把第一屏还给下一节课、最近地点和相关提醒，艺术展示移到个人页和真实内容中</p>
+</article>
+<article class="walk-item" data-walk="2">
+  <header><span class="number">02</span><h3>找课表</h3></header>
+  <a class="evidence-link" href="evidence/02-services.jpg" aria-label="查看第2步完整实截图：2 找课表"><img src="evidence/02-services.jpg" width="390" height="844" alt="第2步本轮实截图：2 找课表" loading="lazy"></a>
+  <p class="label">本轮观察</p><p>需要进入“办事”后再打开课表</p><p class="label judgment">改动判断</p><p>高优先：已导入时首页直接展示下一节；未导入时提供可跳过的轻量入口</p>
+</article>
+<article class="walk-item" data-walk="3">
+  <header><span class="number">03</span><h3>打开课表</h3></header>
+  <a class="evidence-link" href="evidence/03-timetable-empty.jpg" aria-label="查看第3步完整实截图：3 打开课表"><img src="evidence/03-timetable-empty.jpg" width="390" height="844" alt="第3步本轮实截图：3 打开课表" loading="lazy"></a>
+  <p class="label">本轮观察</p><p>本轮设备无课表，显示 <code>.xls</code> 本机导入；从办事进入却标为“返回我的”</p><p class="label judgment">改动判断</p><p>返回文案和返回目的地都必须跟随来源。未验证已导入真实课表，教室不可继续找楼来自代码核对</p>
+</article>
+<article class="walk-item" data-walk="4">
+  <header><span class="number">04</span><h3>找附近吃饭</h3></header>
+  <a class="evidence-link" href="evidence/04-nearby-food.jpg" aria-label="查看第4步完整实截图：4 找附近吃饭"><img src="evidence/04-nearby-food.jpg" width="390" height="844" alt="第4步本轮实截图：4 找附近吃饭" loading="lazy"></a>
+  <p class="label">本轮观察</p><p>餐饮筛选有效，但先消耗大量空间介绍定位和分类；结果只有“查看地点/去这里”</p><p class="label judgment">改动判断</p><p>高优先：餐厅承接窗口、菜单、评价和路线。未定位也应允许看餐厅内容，不强制定位或绕到社区</p>
+</article>
+<article class="walk-item" data-walk="5">
+  <header><span class="number">05</span><h3>去谷园餐厅</h3></header>
+  <a class="evidence-link" href="evidence/05-route-origin.jpg" aria-label="查看第5步完整实截图：5 去谷园餐厅"><img src="evidence/05-route-origin.jpg" width="390" height="844" alt="第5步本轮实截图：5 去谷园餐厅" loading="lazy"></a>
+  <p class="label">本轮观察</p><p>尚未定位，直接得到“西校门→谷园餐厅”；标注校园演示估算 328 米、约 6 分钟</p><p class="label judgment">改动判断</p><p>高优先：先确认起点。演示估算标注已有，但不能让学生把设备预设点误认成自己。腾讯服务本轮提示路线免费额度已用完，未验证真实路线成功</p>
+</article>
+<article class="walk-item" data-walk="6">
+  <header><span class="number">06</span><h3>打开社区</h3></header>
+  <a class="evidence-link" href="evidence/06-community.jpg" aria-label="查看第6步完整实截图：6 打开社区"><img src="evidence/06-community.jpg" width="390" height="844" alt="第6步本轮实截图：6 打开社区" loading="lazy"></a>
+  <p class="label">本轮观察</p><p>首屏仍是五个功能入口和三个示例动态，真实内容区没有形成阅读吸引力</p><p class="label judgment">改动判断</p><p>中高优先：社区应先看到内容，聊天和游戏有明确入口；示例不占据真实推荐流</p>
+</article>
+<article class="walk-item" data-walk="7">
+  <header><span class="number">07</span><h3>查餐厅评价</h3></header>
+  <a class="evidence-link" href="evidence/07-dining-entry.jpg" aria-label="查看第7步完整实截图：7 查餐厅评价"><img src="evidence/07-dining-entry.jpg" width="390" height="844" alt="第7步本轮实截图：7 查餐厅评价" loading="lazy"></a>
+  <p class="label">本轮观察</p><p>从社区再次选择餐厅，然后才能进入窗口</p><p class="label judgment">改动判断</p><p>高优先：与附近餐厅、地点详情共享餐厅和窗口标识，保留当前餐厅与筛选</p>
+</article>
+<article class="walk-item" data-walk="8">
+  <header><span class="number">08</span><h3>打开我的</h3></header>
+  <a class="evidence-link" href="evidence/08-profile.jpg" aria-label="查看第8步完整实截图：8 打开我的"><img src="evidence/08-profile.jpg" width="390" height="844" alt="第8步本轮实截图：8 打开我的" loading="lazy"></a>
+  <p class="label">本轮观察</p><p>默认封面、未登录身份和四个私人工具；自定义封面只在本机</p><p class="label judgment">改动判断</p><p>保留个性展示，但清楚区分“公开名片”和“只有我能看到的工具”。公开封面需另接服务能力，不能仅改文案称已同步</p>
+</article></div>
+<p class="reading-note">每张截图均链接原图，可在浏览器中查看完整尺寸。本轮没有登录、发送消息、提交评价或读取私人账户资料。</p>
+<div class="subsection"><h3>代码核对发现的连接断点</h3><ul><li><code>TimetableDayView</code> 已有下一节计算，但教室没有打开地点的出口；需要可靠建筑匹配和手选确认，不能猜出精确室内路线。</li><li>报修页同时展示本机模拟进度和云端通用上报入口。提交后的落点应进入该条记录；应用提交成功不等于学校已接单。</li><li>首页动态“查看全部”进入社区首页，未直接进入动态列表；“我的发布”打开云端列表也不定位原记录。</li><li>地区聊天与通知分离；通知只能跳地区，无法定位原消息；阅读地区和发送地区独立，容易发错地方。</li><li>他人主页当前仅有昵称、头像和最多 20 条大厅发言；自设封面、签名、标签并未公开。</li></ul></div>
+<div class="subsection"><h3>已有能力继续保留</h3><p>查地点不需要登录；餐厅有真实窗口与部分现场菜单；图片已有选择、压缩、预览和移除；地图与路线已有来源说明；课表能在本机解析后预览；弹层已有部分焦点恢复、滚动锁与减少动态效果适配。这些都应接进新的完整流程，而不是另外造一套展示数据。</p></div>
+</section>
+<section id="scope" aria-labelledby="scope-title">
+<div class="section-head"><span>02</span><h2 id="scope-title">26组页面范围</h2></div>
+<p class="intro">范围来自整款软件重构方案，覆盖一级页面、内嵌页、业务表单及通用弹层。下表是后续实施与验收清单，不代表 26 组页面已全部绘制或实现。</p>
+<div class="table-wrap" role="region" aria-label="26组页面覆盖矩阵，可横向滚动" tabindex="0"><table><caption>页面组、重做范围与必须承接的关键状态</caption><thead><tr><th scope="col">页面组</th><th scope="col">重做范围</th><th scope="col">关键状态与承接</th></tr></thead><tbody><tr data-scope="01"><th scope="row"><span class="row-number">01</span>今天首页</th><td>课程、相关提醒、常用动作、内容排序</td><td>已/未导入、未校准、学期过期、已排课程为空、跨天、登录前后、过期提醒</td></tr>
+<tr data-scope="02"><th scope="row"><span class="row-number">02</span>课程</th><td>日/周课表、导入、预览、校准、课程详情</td><td>解析错误、重复导入、未排时间、课程冲突、账号隔离、建筑未匹配</td></tr>
+<tr data-scope="03"><th scope="row"><span class="row-number">03</span>校园搜索</th><td>地点/餐厅/设施/服务聚合结果</td><td>搜索范围明确，无结果、历史与清除；不声称可搜全部聊天</td></tr>
+<tr data-scope="04"><th scope="row"><span class="row-number">04</span>地图</th><td>地图/列表切换、地点标记、搜索结果</td><td>当前选择与来源保留；Key/网络/配额失败可回退</td></tr>
+<tr data-scope="05"><th scope="row"><span class="row-number">05</span>地点详情</th><td>地址/用途/关联事项/收藏/导航</td><td>来源、未知开放时间、相关活动/反馈</td></tr>
+<tr data-scope="06"><th scope="row"><span class="row-number">06</span>路线</th><td>起点确认、模式、下一步、完整路线</td><td>GPS/手选/演示区别；不可用、同起终点、到达</td></tr>
+<tr data-scope="07"><th scope="row"><span class="row-number">07</span>附近设施</th><td>分类、定位、设施详情、补充</td><td>定位前仍可查；距离是直线估算，精度如实显示</td></tr>
+<tr data-scope="08"><th scope="row"><span class="row-number">08</span>餐厅/窗口</th><td>吃饭入口、餐厅列表、窗口列表、详情、菜单</td><td>真实图片优先；缺图、缺价格、加载失败</td></tr>
+<tr data-scope="09"><th scope="row"><span class="row-number">09</span>评价</th><td>筛选、排序、作者、评价详情、写评价</td><td>1–3 张图、压缩/上传进度、失败保留、移除/撤回</td></tr>
+<tr data-scope="10"><th scope="row"><span class="row-number">10</span>办事目录</th><td>事项搜索、资料、联系方式、官方外链</td><td>缺时间/电话不编造；外部办理与应用内提交区分</td></tr>
+<tr data-scope="11"><th scope="row"><span class="row-number">11</span>报修</th><td>地点、分类、描述、照片、确认、记录详情</td><td>本机/云端范围；提交中、防重复、错误重试</td></tr>
+<tr data-scope="12"><th scope="row"><span class="row-number">12</span>活动</th><td>日期/时间意图、列表、详情、收藏、地点</td><td>今天/未来/已结束、跨午夜、来源；不发明报名系统</td></tr>
+<tr data-scope="13"><th scope="row"><span class="row-number">13</span>社区首页</th><td>阅读内容优先、分类、发布、聊天/游戏入口</td><td>示例与真实流分开；空态不补假热度</td></tr>
+<tr data-scope="14"><th scope="row"><span class="row-number">14</span>校园动态</th><td>列表、地区/类型、详情、发布</td><td>首页和社区进入同一详情，不做两套信息壳</td></tr>
+<tr data-scope="15"><th scope="row"><span class="row-number">15</span>失物招领</th><td>分类、搜索、发布、照片、详情、完成/撤回</td><td>丢失/捡到区分、联系范围、表单草稿</td></tr>
+<tr data-scope="16"><th scope="row"><span class="row-number">16</span>地区聊天</th><td>历史、输入、图片、地区、撤回、转动态</td><td>多入口共用页面与状态；翻页、原消息定位、来源栈、离线、键盘、小屏</td></tr>
+<tr data-scope="17"><th scope="row"><span class="row-number">17</span>你画我猜</th><td>选地区/房间、玩家、画板、猜词、互动</td><td>保留画笔颜色与玩法；临时计分不称长期排行榜</td></tr>
+<tr data-scope="18"><th scope="row"><span class="row-number">18</span>消息</th><td>提醒列表、详情、聊天入口、上报进度</td><td>未读、加载失败、原文已撤回、返回位置</td></tr>
+<tr data-scope="19"><th scope="row"><span class="row-number">19</span>发布</th><td>选发布类型、关联地点、照片、预览、提交结果</td><td>业务表单分流，先确定餐厅/窗口再评价</td></tr>
+<tr data-scope="20"><th scope="row"><span class="row-number">20</span>我的发布</th><td>分类记录、状态、具体详情、返回</td><td>直接定位该条记录，不能只打开另一张列表</td></tr>
+<tr data-scope="21"><th scope="row"><span class="row-number">21</span>收藏/路线</th><td>保存内容、空态、删除、继续任务</td><td>账号隔离、设备记录归属、退出/切换账号；不承诺云端同步</td></tr>
+<tr data-scope="22"><th scope="row"><span class="row-number">22</span>个人/访客页</th><td>自设封面、头像、签名、内容、真实访客预览、本机效果预览</td><td>真实访客页只展示实际公开字段；本机预览明确他人不可见，私人工具不进入公开内容区</td></tr>
+<tr data-scope="23"><th scope="row"><span class="row-number">23</span>账户</th><td>登录、注册、验证、找回、头像昵称</td><td>登录后回原任务，草稿保留，退出说明</td></tr>
+<tr data-scope="24"><th scope="row"><span class="row-number">24</span>设置/更新</th><td>通知订阅、地图/路线偏好、减少动态、版本</td><td>权限拒绝、更新失败、安装来源与签名</td></tr>
+<tr data-scope="25"><th scope="row"><span class="row-number">25</span>管理区域</th><td>审核、窗口维护、地点与反馈管理</td><td>普通用户不见管理动作，服务端权限不变</td></tr>
+<tr data-scope="26"><th scope="row"><span class="row-number">26</span>通用弹层</th><td>标题、关闭、底部动作、图片查看、确认</td><td>返回栈、安全区、键盘、焦点、手势可取消</td></tr></tbody></table></div>
+</section>
+<section id="chains" aria-labelledby="chains-title">
+<div class="section-head"><span>03</span><h2 id="chains-title">5条任务链</h2></div>
+<p class="intro">先接通任务，再安排页面。一级入口保持“今天、校园、社区、我的”；消息在各主页面提供同一个入口，地区聊天共用页面、地区、草稿和阅读位置。</p>
+<ul class="entry-list" aria-label="四个稳定入口"><li><h4>今天</h4><p>下一节、当天安排、相关提醒、可自选的常用动作；确认当天没有已排课程时显示下一次已排课程</p><p class="entry-limit"><strong>边界：</strong>固定艺术封面、永远占位的空课表、大段示例活动</p></li>
+<li><h4>校园</h4><p>搜地点、餐厅、设施与办事；按找楼/吃饭/办事切换；列表与地图共用选择状态</p><p class="entry-limit"><strong>边界：</strong>未定位就给出的精确距离、假实时人流、虚构预约/点餐功能</p></li>
+<li><h4>社区</h4><p>真实动态、活动、失物和同学内容；地区聊天与游戏有稳定入口；提醒和聊天入口始终可达</p><p class="entry-limit"><strong>边界：</strong>只有功能图标的中转菜单、把公开地区大厅冒充私聊</p></li>
+<li><h4>我的</h4><p>公开名片、真实访客预览；独立标注的本机效果预览；课表管理、收藏、路线、发布记录；账户和设置</p><p class="entry-limit"><strong>边界：</strong>把本机装扮说成公开同步、把课表和私人路线暴露给访客</p></li></ul>
+<div class="chains"><article class="chain" data-chain="1"><div class="chain-heading"><span class="number">01</span><h3>上课</h3></div><p class="flow">首页下一节 → 课程详情 → 教室/建筑确认 → 选择起点 → 路线 → 返回原课程</p><p>下一节只依据已导入、已校准且在有效学期内的已排课程；未校准、学期过期、未排时间和课程冲突分别说明，不能把缺少安排解释为“无课”，也不推断临时调课。保留教室号，不能可靠匹配时让用户选建筑；不承诺室内导航。</p></article><article class="chain" data-chain="2"><div class="chain-heading"><span class="number">02</span><h3>吃饭</h3></div><p class="flow">校园/吃饭 → 餐厅 → 窗口与菜单 → 评价与照片 → 写评价或去这里</p><p>全流程共用餐厅/窗口 ID，返回保留筛选。看菜单不强制登录，发表时登录并保留草稿。</p></article><article class="chain" data-chain="3"><div class="chain-heading"><span class="number">03</span><h3>办事</h3></div><p class="flow">按事项搜索 → 资料/材料/官方入口/地点 → 联系或导航</p><p>报修从地点和问题进入，上传照片 → 确认提交范围 → 回到该条记录；本机草稿与应用云端提交分别标注。</p></article><article class="chain" data-chain="4"><div class="chain-heading"><span class="number">04</span><h3>交流</h3></div><p class="flow">消息提醒 → 原地区/原消息定位 → 查看上下文或作者 → 返回原阅读位置 → 返回来源提醒或社区</p><p>来源栈须跨作者页、图片预览和地图跳转保留；发送地区默认跟随当前阅读地区，“全部”时明确选择。地区聊天与临时游戏房间的数据寿命分开。</p></article><article class="chain" data-chain="5"><div class="chain-heading"><span class="number">05</span><h3>个人展示</h3></div><p class="flow">我的 → 编辑头像/封面/签名 → 核对保存范围与结果 → 真实访客预览或本机效果预览</p><p>真实访客预览只读取已保存且实际公开的字段，不能混入本机私有内容或未保存草稿；未接通公开能力的封面、签名只能标为“本机效果预览，他人不可见”。私人工具在访客页不存在；公开封面、签名与分享需另做服务端字段、存储和权限，未接通前不假装发布成功。</p></article></div>
+<div class="account-note"><h3>账号与返回规则</h3><p>课表、收藏、路线及本机发布历史按账号隔离；退出或换账号后不沿用上一账号的私人记录。旧设备共用记录须明确归属，不能静默归入新账号。本机保存不等于云端同步。</p><p>顶部消息与社区进入同一个地区聊天页面；经过作者、图片或地图后仍保留原消息、阅读位置和来源栈。退出时回到来源提醒或社区，不固定跳首页。</p></div>
+</section>
+<section id="concepts" aria-labelledby="concept-title">
+<div class="section-head"><span>04</span><h2 id="concept-title">3套成组方向图</h2></div>
+<p class="intro">按本轮最新显示顺序编号。每张包含四个代表页面，只用于比较同一套设计跨页面是否成立。人物、照片、课程、活动和地图均为视觉示例；图中任何数据都不代表学校、实际课程或线上用户。</p>
+<figure class="concept" data-concept="1"><figcaption><div><span class="section-kicker">DIRECTION 01</span><h3>方向 1</h3></div><p>本图为修正版，已替代最早将私人工具误放入公开区域的废弃图；废弃图不参与选择。首页动作栏仍有装饰分隔，实现时需控制。</p></figcaption><a href="concepts/direction-1.png" aria-label="查看方向1完整静态设计图"><img src="concepts/direction-1.png" width="1652" height="952" alt="方向1：四个代表页面的成组静态设计稿，不是可运行应用" loading="lazy"></a></figure>
+<figure class="concept" data-concept="2"><figcaption><div><span class="section-kicker">DIRECTION 02</span><h3>方向 2</h3></div><p>用于比较同一套设计跨页面是否成立；局部列表仍有多条横线，实现时不机械照搬。</p></figcaption><a href="concepts/direction-2.png" aria-label="查看方向2完整静态设计图"><img src="concepts/direction-2.png" width="1652" height="952" alt="方向2：四个代表页面的成组静态设计稿，不是可运行应用" loading="lazy"></a></figure>
+<figure class="concept" data-concept="3"><figcaption><div><span class="section-kicker">DIRECTION 03</span><h3>方向 3</h3></div><p>图中的“已定位／320 米”仅为示例成功状态。实际默认态应为待定位；定位后才显示真实计算并标注直线估算。局部横线仍需控制。</p></figcaption><a href="concepts/direction-3.png" aria-label="查看方向3完整静态设计图"><img src="concepts/direction-3.png" width="1652" height="952" alt="方向3：四个代表页面的成组静态设计稿，不是可运行应用" loading="lazy"></a></figure>
+<p class="reading-note">图下动效描述是设计意图，图片本身没有运行这些动效。活动、失物、游戏、报修、消息、发布、账户与设置仍在正式实施范围内。</p>
+</section>
+<section id="boundaries" aria-labelledby="boundary-title">
+<div class="section-head"><span>05</span><h2 id="boundary-title">边界与参考链接</h2></div>
+<div class="boundary-grid">
+<div><h3>证据与能力边界</h3><ul>
+<li>本轮未验证真实消息发送、相册上传、双账号图片读取、真实课表导入或学校受理链路。</li>
+<li>腾讯路线提示免费额度已用完；未验证真实路线成功。未知起点需确认，生成地图不得作为地理依据。</li>
+<li>默认定位态应为待定位；图3的 320 米不是本轮采集的距离，真实定位后需如实标注直线估算。</li>
+<li>学校已接单、实时人流、预约、点餐、购票和报名等能力不得因视觉稿而凭空增加。</li>
+<li>当前他人主页仅有公开头像、昵称与最多 20 条未撤回大厅发言。公开封面、签名与分享仍需服务端字段、存储和权限支持。</li>
+<li>真实访客预览只展示已保存且实际公开的字段。本机封面、签名、标签或未保存草稿不能混入；本机效果预览须明确他人不可见。</li>
+<li>正式 Android 覆盖升级仍依赖原签名配置。本审阅包不是安装包，不代表新版发布。</li>
+</ul></div>
+<div><h3>视觉规则</h3><ul><li>产品主要字号 14–16px，标题用于定位任务，不用超大口号占首屏；不写“这里可以做什么”“开启校园新体验”。</li><li>不把每件事塞进有边框的卡片；只有有独立状态的课程/行程可用一个明显的承载面。列表以对齐、间距和内容本身区分。</li><li>丰富颜色有用途：行动色一套，课程/内容类别一套，错误和状态单独定义；拒绝逐项随机粉彩、全页灰绿和极端荧光。</li><li>学生的个性来自自己设置的封面、照片、签名与真实内容；不强制校园插画，也不将一幅默认静物当产品主视觉。</li><li>图标使用统一库与字重，常用入口配短文字；不设计难认的抽象符号替代实际任务名。</li><li>登录前后、空内容、加载、失败与长文本都与常规页面一起设计。</li></ul></div>
+</div>
+<div class="subsection"><h3>动态表达与限制</h3><ul class="motion-list"><li><strong>课程打开地点</strong><span>课程中的地点信息连续进入详情。保留原始课程，180–240ms，不抢焦点</span></li><li><strong>列表切地图</strong><span>同一选中地点保持身份、地图展示对应区域。不重新跳回校园中心，不伪造定位</span></li><li><strong>打开照片</strong><span>从点击照片扩展到完整图，关闭回原位置。可用按钮关闭，不只依赖手势</span></li><li><strong>切日/筛选</strong><span>日期选择和内容短距离移动。可点击替代滑动，读取时保持稳定</span></li><li><strong>个人封面</strong><span>用户选择静止/轻微移动。只在个人展示场景，后台停止，减少动态时关闭</span></li><li><strong>上传/提交</strong><span>明确进度与完成反馈。不用虚假动画代替真实结果；失败保留输入</span></li></ul></div>
+<div class="subsection"><h3>按完整任务验收</h3><p>以完整任务而非单页截图验收：已导入课表能到建筑；未知教室能手选；未定位不冒认当前位置；从餐厅能直达窗口评价；登录后回原草稿；消息能回原文；提交后能找到对应记录；访客看不到私人工具。各链路都覆盖返回、大字体、320px、键盘、无网、减少动态与权限拒绝。
+
+视觉稿的隐私边界单独验收：课表、收藏、路线绝不能排在公开内容下，只能出现在明确的本人私人工具区域，真实访客页不得出现。生成的方向图如果误排，一律记录为缺陷并要求修正，不作为后续实现依据。
+
+同时核对未校准、学期过期、未排时间与课程冲突的文案；分别验证真实访客预览和本机效果预览，并测试退出、换账号后没有上一账号私人记录。聊天须从顶部消息和社区各走一遍，经过作者、图片或地图后仍能回到原消息、阅读位置和入口来源。
+
+本轮先完成整套流程与视觉方向的可审阅稿；未选定视觉前不再次覆盖生产界面或发布新安装包。</p></div>
+<div class="subsection"><h3>一手参考与迁移判断</h3><p class="intro">以下是从官方资料推导的设计建议，尚未经过本校学生访谈验证；借鉴任务组织和边界，不照搬其他产品的品牌或服务能力。</p>
+<ul class="references">
+<li><a href="https://about-univus.nus.edu.sg/univus-tips/" target="_blank" rel="noopener noreferrer">NUS uNivUS · 官方教程</a><p>高频组件优先、部分访客查询和课程地点承接。借鉴任务优先级，不迁入公交实时数据。</p></li>
+<li><a href="https://citymapper.com/news/597/go-your-personal-trip-assistant" target="_blank" rel="noopener noreferrer">Citymapper GO · 行程分步</a><p>突出当前相关的一步。借鉴分阶段操作，不把全部路线控制铺在首屏。</p></li>
+<li><a href="https://dicefm.zendesk.com/hc/en-gb/articles/22365220986897-How-to-find-events-you-ll-love-on-DICE" target="_blank" rel="noopener noreferrer">DICE · 活动发现指南</a><p>以时间意图、附近与内容组织活动，不为本项目增加未接通的购票或报名。</p></li>
+<li><a href="https://help.are.na/docs/getting-started/channels" target="_blank" rel="noopener noreferrer">Are.na · 内容集合与可见范围</a><p>借鉴私人／公开边界和内容组织，不复制其品牌样式。</p></li>
+</ul>
+<p class="reading-note">正文与全部图片可离线查看；以上官方参考链接打开时需要网络。参考地址于 2026年11月15日核验可访问。</p>
+</div>
+<div class="subsection"><h3>本地原始文档</h3><div class="source-files"><a href="01-学生日常走查.md">01 学生日常走查</a><a href="02-整款软件重构方案.md">02 整款软件重构方案</a><a href="03-方向图与实施边界.md">03 方向图与实施边界</a></div></div>
+</section>
+</main>
+<footer>OurCampus · 2026-11-15 · 本页为选择前的静态设计档案；沿途方向已实施，实际结果以最终交付记录为准。</footer>
+</div>
+</body>
+</html>

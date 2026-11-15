@@ -42,7 +42,7 @@ describe('community canvas presentation contracts', () => {
     expect(html).toContain('登录后查看历史消息')
     expect(html).toContain('aria-label="添加聊天照片" disabled=""')
     expect(html).toMatch(/id="mobile-hall-message"[^>]*disabled=""/)
-    expect(html).toContain('type="submit" disabled=""')
+    expect(html).toMatch(/type="submit"[^>]*disabled=""/)
     expect(html).not.toContain('提交为动态')
   })
 
@@ -66,5 +66,45 @@ describe('community canvas presentation contracts', () => {
     expect(html).toContain('连接暂时中断')
     expect(html).toContain('disabled="">加载中…</button>')
     expect(html).toContain('>重试</button>')
+  })
+
+  it('defaults sending to the concrete district being read', () => {
+    const html = render({ isFullscreen: true, selectedRegionId: 'sports' })
+    expect(html).toContain('<option value="sports" selected="">运动区</option>')
+    expect(html).toContain('发送到')
+  })
+
+  it('asks for a sending district when reading All', () => {
+    const html = render({ isFullscreen: true })
+    expect(html).toContain('<option value="" selected="">选择发送地区</option>')
+  })
+
+  it('marks the requested original message only when that message is loaded', () => {
+    const html = render({ isFullscreen: true, initialMessageId: 'original', messages: [message('original', other, '原消息')] })
+    expect(html).toContain('data-message-id="original"')
+    expect(html).toContain('aria-current="true"')
+    expect(html).toContain('原消息')
+    expect(html).not.toContain('尚未载入')
+  })
+
+  it('offers older history without claiming a missing source was withdrawn', () => {
+    const html = render({ isFullscreen: true, initialMessageId: 'unloaded', chat: { ...defaults.chat, hasMore: true } })
+    expect(html).toContain('原消息尚未载入')
+    expect(html).toContain('查看更早消息')
+    expect(html).not.toContain('原消息已撤回')
+    const exhausted = render({ isFullscreen: true, initialMessageId: 'missing' })
+    expect(exhausted).toContain('当前历史中未找到原消息，可能已撤回或暂不可查看。')
+  })
+
+  it('keeps real community content ahead of stable chat/game entrances and separates local records', () => {
+    const html = render({ hotspots: [
+      { id: 'event-library-lecture', title: '不应进入真实动态的示例', startAt: '2026-11-15T00:00:00Z' },
+      { id: 'real', title: '已审核的真实通知', isCloud: true },
+      { id: 'local', title: '设备上的记录' },
+    ] })
+    expect(html.indexOf('已审核的真实通知')).toBeLessThan(html.indexOf('aria-label="社区功能"'))
+    expect(html).toContain('本机发布 · 仅此设备')
+    expect(html).toContain('你画我猜')
+    expect(html).not.toContain('不应进入真实动态的示例')
   })
 })

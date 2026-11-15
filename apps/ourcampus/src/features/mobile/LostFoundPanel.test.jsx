@@ -13,6 +13,13 @@ const render = (posts) => renderToStaticMarkup(<LostFoundPanel posts={posts}
   currentUserId={user} cloudReady onFilterChange={() => {}} onRegionChange={() => {}} />)
 
 describe('lost/found cloud photos', () => {
+  it('shows an honest empty list without generating fresh example posts', () => {
+    const html = renderToStaticMarkup(<LostFoundPanel posts={[]} locations={[]} regionId="all" filter="all"
+      onFilterChange={() => {}} onRegionChange={() => {}} />)
+    expect(html).not.toContain('深蓝色折叠伞')
+    expect(html).not.toContain('一串钥匙')
+    expect(html).toContain('暂时没有')
+  })
   it('renders a private photo gallery for cloud records on a second device', () => {
     const html = render([post])
     expect(html).toContain('aria-label="物品照片"')

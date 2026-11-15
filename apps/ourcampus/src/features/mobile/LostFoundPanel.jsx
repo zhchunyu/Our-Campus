@@ -1,7 +1,7 @@
 import { campusDisplayText } from '../../data/campusPresentation.js'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Search, Plus, ImagePlus, MapPin, Navigation, PackageSearch, KeyRound, Check, Pencil, Trash2, X } from 'lucide-react'
-import { createDemoLostFoundPosts, filterLostFoundPosts, getRegionLabel, LOCAL_AUTHOR_ID } from '../../data/campusCommunity.js'
+import { filterLostFoundPosts, getRegionLabel, LOCAL_AUTHOR_ID } from '../../data/campusCommunity.js'
 import { prepareCommunityPhoto } from './communityImage.js'
 import { usePostImageDraft } from './usePostImageDraft.js'
 import { PostImagePicker } from './PostImagePicker.jsx'
@@ -33,9 +33,8 @@ export function LostFoundPanel({ posts, locations, regionId, filter, onFilterCha
   const [deleteId, setDeleteId] = useState(null)
   useBackLayer(Boolean(draft || deleteId || saving), () => { if (!saving) { if (deleteId) setDeleteId(null); else closeForm() } }, 30)
   const photoSequence = useRef(0)
-  const examples = useMemo(createDemoLostFoundPosts, [])
   const byId = new Map(locations.map((location) => [location.id, location]))
-  const visible = filterLostFoundPosts([...posts, ...examples], { regionId, type: filter, status, query, authorId: currentUserId })
+  const visible = filterLostFoundPosts(posts, { regionId, type: filter, status, query, authorId: currentUserId })
   useEffect(() => { if (filter === 'mine') setStatus('all') }, [filter])
   useEffect(() => () => { photoSequence.current += 1 }, [])
 

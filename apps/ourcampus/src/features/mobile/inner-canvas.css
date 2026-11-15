@@ -15,7 +15,7 @@
 :root.canvas-ui :is(.auv-page__header h1, .timetable-header h1, .information-frame > header h2, .my-publications-page > header h2) {
   margin: 0;
   color: var(--canvas-ink);
-  font: 500 20px/1.45 var(--font-ui);
+  font: 650 22px/1.45 var(--font-ui);
   letter-spacing: -.3px;
 }
 :root.canvas-ui :is(.auv-page__header span, .timetable-header span, .information-frame > header small) { color: var(--canvas-muted); font-size: 13px; letter-spacing: 0; }
@@ -37,17 +37,64 @@
 :root.canvas-ui :is(.auv-page, .timetable-page, .information-page, .my-publications-page) button { min-height: 44px; font-family: var(--font-ui); }
 :root.canvas-ui :is(.auv-page__header > button, .timetable-header > button:first-child, .information-frame > header > button, .my-publications-page > header > button, .location-sheet .detail-close, .place-feedback-sheet__header button, .route-dock__swap, .route-dock__clear):not(:disabled):hover { background: var(--canvas-inset); }
 
+/* Along campus: content is immediately available beneath six stable tasks. */
+:root.canvas-ui .along-campus { padding: calc(12px + env(safe-area-inset-top, 0px)) 18px calc(96px + env(safe-area-inset-bottom, 0px)); color: var(--canvas-ink); background: var(--canvas-bg); font: 400 15px/1.65 var(--font-ui); }
+:root.canvas-ui .along-campus .along-campus-heading { min-height: 48px; margin: 0 0 16px; padding: 0; gap: 8px; }
+:root.canvas-ui .along-campus-heading > div:first-of-type { flex: 1; width: auto; min-width: 0; }
+:root.canvas-ui .along-campus .along-campus-heading h2 { margin: 0; padding: 0; border: 0; color: var(--canvas-ink); font: 700 26px/1.4 var(--font-ui); text-align: left; }
+:root.canvas-ui .along-campus-heading > .organized-back { position: static; flex: 0 0 44px; width: 44px; height: 44px; min-height: 44px; padding: 0; color: var(--canvas-ink); background: transparent; }
+:root.canvas-ui .along-campus-heading > .primary-page-actions { position: static; margin-left: auto; }
+:root.canvas-ui .along-campus :is(button, input, select, textarea, summary):focus-visible { outline: 2px solid var(--canvas-accent); outline-offset: 3px; }
+:root.canvas-ui .along-campus button { min-height: 44px; font-family: var(--font-ui); }
+:root.canvas-ui .along-campus :is(button, input, select, textarea) { max-width: 100%; }
+:root.canvas-ui .along-campus button:disabled { opacity: .5; cursor: default; }
+:root.canvas-ui .along-campus-sections { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; margin: 0 0 20px; }
+:root.canvas-ui .along-campus-sections button { display: grid; justify-items: center; align-content: center; gap: 5px; min-width: 0; min-height: 64px; padding: 7px 1px; border: 0; border-radius: 14px; color: var(--canvas-secondary); background: transparent; font-size: 14px; line-height: 1.4; white-space: nowrap; }
+:root.canvas-ui .along-campus-sections button[aria-pressed=true] { color: var(--canvas-ink); background: var(--canvas-highlight); font-weight: 650; }
+:root.canvas-ui .along-campus-search { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 13px; margin-bottom: 14px; border: 1px solid var(--canvas-line); border-radius: 14px; color: var(--canvas-muted); background: var(--canvas-bg); }
+:root.canvas-ui .along-campus-search input { flex: 1; min-width: 0; width: 100%; min-height: 46px; padding: 0; border: 0; border-radius: 0; color: var(--canvas-ink); background: transparent; font: 400 16px/1.6 var(--font-ui); box-shadow: none; }
+:root.canvas-ui .along-campus-search input::placeholder { color: var(--canvas-muted); opacity: 1; }
+:root.canvas-ui .along-campus-search button { flex: 0 0 32px; width: 32px; padding: 0; border: 0; color: var(--canvas-muted); background: transparent; font-size: 22px; }
+:root.canvas-ui .along-campus-place-types { display: flex; gap: 6px; overflow-x: auto; margin: 0 0 20px; scrollbar-width: thin; }
+:root.canvas-ui .along-campus-place-types button { flex: 0 0 auto; min-height: 40px; padding: 7px 10px; border: 0; border-radius: 12px; color: var(--canvas-secondary); background: transparent; font-size: 14px; white-space: nowrap; }
+:root.canvas-ui .along-campus-place-types button[aria-pressed=true] { color: var(--canvas-accent); background: var(--canvas-inset); font-weight: 600; }
+:root.canvas-ui .along-campus-results > .mobile-panel-section__heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 8px; }
+:root.canvas-ui .along-campus-results h3 { margin: 0; color: var(--canvas-ink); font-size: 17px; font-weight: 650; }
+:root.canvas-ui .along-campus-results > .mobile-panel-section__heading > span { color: var(--canvas-muted); font-size: 13px; }
+:root.canvas-ui .along-campus-list { display: grid; gap: 8px; }
+:root.canvas-ui .along-campus-place { min-width: 0; padding: 0; border: 0; background: transparent; }
+:root.canvas-ui .along-campus-results[aria-label="校园地点"] .along-campus-place { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+:root.canvas-ui .along-campus-place__main { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; min-height: 76px; padding: 10px 0; border: 0; color: var(--canvas-ink); background: transparent; text-align: left; }
+:root.canvas-ui .along-campus-place__icon { display: grid; flex: 0 0 38px; place-items: center; width: 38px; height: 42px; border-radius: 12px; color: var(--canvas-ink); background: var(--canvas-inset); }
+:root.canvas-ui .along-campus-place.is-selected .along-campus-place__icon { background: var(--canvas-highlight); }
+:root.canvas-ui .along-campus-place__main > span:nth-child(2) { display: grid; flex: 1; gap: 3px; min-width: 0; }
+:root.canvas-ui .along-campus-place__main strong { color: var(--canvas-ink); font-size: 16px; font-weight: 650; line-height: 1.55; overflow-wrap: anywhere; }
+:root.canvas-ui .along-campus-place__main small { color: var(--canvas-muted); font-size: 13px; line-height: 1.55; }
+:root.canvas-ui .along-campus-place__main > svg { flex: 0 0 17px; color: var(--canvas-muted); }
+:root.canvas-ui .along-campus-place__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 5px 18px; padding: 0 0 10px 50px; }
+:root.canvas-ui .along-campus-place__actions button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 5px 0; border: 0; border-radius: 10px; color: var(--canvas-accent); background: transparent; font-size: 14px; }
+:root.canvas-ui .along-campus-results[aria-label="校园地点"] .along-campus-place__actions { padding: 0; }
+:root.canvas-ui .along-campus-results[aria-label="校园地点"] .along-campus-place__main > svg { display: none; }
+:root.canvas-ui .along-campus-tools { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 24px; }
+:root.canvas-ui .along-campus-tools button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 0; border: 0; color: var(--canvas-secondary); background: transparent; font-size: 14px; }
+:root.canvas-ui :is(.along-campus-note, .along-campus-empty p) { color: var(--canvas-muted); font-size: 13px; line-height: 1.75; }
+:root.canvas-ui .along-campus-note { margin: 16px 0 0; }
+:root.canvas-ui .along-campus-empty { display: grid; justify-items: start; gap: 8px; padding: 26px 0; color: var(--canvas-muted); }
+:root.canvas-ui .along-campus-empty strong { color: var(--canvas-ink); font-size: 16px; font-weight: 600; }
+:root.canvas-ui .along-campus-empty p { margin: 0; }
+:root.canvas-ui .along-campus-empty button { padding: 6px 0; border: 0; color: var(--canvas-accent); background: transparent; font-size: 14px; }
+
 /* Assistant: one reading column, with clear authorship and a quiet composer. */
 :root.canvas-ui .auv-mode-switch { gap: 8px; margin: 0 20px; padding: 0; border-radius: 0; background: transparent; border: 0; }
 :root.canvas-ui .auv-mode-switch button { position: relative; flex: 0 1 auto; padding: 10px 14px; border-radius: 10px; color: var(--canvas-secondary); font-size: 15px; }
-:root.canvas-ui .auv-mode-switch button.is-active { color: var(--canvas-accent); font-weight: 500; background: var(--canvas-inset); box-shadow: none; }
+:root.canvas-ui .auv-mode-switch button.is-active { color: var(--canvas-ink); font-weight: 650; background: var(--canvas-highlight); box-shadow: none; }
 :root.canvas-ui .auv-mode-switch button.is-active::after { display: none; }
 :root.canvas-ui .auv-welcome { padding: 12px 0 28px; }
 :root.canvas-ui .auv-welcome > span { display: none; }
-:root.canvas-ui .auv-welcome h2 { margin: 0 0 10px; color: var(--canvas-ink); font-size: 23px; font-weight: 500; }
+:root.canvas-ui .auv-welcome h2 { margin: 0 0 10px; color: var(--canvas-ink); font-size: 22px; font-weight: 650; }
 :root.canvas-ui .auv-welcome > p { max-width: 38em; color: var(--canvas-secondary); font-size: 15px; line-height: 1.8; }
 :root.canvas-ui .auv-welcome > div { gap: 8px; margin-top: 24px; border: 0; }
-:root.canvas-ui .auv-welcome button { padding: 10px 0; border: 0; border-radius: var(--canvas-radius-control); color: var(--canvas-ink); background: transparent; font-size: 15px; line-height: 1.65; }
+:root.canvas-ui .auv-welcome button { padding: 12px 14px; border: 0; border-radius: var(--canvas-radius-control); color: var(--canvas-ink); background: var(--canvas-inset); font-size: 15px; line-height: 1.65; }
 :root.canvas-ui .auv-welcome button svg { flex-shrink: 0; color: var(--canvas-muted); }
 :root.canvas-ui .auv-login { justify-items: start; gap: 12px; padding: 24px 0; border: 0; border-radius: 0; color: var(--canvas-muted); }
 :root.canvas-ui .auv-login > svg { display: none; }
@@ -78,9 +125,9 @@
 
 /* Timetable: schedule as a timeline, with numerals that are easy to scan. */
 :root.canvas-ui .timetable-import { border-radius: var(--canvas-radius-control); background: transparent; color: var(--canvas-accent); font-size: 13px !important; }
-:root.canvas-ui .timetable-next { padding: 0 0 8px; border: 0; border-radius: 0; color: var(--canvas-ink); background: transparent; }
+:root.canvas-ui .timetable-next { padding: 18px; border: 0; border-radius: var(--canvas-radius-surface); color: var(--canvas-ink); background: var(--canvas-inset); }
 :root.canvas-ui :is(.timetable-next__eyebrow, .timetable-next__date) { color: var(--canvas-muted); font-size: 13px; }
-:root.canvas-ui .timetable-next h2 { margin: 14px 0 9px; color: var(--canvas-ink); font-size: 25px; font-weight: 500; }
+:root.canvas-ui .timetable-next h2 { margin: 12px 0 9px; color: var(--canvas-ink); font-size: 22px; font-weight: 650; }
 :root.canvas-ui .timetable-next__course p strong { font-size: 20px; font-weight: 500; }
 :root.canvas-ui .timetable-next__course p span { color: var(--canvas-muted); font-size: 13px; }
 :root.canvas-ui .timetable-next__course > div { font-size: 15px; }
@@ -99,24 +146,37 @@
 :root.canvas-ui .timetable-days button > strong { font-size: 18px; font-weight: 500; }
 :root.canvas-ui .timetable-days button .has-course { background: var(--canvas-accent); }
 :root.canvas-ui .timetable-days button.is-today:not([aria-pressed=true]) { color: var(--canvas-accent); background: transparent; }
-:root.canvas-ui .timetable-days button[aria-pressed=true] { color: var(--canvas-accent); background: var(--canvas-accent-soft); font-weight: 500; }
+:root.canvas-ui .timetable-days button[aria-pressed=true] { color: var(--canvas-ink); background: var(--canvas-highlight); font-weight: 650; }
+:root.canvas-ui .timetable-days button[aria-pressed=true] i.has-course { background: var(--canvas-ink); }
 :root.canvas-ui .timetable-day h2 { font-size: 18px; font-weight: 500; color: var(--canvas-ink); }
 :root.canvas-ui :is(.timetable-day header p, .timetable-day header > span) { font-size: 13px; color: var(--canvas-muted); }
 :root.canvas-ui .timetable-course { gap: 16px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; }
-:root.canvas-ui .timetable-timeline { display: grid; gap: 24px; }
-:root.canvas-ui .timetable-course.is-active { background: transparent; border: 0; }
+:root.canvas-ui .timetable-timeline { display: grid; gap: 22px; }
+:root.canvas-ui .timetable-course.is-active { padding: 12px; border-radius: var(--canvas-radius-control); background: var(--canvas-inset); border: 0; }
 :root.canvas-ui .timetable-course.is-conflict { border: 0; }
 :root.canvas-ui .timetable-course-time { flex-basis: 58px; color: var(--canvas-ink); font-variant-numeric: tabular-nums; }
 :root.canvas-ui .timetable-course-time strong { font-size: 17px; font-weight: 500; }
 :root.canvas-ui :is(.timetable-course-time > span, .timetable-course-time small) { font-size: 13px; color: var(--canvas-muted); }
 :root.canvas-ui .timetable-course-copy { padding-left: 0; border: 0; }
-:root.canvas-ui .timetable-course-copy h3 { color: var(--canvas-ink); font-size: 16px; font-weight: 500; }
+:root.canvas-ui .timetable-course-copy h3 { color: var(--canvas-ink); font-size: 16px; font-weight: 650; }
 :root.canvas-ui .timetable-course-state { padding: 0; border-radius: 0; background: none; font-size: 13px; color: var(--canvas-muted); }
 :root.canvas-ui .timetable-course.is-active .timetable-course-state { background: transparent; color: var(--canvas-accent); }
 :root.canvas-ui .timetable-course-copy p { color: var(--canvas-muted); font-size: 15px; }
 :root.canvas-ui .timetable-course-copy > span, :root.canvas-ui .timetable-course-copy .timetable-course-conflict { font-size: 13px; }
 :root.canvas-ui .timetable-course.is-active .timetable-course-time { color: var(--canvas-accent); }
 :root.canvas-ui .timetable-course.is-conflict .timetable-course-time, :root.canvas-ui .timetable-course-copy .timetable-course-conflict { color: var(--canvas-danger); }
+:root.canvas-ui .timetable-next__course > .timetable-course-location { display: grid; gap: 2px; align-items: start; margin-top: 6px; }
+:root.canvas-ui .timetable-course-location { display: grid; gap: 2px; margin-top: 8px; color: var(--canvas-secondary); font-size: 14px; }
+:root.canvas-ui .timetable-course-location > button, :root.canvas-ui .timetable-course-location > summary { display: inline-flex; align-items: center; justify-self: start; gap: 5px; min-height: 44px; padding: 5px 0; border: 0; border-radius: 0; color: var(--canvas-accent); background: transparent; font: 600 14px/1.6 var(--font-ui); cursor: pointer; }
+:root.canvas-ui .timetable-course-location > small { display: block; color: var(--canvas-muted); font-size: 12px; line-height: 1.7; }
+:root.canvas-ui .timetable-course-location > summary { list-style: none; }
+:root.canvas-ui .timetable-course-location > summary::-webkit-details-marker { display: none; }
+:root.canvas-ui .timetable-course-location[open] > summary > svg:last-child { transform: rotate(90deg); }
+:root.canvas-ui .timetable-course-location > p { display: block; margin: 0 0 10px; color: var(--canvas-secondary); font-size: 13px; line-height: 1.75; }
+:root.canvas-ui .timetable-course-location form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; }
+:root.canvas-ui .timetable-course-location form label { flex: 1 1 130px; min-width: 0; }
+:root.canvas-ui .timetable-course-location select { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--canvas-line); border-radius: var(--canvas-radius-control); color: var(--canvas-ink); background: var(--canvas-bg); font: 400 15px/1.6 var(--font-ui); }
+:root.canvas-ui .timetable-course-location form button { flex: 0 0 auto; min-height: 44px; padding: 8px 12px; border: 0; border-radius: var(--canvas-radius-control); color: var(--canvas-surface); background: var(--canvas-accent); font: 500 14px/1.6 var(--font-ui); }
 :root.canvas-ui :is(.timetable-settings, .timetable-warning, .timetable-all, .timetable-preview-note) { padding: 16px 0; border: 0; border-radius: 0; color: var(--canvas-ink); background: transparent; margin-top: 24px; }
 :root.canvas-ui .timetable-settings > summary { padding: 0; color: var(--canvas-ink); font-size: 15px; }
 :root.canvas-ui .timetable-settings > summary small { font-size: 13px; color: var(--canvas-muted); }
@@ -234,30 +294,37 @@
 :root.canvas-ui .mobile-event-calendar__date { padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--canvas-ink); font-size: 15px; }
 :root.canvas-ui .mobile-event-calendar__date input { min-height: 44px; color: var(--canvas-ink); background: var(--canvas-inset); font-size: 16px; border: 0; border-radius: var(--canvas-radius-control); }
 :root.canvas-ui :is(.mobile-event-calendar__note, .mobile-service-directory__note, .service-directory-footnote) { margin-top: 12px; color: var(--canvas-muted); font-size: 13px; line-height: 1.8; }
-:root.canvas-ui .mobile-event-calendar__list { gap: 28px; margin-top: 24px; }
+:root.canvas-ui .mobile-event-calendar__list { gap: 24px; margin-top: 20px; }
 :root.canvas-ui .mobile-event-card { gap: 20px; padding: 0; border: 0; border-radius: 0; background: transparent; }
 :root.canvas-ui .mobile-event-card__time { flex-basis: 52px; color: var(--canvas-ink); font-variant-numeric: tabular-nums; }
 :root.canvas-ui .mobile-event-card__time strong { color: var(--canvas-ink); font-size: 17px; font-weight: 500; }
 :root.canvas-ui .mobile-event-card__time span { color: var(--canvas-muted); font-size: 13px; }
 :root.canvas-ui .mobile-event-card__content { min-width: 0; }
 :root.canvas-ui .mobile-event-card__tag { padding: 0; border-radius: 0; color: var(--canvas-accent); background: none; font-size: 13px; }
-:root.canvas-ui .mobile-event-card__content > strong { margin-top: 7px; color: var(--canvas-ink); font-size: 17px; font-weight: 500; }
+:root.canvas-ui .mobile-event-card__content > strong { display: block; margin-top: 6px; color: var(--canvas-ink); font-size: 17px; font-weight: 650; }
 :root.canvas-ui .mobile-event-card__content p { color: var(--canvas-secondary); font-size: 15px; line-height: 1.75; }
 :root.canvas-ui .mobile-event-card__content small { color: var(--canvas-muted); font-size: 13px; }
 :root.canvas-ui .mobile-event-card__actions { gap: 16px; flex-wrap: wrap; }
 :root.canvas-ui .mobile-event-card__actions button { min-height: 44px; padding: 0; border: 0; border-radius: 0; color: var(--canvas-accent); background: none; font-size: 13px; }
 :root.canvas-ui .mobile-event-calendar__empty { padding: 26px 0; color: var(--canvas-muted); font-size: 15px; }
+:root.canvas-ui .along-event-intents { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+:root.canvas-ui .along-event-intents button { min-height: 42px; padding: 8px 12px; border: 0; border-radius: 12px; color: var(--canvas-secondary); background: transparent; font-size: 14px; }
+:root.canvas-ui .along-event-intents button[aria-pressed=true] { color: var(--canvas-ink); background: var(--canvas-highlight); font-weight: 650; }
+:root.canvas-ui .along-event-meta { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 5px 12px; }
+:root.canvas-ui .mobile-event-card__content .along-event-time { margin: 7px 0; color: var(--canvas-secondary); font-size: 14px; font-variant-numeric: tabular-nums; }
 :root.canvas-ui :is(.service-directory-search, .nearby-facilities .community-search) { min-height: 48px; padding: 0 12px; border: 0; border-radius: var(--canvas-radius-control); color: var(--canvas-muted); background: var(--canvas-inset); }
 :root.canvas-ui :is(.service-directory-search, .nearby-facilities .community-search) input { padding: 0; border: 0; color: var(--canvas-ink); background: transparent; font-size: 16px; }
 :root.canvas-ui .service-directory-categories { gap: 8px; padding: 0; margin-top: 12px; border: 0; }
 :root.canvas-ui .service-directory-categories button { min-height: 48px; padding: 10px 12px; border: 0; border-radius: 10px; color: var(--canvas-muted); background: transparent; font-size: 15px; }
-:root.canvas-ui .service-directory-categories button.is-active { color: var(--canvas-accent); background: var(--canvas-inset); box-shadow: none; }
-:root.canvas-ui .mobile-service-directory__list { gap: 28px; margin-top: 24px; }
+:root.canvas-ui .service-directory-categories button.is-active { color: var(--canvas-ink); background: var(--canvas-highlight); box-shadow: none; font-weight: 650; }
+:root.canvas-ui .mobile-service-directory__list { gap: 22px; margin-top: 20px; }
 :root.canvas-ui .mobile-service-directory__card { padding: 0; border: 0; border-radius: 0; background: transparent; }
 :root.canvas-ui .mobile-service-directory__card > header { gap: 13px; align-items: flex-start; }
 :root.canvas-ui .mobile-service-directory__icon { flex: 0 0 22px; width: 22px; height: 26px; border-radius: 0; color: var(--canvas-muted); background: none; }
-:root.canvas-ui .mobile-service-directory__card strong { color: var(--canvas-ink); font-size: 18px; font-weight: 500; }
-:root.canvas-ui .mobile-service-directory__card header p { color: var(--canvas-secondary); font-size: 15px; line-height: 1.8; }
+:root.canvas-ui .mobile-service-directory__card strong { color: var(--canvas-ink); font-size: 17px; font-weight: 650; }
+:root.canvas-ui .mobile-service-directory__card header p { margin: 5px 0 0; color: var(--canvas-secondary); font-size: 14px; line-height: 1.75; }
+:root.canvas-ui .mobile-service-directory__details > summary { min-height: 44px; padding: 8px 0; color: var(--canvas-secondary); font-size: 14px; cursor: pointer; }
+:root.canvas-ui .mobile-service-directory__details { margin-left: 35px; }
 :root.canvas-ui .mobile-service-directory__card dl { margin: 16px 0; font-size: 15px; }
 :root.canvas-ui .mobile-service-directory__card dl { grid-template-columns: minmax(0, 1fr); gap: 10px; }
 :root.canvas-ui .mobile-service-directory__card dl > div { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: 10px; padding: 0; border-radius: 0; background: transparent; }
@@ -267,21 +334,21 @@
 :root.canvas-ui .mobile-service-directory__card :is(footer button, footer a, dd a) { min-height: 44px; padding: 5px 0; border: 0; border-radius: 0; color: var(--canvas-accent); background: transparent; font-size: 13px; }
 :root.canvas-ui .nearby-facilities > .community-banner { padding: 0; margin-bottom: 20px; border: 0; border-radius: 0; color: var(--canvas-ink); background: transparent; }
 :root.canvas-ui .nearby-facilities > .community-banner > svg { display: none; }
-:root.canvas-ui .nearby-facilities .community-banner strong { font-size: 20px; font-weight: 500; }
-:root.canvas-ui .nearby-facilities .community-banner p { color: var(--canvas-secondary); font-size: 15px; }
+:root.canvas-ui .nearby-facilities .community-banner strong { color: var(--canvas-ink); font-size: 18px; font-weight: 650; }
+:root.canvas-ui .nearby-facilities .community-banner p { color: var(--canvas-secondary); font-size: 14px; }
 :root.canvas-ui .nearby-facilities .community-action-line { margin: 10px 0; }
 :root.canvas-ui .nearby-facilities .community-local-label { font-size: 13px; color: var(--canvas-muted); }
 :root.canvas-ui .nearby-facilities .community-facility-types { display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto; margin: 12px 0 24px; padding-bottom: 0; border: 0; }
 :root.canvas-ui .nearby-facilities .community-facility-types button { display: inline-flex; flex: 0 0 auto; gap: 6px; min-height: 48px; padding: 10px 12px; border: 0; border-radius: 10px; color: var(--canvas-muted); background: transparent; font-size: 15px; }
-:root.canvas-ui .nearby-facilities .community-facility-types button.is-active { color: var(--canvas-accent); background: var(--canvas-inset); box-shadow: none; }
-:root.canvas-ui .nearby-facilities { gap: 20px; }
+:root.canvas-ui .nearby-facilities .community-facility-types button.is-active { color: var(--canvas-ink); background: var(--canvas-highlight); box-shadow: none; font-weight: 650; }
+:root.canvas-ui .nearby-facilities { gap: 16px; }
 :root.canvas-ui .nearby-facilities .community-card { padding: 0; margin: 0 0 8px; border: 0; border-radius: 0; background: transparent; }
 :root.canvas-ui .nearby-facilities .community-icon { width: 24px; height: 30px; flex-basis: 24px; border-radius: 0; color: var(--canvas-muted); background: none; }
-:root.canvas-ui .nearby-facilities .community-card-top h3 { color: var(--canvas-ink); font-size: 18px; font-weight: 500; }
+:root.canvas-ui .nearby-facilities .community-card-top h3 { color: var(--canvas-ink); font-size: 16px; font-weight: 650; }
 :root.canvas-ui .nearby-facilities :is(.community-card-top small, .community-meta, .community-tag, .community-footnote) { color: var(--canvas-muted); font-size: 13px; }
 :root.canvas-ui .nearby-facilities .community-tag { padding: 0; background: transparent; }
-:root.canvas-ui .nearby-facilities .community-description { color: var(--canvas-secondary); font-size: 15px; line-height: 1.8; }
-:root.canvas-ui .nearby-facilities .community-card-actions { gap: 20px; }
+:root.canvas-ui .nearby-facilities .community-description { color: var(--canvas-secondary); font-size: 14px; line-height: 1.75; }
+:root.canvas-ui .nearby-facilities .community-card-actions { gap: 4px 18px; flex-wrap: wrap; }
 :root.canvas-ui .nearby-facilities .community-card-actions button { flex: 0 1 auto; min-height: 44px; padding: 0; border: 0; border-radius: 0; color: var(--canvas-accent); background: none; font-size: 13px; }
 :root.canvas-ui .nearby-facilities :is(.community-primary, .community-secondary) { min-height: 44px; border: 0; border-radius: var(--canvas-radius-control); color: var(--canvas-ink); background: transparent; font-size: 15px; }
 :root.canvas-ui .nearby-facilities .community-primary { color: var(--canvas-surface); background: var(--canvas-accent); border: 0; }
@@ -294,7 +361,7 @@
 :root.canvas-ui .facility-reports-panel__heading small { color: var(--canvas-muted); font-size: 13px; }
 :root.canvas-ui .facility-report-tabs { gap: 8px; overflow-x: auto; padding: 0; margin-top: 14px; border-radius: 0; background: transparent; margin: 16px 0 24px; border: 0; }
 :root.canvas-ui .facility-report-tabs button { flex: 0 0 auto; min-height: 48px; padding: 10px 12px; border: 0; border-radius: 10px; background: transparent; color: var(--canvas-muted); font-size: 13px; white-space: nowrap; }
-:root.canvas-ui .facility-report-tabs button.is-active { color: var(--canvas-accent); background: var(--canvas-inset); box-shadow: none; }
+:root.canvas-ui .facility-report-tabs button.is-active { color: var(--canvas-ink); background: var(--canvas-highlight); box-shadow: none; font-weight: 650; }
 :root.canvas-ui .facility-report-list { gap: 24px; }
 :root.canvas-ui .facility-report-card { padding: 0; border: 0; border-radius: 0; background: transparent; margin: 0; }
 :root.canvas-ui .facility-report-card p { color: var(--canvas-ink); font-size: 15px; line-height: 1.8; }
@@ -303,7 +370,7 @@
 :root.canvas-ui .facility-report-card__advance { min-height: 44px; border-radius: var(--canvas-radius-control); color: var(--canvas-accent); background: var(--canvas-inset); font-size: 13px; }
 :root.canvas-ui .facility-report-empty { padding: 28px 0; color: var(--canvas-muted); font-size: 15px; }
 :root.canvas-ui .service-repair-entry { padding: 0 0 24px; border: 0; border-radius: 0; background: transparent; }
-:root.canvas-ui .service-repair-entry h3 { color: var(--canvas-ink); font-size: 20px; font-weight: 500; }
+:root.canvas-ui .service-repair-entry h3 { color: var(--canvas-ink); font-size: 18px; font-weight: 650; }
 :root.canvas-ui .service-repair-entry p { color: var(--canvas-secondary); font-size: 15px; }
 :root.canvas-ui .service-repair-entry label { font-size: 15px; color: var(--canvas-ink); }
 :root.canvas-ui .service-repair-entry select { min-height: 48px; border-radius: var(--canvas-radius-control); color: var(--canvas-ink); background: var(--canvas-inset); font-size: 16px; border: 0; }
@@ -318,7 +385,7 @@
 :root.canvas-ui .location-sheet .detail-panel__header { padding: 16px 20px; border: 0; }
 :root.canvas-ui .location-sheet__icon { display: none; }
 :root.canvas-ui .location-sheet .eyebrow { color: var(--canvas-muted); font: 400 13px/1.6 var(--font-ui); letter-spacing: 0; }
-:root.canvas-ui .location-sheet h2 { color: var(--canvas-ink); font: 500 24px/1.4 var(--font-ui); }
+:root.canvas-ui .location-sheet h2 { color: var(--canvas-ink); font: 700 24px/1.4 var(--font-ui); }
 :root.canvas-ui .location-sheet .detail-close { width: 44px; height: 44px; border: 0; border-radius: 50%; color: var(--canvas-ink); background: transparent; }
 :root.canvas-ui .location-sheet__body { padding: 0 20px 16px; }
 :root.canvas-ui .location-sheet .detail-panel__description { margin-top: 18px; color: var(--canvas-secondary); font-size: 15px; line-height: 1.85; }
@@ -348,7 +415,7 @@
 :root.canvas-ui :is(.detail-external-link, .detail-feedback-action) { min-height: 44px; border-radius: 0; color: var(--canvas-accent); background: transparent; font-size: 13px; }
 :root.canvas-ui .location-sheet__footer { padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--canvas-surface); border: 0; }
 :root.canvas-ui :is(.detail-favorite-action, .detail-action, .detail-edit-actions button) { min-height: 44px; border: 0; border-radius: var(--canvas-radius-control); color: var(--canvas-ink); background: var(--canvas-inset); font: 400 15px/1.6 var(--font-ui); }
-:root.canvas-ui .detail-favorite-action.is-active { color: var(--canvas-accent); background: var(--canvas-accent-soft); border: 0; }
+:root.canvas-ui .detail-favorite-action.is-active { color: var(--canvas-ink); background: var(--canvas-highlight); border: 0; }
 :root.canvas-ui .detail-action { color: var(--canvas-surface); background: var(--canvas-accent); border: 0; }
 :root.canvas-ui .place-feedback-backdrop { background: color-mix(in srgb, var(--canvas-ink) 28%, transparent); backdrop-filter: blur(2px); }
 :root.canvas-ui .place-feedback-sheet { border-radius: var(--canvas-radius-surface) var(--canvas-radius-surface) 0 0; color: var(--canvas-ink); background: var(--canvas-surface); }
@@ -378,7 +445,8 @@
 :root.canvas-ui .route-dock__clear { position: absolute; top: 12px; right: 12px; margin: 0; }
 :root.canvas-ui .route-dock__modes { flex: 1 0 100%; gap: 6px; border: 0; }
 :root.canvas-ui .route-dock__modes button { min-height: 44px; padding: 8px 12px; border: 0; border-radius: 10px; color: var(--canvas-muted); background: transparent; font-size: 13px; }
-:root.canvas-ui .route-dock__modes button:is(.is-active, :hover) { color: var(--canvas-accent); background: var(--canvas-inset); box-shadow: none; }
+:root.canvas-ui .route-dock__modes button.is-active { color: var(--canvas-ink); background: var(--canvas-highlight); box-shadow: none; font-weight: 650; }
+:root.canvas-ui .route-dock__modes button:not(.is-active):hover { color: var(--canvas-accent); background: var(--canvas-inset); }
 :root.canvas-ui .route-dock__utilities { gap: 12px; padding: 0; border: 0; }
 :root.canvas-ui .route-dock__utilities button { min-height: 44px; padding: 4px 0; border: 0; border-radius: 0; color: var(--canvas-muted); background: transparent; font-size: 13px; }
 :root.canvas-ui .route-dock__utilities button:is(.is-active, :hover) { color: var(--canvas-accent); background: transparent; }
@@ -407,12 +475,18 @@
 :root.canvas-ui :is(.map-search-empty, .map-search-more) { color: var(--canvas-muted); font-size: 13px; }
 
 @media (max-width: 380px) {
+  :root.canvas-ui .along-campus { padding-right: 16px; padding-left: 16px; }
+  :root.canvas-ui .along-campus-sections { gap: 1px; }
+  :root.canvas-ui .along-campus-sections button { font-size: 13px; }
+  :root.canvas-ui .along-campus-place__main { gap: 9px; }
+  :root.canvas-ui .along-campus-place__actions { gap: 2px 14px; padding-left: 0; }
+  :root.canvas-ui .mobile-service-directory__details { margin-left: 0; }
   :root.canvas-ui :is(.auv-feed, .timetable-content, .information-scroll, .my-publications-scroll) { padding-right: 16px; padding-left: 16px; }
   :root.canvas-ui .timetable-footer { align-items: flex-start; flex-wrap: wrap; }
   :root.canvas-ui .route-dock__utilities { flex-wrap: wrap; gap: 0 16px; }
   :root.canvas-ui .route-dock__endpoint-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
-  :root.canvas-ui :is(.auv-page, .timetable-page, .information-page, .my-publications-page, .location-sheet, .place-feedback-sheet, .route-dock),
-  :root.canvas-ui :is(.auv-page, .timetable-page, .information-page, .my-publications-page, .location-sheet, .place-feedback-sheet, .route-dock) * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  :root.canvas-ui :is(.along-campus, .auv-page, .timetable-page, .information-page, .my-publications-page, .location-sheet, .place-feedback-sheet, .route-dock),
+  :root.canvas-ui :is(.along-campus, .auv-page, .timetable-page, .information-page, .my-publications-page, .location-sheet, .place-feedback-sheet, .route-dock) * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }

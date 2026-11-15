@@ -37,6 +37,7 @@ export function MePanel({
   onSelectLocation,
   favoriteLocationIds = [],
   savedRoutes = [],
+  collectionSaveError = false,
   onToggleFavorite,
   onPlanSavedRoute,
   onRemoveSavedRoute,
@@ -95,6 +96,7 @@ export function MePanel({
           <h3 id={collectionId + '-title'} ref={collectionHeadingRef} tabIndex={-1}>{activeCollection === 'favorites' ? '我的收藏' : '常用路线'}</h3>
           <button type="button" aria-label="收起收藏与路线" onClick={closeCollection}><X size={19} /></button>
         </div>
+        <p className="mobile-my-collections__empty" role={collectionSaveError ? 'status' : undefined}>{collectionSaveError ? '本机存储不可用，修改仅保留到本次关闭前。' : auth.user?.id ? '收藏与路线按账号保存在本机，未同步到云端。' : '这是未登录时的设备记录；登录后按账号分别保存。'}</p>
         <div className="mobile-my-collections">
           {activeCollection === 'favorites' ? (
             <div className="mobile-my-collections__group">

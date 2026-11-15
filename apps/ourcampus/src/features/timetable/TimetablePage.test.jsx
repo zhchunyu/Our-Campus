@@ -48,3 +48,10 @@ it('never calls a clamped historical week the current week in settings', () => {
   expect(html).not.toContain('学期已结束')
   expect(html).not.toContain('当前第 16 教学周')
 })
+
+it('forwards available campus locations and labels back by source-independent intent', () => {
+  const html = renderToStaticMarkup(<TimetablePage userId="member-a" onClose={() => {}} locations={[{ id: 'real-building', name: '教学楼' }]} onSelectLocation={() => {}} />)
+  expect(html).toContain('找教室')
+  expect(html).toContain('aria-label="返回上一页"')
+  expect(html).not.toContain('返回我的')
+})

@@ -1,11 +1,13 @@
 import './inner-canvas.css'
 import { useMemo, useState } from 'react'
-import { MapPin, Navigation, LocateFixed, Plus, Search, Utensils, HeartPulse, Trophy, Droplets, Printer, Package, Bike, PersonStanding, X } from 'lucide-react'
+import { MapPin, MessageCircle, Navigation, LocateFixed, Plus, Search, Utensils, HeartPulse, Trophy, Droplets, Printer, Package, Bike, PersonStanding, X } from 'lucide-react'
 import { FACILITY_TYPES } from '../../data/campusCommunity.js'
 import { listCampusFacilities } from '../../data/campusFacilities.js'
+import { isRestaurantLocation } from '../../data/restaurantReviews.js'
+import { openCampusRestaurant } from './campusConnections.js'
 
 const icons = { food: Utensils, medical: HeartPulse, sports: Trophy, toilet: PersonStanding, water: Droplets, print: Printer, parcel: Package, bike: Bike }
-export function NearbyFacilitiesPanel({ locations, contributions, livePosition, locationStatus, locationMessage, onLocate, role, onSubmitContribution, onReviewContribution, onSelectLocation, onPlanRouteToLocation }) {
+export function NearbyFacilitiesPanel({ locations = [], contributions = [], livePosition, locationStatus, locationMessage, onLocate, role, onSubmitContribution, onReviewContribution, onSelectLocation, onPlanRouteToLocation, onOpenRestaurantReviews }) {
   const [type, setType] = useState('all')
   const [query, setQuery] = useState('')
   const [draft, setDraft] = useState(null)
@@ -24,7 +26,7 @@ export function NearbyFacilitiesPanel({ locations, contributions, livePosition, 
     try { onReviewContribution(id, status); setNotice(status === 'verified' ? '已在本机确认收录。' : '已标记不收录。') } catch (saveError) { setNotice(saveError.message) }
   }
   return <div className="community-content nearby-facilities">
-    <div className="community-banner"><MapPin size={27} /><div><strong>找一个方便到达的校园设施</strong><p>{livePosition ? '已按当前位置的直线估算距离排序。' : '定位后，可以按距离查看校园设施。'}</p></div></div>
+    <div className="community-banner"><MapPin size={27} /><div><strong>附近设施</strong><p>{livePosition ? '按到所属建筑的直线估算距离排序。' : '可先按分类查找，定位后再比较直线距离。'}</p></div></div>
     <div className="community-action-line"><span className="community-local-label">{livePosition ? Number.isFinite(livePosition.accuracy) ? `定位精度约 ${Math.round(livePosition.accuracy)} 米` : '已获取位置，精度未知' : '尚未获取当前位置'}</span><button className="community-primary" type="button" disabled={locationStatus === 'loading'} onClick={onLocate}><LocateFixed size={15} />{locationStatus === 'loading' ? '定位中…' : '定位'}</button></div>
     {locationMessage && <p className="community-error" role="alert">{locationMessage}</p>}
     <div className="community-facility-types" aria-label="设施分类">{[{ id: 'all', label: '全部' }, ...FACILITY_TYPES].map((item) => {
@@ -38,7 +40,7 @@ export function NearbyFacilitiesPanel({ locations, contributions, livePosition, 
       return <article className="community-card facility-card" key={facility.id}>
         <div className="community-card-top"><span className="community-icon"><Icon size={19} /></span><h3>{facility.name}</h3><small>{facility.distance === null ? '距离待定位' : facility.distance >= 1000 ? `约 ${(facility.distance / 1000).toFixed(1)} km` : `约 ${facility.distance} m`}</small></div>
         <p className="community-description">{facility.detail}</p><div className="community-meta"><MapPin size={13} />{facility.locationName}<span className="community-tag">{facility.source === 'local-contribution' ? '本机已确认' : '地图已有地点'}</span></div>
-        <div className="community-card-actions"><button type="button" onClick={() => onSelectLocation(facility.locationId)}><MapPin size={14} />查看地点</button><button type="button" onClick={() => onPlanRouteToLocation(facility.locationId)}><Navigation size={14} />{facility.source === 'local-contribution' ? '导航到所属建筑' : '去这里'}</button></div>
+        <div className="community-card-actions"><button type="button" onClick={() => onSelectLocation?.(facility.locationId)}><MapPin size={14} />查看地点</button>{isRestaurantLocation(byId.get(facility.locationId)) && typeof onOpenRestaurantReviews === 'function' && <button type="button" onClick={() => openCampusRestaurant(facility.locationId, locations, onOpenRestaurantReviews)}><MessageCircle size={14} />窗口与评价</button>}{onPlanRouteToLocation && <button type="button" onClick={() => onPlanRouteToLocation(facility.locationId)}><Navigation size={14} />{facility.source === 'local-contribution' ? '到所属建筑' : '去这里'}</button>}</div>
       </article>
     }) : <div className="community-empty"><MapPin size={30} /><strong>{query ? '没有找到匹配的设施' : '这一类设施的位置还未收录'}</strong><p>已知位置可以先补充，确认后再显示。</p></div>}
     <p className="community-footnote">距离为到建筑的直线估算，不是步行路线长度。设施位于建筑内时，导航先到所属建筑，具体位置见说明。</p>

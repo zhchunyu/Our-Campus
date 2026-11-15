@@ -1,7 +1,7 @@
-/* Student canvas: the member's artwork supplies color; controls stay quiet. */
+/* Along: local artwork, a public identity and a separate private tool area. */
 .mobile-page-panel--me.student-canvas-me { --personal-ink: var(--canvas-ink); --personal-muted: var(--canvas-muted); --personal-line: var(--canvas-line); --personal-green: var(--canvas-accent); padding: calc(16px + env(safe-area-inset-top, 0px)) 20px calc(104px + env(safe-area-inset-bottom, 0px)); background: var(--canvas-bg); color: var(--personal-ink); }
 .student-canvas-me .personal-topbar { min-height: 48px; margin-bottom: 16px; }
-.student-canvas-me .personal-topbar strong { color: var(--personal-ink); font-size: 20px; font-weight: 550; letter-spacing: -.025em; }
+.student-canvas-me .personal-topbar strong { color: var(--personal-ink); font-size: 25px; font-weight: 700; letter-spacing: -.025em; }
 .student-canvas-me .personal-topbar span { color: var(--personal-muted); padding-left: 0; border: 0; font-size: 15px; font-weight: 400; }
 .student-canvas-me .personal-topbar__actions button { border-radius: 50%; color: var(--personal-ink); background: transparent; }
 .student-canvas-me .personal-topbar__actions i { border-color: var(--canvas-surface); background: var(--personal-green); }
@@ -12,28 +12,38 @@
 .personal-sheet .personal-cover::before { display: none; }
 .personal-cover__open { position: absolute; inset: 0; z-index: 1; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
 .personal-cover__open > span { position: absolute; top: 10px; left: 10px; display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 6px 9px; border-radius: 999px; color: var(--canvas-ink); background: color-mix(in srgb, var(--canvas-surface) 92%, transparent); font-size: 13px; backdrop-filter: blur(8px); }
-.student-canvas-me .personal-cover__change { z-index: 2; right: 10px; bottom: 10px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 999px; color: var(--personal-ink); background: color-mix(in srgb, var(--canvas-surface) 94%, transparent); box-shadow: none; font-size: 13px; font-weight: 400; backdrop-filter: blur(8px); }
-.student-canvas-me .personal-identity { margin-top: -48px; padding: 0; }
+.student-canvas-me .personal-cover__change { z-index: 2; top: 10px; right: 10px; bottom: auto; min-height: 36px; padding: 0 11px; border: 0; border-radius: 999px; color: var(--personal-ink); background: color-mix(in srgb, var(--canvas-surface) 94%, transparent); box-shadow: none; font-size: 13px; font-weight: 500; backdrop-filter: blur(8px); }
+.student-canvas-me .personal-identity { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 10px 14px; align-items: start; margin-top: -60px; padding: 0; }
 .student-canvas-me .personal-avatar { border-width: 4px; color: var(--personal-green); background: var(--canvas-inset); box-shadow: none; font-weight: 400; }
-.student-canvas-me .personal-identity__avatar { width: 72px; height: 72px; }
-.student-canvas-me .personal-identity__row { margin-top: 12px; gap: 12px; }
-.student-canvas-me .personal-identity__row h2 { color: var(--personal-ink); font-size: 26px; font-weight: 450; line-height: 1.35; letter-spacing: -.02em; }
+.student-canvas-me .personal-identity__avatar { width: 84px; height: 84px; }
+.student-canvas-me .personal-identity__row { grid-column: 2; margin-top: 43px; gap: 12px; }
+.student-canvas-me .personal-identity__row h2 { color: var(--personal-ink); font-size: 25px; font-weight: 700; line-height: 1.35; letter-spacing: -.02em; }
 .student-canvas-me .personal-identity__row p { margin-top: 9px; color: var(--personal-muted); font-size: 15px; line-height: 1.7; }
-.student-canvas-me .personal-identity__decorate { min-height: 44px; margin-top: -54px; padding: 0 13px; border: 0; border-radius: var(--canvas-radius-control); color: var(--canvas-secondary); background: var(--canvas-inset); font-size: 13px; font-weight: 400; }
-.student-canvas-me .personal-tags { gap: 12px; margin-top: 14px; }
+.student-canvas-me .personal-identity__actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 0; }
+.student-canvas-me .personal-identity__actions > button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; margin: 0; padding: 0 15px; border: 0; border-radius: 999px; font-size: 14px; font-weight: 600; }
+.student-canvas-me .personal-identity__decorate { color: var(--personal-ink); background: var(--canvas-inset); }
+.student-canvas-me .personal-identity__preview { color: var(--canvas-surface); background: var(--canvas-accent); }
+.student-canvas-me .personal-identity__preview:hover { background: var(--canvas-accent-hover); }
+.student-canvas-me .personal-tags { grid-column: 1 / -1; gap: 12px; margin-top: 2px; }
 .student-canvas-me .personal-tags > span { padding: 0; border-radius: 0; color: var(--personal-local-accent); background: none; font-size: 13px; line-height: 1.6; }
 .student-canvas-me .personal-tags > span::before { content: '#'; margin-right: 2px; }
-.student-canvas-me .personal-identity__foot { gap: 0 10px; margin-top: 13px; }
+.student-canvas-me .personal-identity__foot { grid-column: 1 / -1; gap: 0 10px; margin-top: 0; }
 .student-canvas-me .personal-identity__foot > span { color: var(--personal-muted); font-size: 13px; line-height: 1.6; }
 .student-canvas-me .personal-identity__foot > button:not(.personal-login-button) { min-height: 44px; color: var(--personal-green); font-size: 13px; }
 .student-canvas-me .personal-login-button { min-height: 48px; margin-top: 6px; border-radius: var(--canvas-radius-control); color: var(--canvas-surface); background: var(--personal-green); font-size: 15px; }
-.student-canvas-me .personal-private { padding: 18px 0 4px; border: 0; border-top: 0; border-bottom: 0; border-radius: 0; background: transparent; }
-.student-canvas-me .personal-section-label { gap: 6px; margin: 0 0 14px; color: var(--personal-muted); font-size: 13px; }
+.student-canvas-me .personal-private { padding: 0 0 4px; border: 0; border-radius: 0; background: transparent; }
+.student-canvas-me .personal-section-label { display: flex; align-items: center; gap: 7px; margin: 0 0 14px; padding: 9px 11px; border-radius: 9px; color: var(--personal-ink); background: var(--canvas-inset); font-size: 17px; font-weight: 700; line-height: 1.35; }
+.student-canvas-me .personal-public { min-width: 0; }
+.student-canvas-me .personal-public__row { display: flex; align-items: center; gap: 13px; width: 100%; min-height: 64px; padding: 10px 11px; border: 0; border-radius: 14px; color: var(--personal-ink); background: transparent; text-align: left; font-size: 15px; }
+.student-canvas-me .personal-public__row > span { display: grid; flex: 1; gap: 4px; }
+.student-canvas-me .personal-public__row small { color: var(--personal-muted); font-size: 13px; line-height: 1.5; }
+.student-canvas-me .personal-public__row:hover { background: var(--canvas-inset); }
+.student-canvas-me .personal-public__row > svg { flex: 0 0 auto; }
 .student-canvas-me .personal-shortcuts { gap: 12px; }
-.student-canvas-me .personal-shortcuts button { min-height: 78px; gap: 11px; padding: 10px 2px; border-radius: var(--canvas-radius-control); color: var(--personal-ink); background: transparent; font-size: 13px; font-weight: 400; transform: none; border: 0; }
+.student-canvas-me .personal-shortcuts button { min-height: 78px; gap: 11px; padding: 10px 2px; border-radius: var(--canvas-radius-control); color: var(--personal-ink); background: transparent; font-size: 14px; font-weight: 400; transform: none; border: 0; }
 .student-canvas-me .personal-shortcuts button + button { border-left: 0; }
-.student-canvas-me .personal-shortcuts button[aria-expanded=true] { background: var(--canvas-inset); }
-.student-canvas-me .personal-shortcuts svg { color: var(--personal-green); stroke-width: 1.5; }
+.student-canvas-me .personal-shortcuts button[aria-expanded=true] { background: var(--canvas-highlight); }
+.student-canvas-me .personal-shortcuts svg { color: var(--personal-ink); stroke-width: 1.6; }
 .student-canvas-me .personal-home__notice { padding: 12px 0; border-top: 0; border-bottom: 0; border-radius: 0; color: var(--personal-green); background: transparent; font-size: 13px; }
 .student-canvas-me .personal-home__notice button { min-height: 44px; }
 .student-canvas-me .me-tools { margin-top: 26px; border: 0; border-radius: 0; background: transparent; }
@@ -86,7 +96,7 @@
 .personal-sheet .personal-theme-choice.is-active > span { outline-color: var(--personal-ink); outline-offset: 4px; }
 .personal-sheet .personal-theme-choice small { color: var(--personal-muted); font-size: 13px; }
 .personal-sheet .personal-motion-options button { min-height: 86px; padding: 14px; border-color: var(--personal-line); border-radius: var(--canvas-radius-control); color: var(--personal-ink); background: transparent; font-size: 15px; border: 0; }
-.personal-sheet .personal-motion-options button.is-active { border-color: transparent; background: var(--canvas-inset); }
+.personal-sheet .personal-motion-options button.is-active { border-color: transparent; background: var(--canvas-highlight); }
 .personal-sheet .personal-motion-options small,
 .personal-sheet .personal-sheet__privacy small { color: var(--personal-muted); font-size: 13px; line-height: 1.65; }
 .personal-sheet .personal-sheet__privacy p { color: var(--personal-ink); font-size: 15px; }
@@ -119,11 +129,12 @@
 .member-profile .member-profile__header h1 { font-size: 18px; font-weight: 500; }
 .member-profile .member-profile__identity { gap: 18px; padding: 12px 0 28px; border-bottom: 0; }
 .member-profile .member-profile__avatar { width: 72px; height: 72px; border: 0; box-shadow: none; font-size: 28px; }
-.member-profile .member-profile__identity h2 { color: var(--canvas-ink); font-size: 27px; font-weight: 450; }
+.member-profile .member-profile__identity h2 { color: var(--canvas-ink); font-size: 25px; font-weight: 700; }
+.member-profile .member-profile__scope { margin: 0; padding: 13px 14px; border-radius: 14px; color: var(--canvas-muted); background: var(--canvas-inset); font-size: 13px; line-height: 1.7; }
 .member-profile .member-profile__identity p { color: var(--canvas-muted); font-size: 13px; }
 .member-profile .member-profile__messages { border: 0; border-radius: 0; background: var(--canvas-surface); }
 .member-profile .member-profile__heading { padding: 25px 0 16px; border-color: var(--canvas-line); border-bottom: 0; }
-.member-profile .member-profile__heading h3 { font-size: 18px; font-weight: 500; }
+.member-profile .member-profile__heading h3 { font-size: 18px; font-weight: 650; }
 .member-profile .member-profile__heading p { color: var(--canvas-muted); font-size: 13px; line-height: 1.65; }
 .member-profile .member-profile__message-list { padding: 0; }
 .member-profile .member-profile__message-list li { padding: 20px 0; }
@@ -143,7 +154,7 @@
 .student-canvas-login .mobile-login-sheet__close { flex-basis: 44px; width: 44px; height: 44px; border-radius: 50%; color: var(--canvas-ink); background: transparent; }
 .student-canvas-login .mobile-login-methods { gap: 8px; padding: 0; border-bottom: 0; border-radius: 0; background: var(--canvas-surface); }
 .student-canvas-login .mobile-login-methods button { min-height: 48px; padding: 8px 14px; border: 0; border-bottom: 0; border-radius: 16px; color: var(--canvas-muted); background: transparent; font-size: 15px; font-weight: 400; }
-.student-canvas-login .mobile-login-methods button.is-active { border-bottom-color: transparent; color: var(--canvas-ink); background: var(--canvas-inset); box-shadow: none; }
+.student-canvas-login .mobile-login-methods button.is-active { border-bottom-color: transparent; color: var(--canvas-ink); background: var(--canvas-highlight); box-shadow: none; }
 .student-canvas-login .mobile-login-fields { gap: 18px; }
 .student-canvas-login .mobile-login-field { gap: 10px; }
 .student-canvas-login .mobile-login-field > span { color: var(--canvas-ink); font-size: 15px; font-weight: 400; }
@@ -188,3 +199,14 @@
 .personal-sheet :is(.personal-sheet__photo-actions label, .personal-account__avatar label):focus-within { outline: 2px solid var(--canvas-accent); outline-offset: 3px; }
 
 .personal-sheet .personal-sheet__group > label:focus-within { outline: 0; }
+
+.personal-sheet--local-preview .personal-sheet__scroll { padding-top: 0; }
+.personal-preview-scope { display: flex; align-items: center; gap: 7px; margin: 0 0 16px; padding: 12px 13px; border-radius: 14px; color: var(--canvas-ink); background: var(--canvas-highlight); font-size: 14px; line-height: 1.5; }
+.personal-local-preview .personal-preview-identity { gap: 12px; margin-top: -34px; padding-inline: 12px; }
+.personal-local-preview .personal-preview-identity .personal-avatar { width: 78px; height: 78px; border-color: var(--canvas-surface); }
+.personal-local-preview .personal-preview-identity h2 { color: var(--canvas-ink); font-size: 25px; font-weight: 700; overflow-wrap: anywhere; }
+.personal-local-preview .personal-preview-identity p { color: var(--canvas-muted); font-size: 15px; line-height: 1.7; overflow-wrap: anywhere; }
+.personal-local-preview .personal-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.personal-local-preview .personal-tags > span { padding: 6px 10px; border-radius: 999px; color: var(--canvas-accent); background: var(--canvas-inset); font-size: 13px; }
+.personal-preview-explanation { margin: 26px 0 0; color: var(--canvas-muted); font-size: 13px; line-height: 1.8; }
+@media (max-width: 360px) { .student-canvas-me .personal-identity__actions { gap: 8px; } .student-canvas-me .personal-identity__actions > button { padding-inline: 12px; } .student-canvas-me .personal-section-label { font-size: 16px; } .student-canvas-me .personal-shortcuts { gap: 4px; } }

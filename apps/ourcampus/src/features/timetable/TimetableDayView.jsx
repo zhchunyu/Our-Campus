@@ -1,6 +1,7 @@
 import { CalendarDays, ChevronLeft, ChevronRight, Clock3, MapPin } from 'lucide-react'
 import { campusDisplayText } from '../../data/campusPresentation.js'
 import { calendarDateForDay, canUseCalendar, coursesForWeek, dateAnchor, DAY_NAMES, getMaxTeachingWeek, getNextClassState, getShanghaiCalendar, weekStartLabel } from '../../data/timetable.js'
+import { resolveCourseLocation } from '../mobile/campusConnections.js'
 
 export function calendarLabel(date) {
   const value = dateAnchor(date)
@@ -25,13 +26,21 @@ export function getTermPosition(timetable, now) {
   return today < first ? 'before' : today > last ? 'after' : 'within'
 }
 
-export function NextClassCard({ timetable, now, onCalibrate, onShowDay }) {
+export function CourseLocationControl({ course, locations = [], onSelectLocation }) {
+  if (!locations.length || typeof onSelectLocation !== 'function') return null
+  const match = resolveCourseLocation(course.classroom, locations)
+  if (match.status === 'matched') return <div className="timetable-course-location"><button type="button" onClick={() => onSelectLocation(match.locationId)} aria-label={`找教室：${campusDisplayText(course.classroom)}，查看${match.candidates[0].name}`}><MapPin size={15} />找教室 <ChevronRight size={14} /></button><small>到{match.candidates[0].name}，室内位置请核对</small></div>
+  const choices = [...match.candidates, ...locations.filter(location => !match.candidates.some(item => item.id === location.id))]
+  return <details className="timetable-course-location timetable-course-location--choose"><summary><MapPin size={15} />选择上课建筑 <ChevronRight size={14} /></summary><p>{match.status === 'ambiguous' ? '有多个可能的建筑，请按教务信息确认。' : '无法可靠匹配建筑，请按教务信息选择。'}原教室文字保留，导航只到建筑。</p><form onSubmit={event => { event.preventDefault(); const locationId = event.currentTarget.elements.namedItem('building')?.value; if (locations.some(location => location.id === locationId)) onSelectLocation(locationId) }}><label><span className="sr-only">为{campusDisplayText(course.name)}选择校园建筑</span><select name="building" required defaultValue=""><option value="" disabled>请选择校园建筑</option>{choices.map(location => <option key={location.id} value={location.id}>{location.name}</option>)}</select></label><button type="submit">查看地点</button></form></details>
+}
+
+export function NextClassCard({ timetable, now, onCalibrate, onShowDay, locations = [], onSelectLocation }) {
   const next = getNextClassState(timetable, now)
   if (next.status === 'unconfirmed') return <section className="timetable-next timetable-next--setup" aria-label="教学周待校准"><span className="timetable-next__eyebrow"><CalendarDays size={16} />让课表跟上今天</span><h2>先校准教学周</h2><p>确认现在第几周，就能自动显示当天安排和下一节课。未校准时会记住你上次查看的位置。</p><button type="button" onClick={onCalibrate}>校准教学周</button></section>
   if (next.status === 'empty') return <section className="timetable-next timetable-next--empty" aria-label="后续已排课程"><span className="timetable-next__eyebrow"><CalendarDays size={16} />接下来的安排</span><h2>没有更多已排课程</h2><p>当前课表中没有尚未结束的课程。临时调课和未排时间的课程仍需核对。</p></section>
   return <section className={`timetable-next${next.status === 'active' ? ' timetable-next--active' : ''}`} aria-label={next.status === 'active' ? '正在上的课' : '下一节课'}>
     <div className="timetable-next__top"><span className="timetable-next__eyebrow"><Clock3 size={15} />{next.status === 'active' ? '正在上课' : '下一节课'}</span><span className="timetable-next__date">{occurrenceLabel(next.date, now)}</span></div>
-    {next.courses.map(course => <div className="timetable-next__course" key={course.id}><h2>{campusDisplayText(course.name)}</h2><p><strong>{course.startTime}–{course.endTime}</strong><span>第 {course.periods[0]}–{course.periods[1]} 节</span></p><div><MapPin size={15} /><span>{campusDisplayText(course.classroom || '教室待确认')}</span></div></div>)}
+    {next.courses.map(course => <div className="timetable-next__course" key={course.id}><h2>{campusDisplayText(course.name)}</h2><p><strong>{course.startTime}–{course.endTime}</strong><span>第 {course.periods[0]}–{course.periods[1]} 节</span></p><div><MapPin size={15} /><span>{campusDisplayText(course.classroom || '教室待确认')}</span></div><CourseLocationControl course={course} locations={locations} onSelectLocation={onSelectLocation} /></div>)}
     {next.courses.length > 1 && <p className="timetable-next__conflict">这几门课时间重叠，请核对课程安排。</p>}
     <button type="button" className="timetable-next__link" onClick={() => onShowDay?.(next.date, next.courses[0]?.weekday)}>查看这天课表 <ChevronRight size={15} /></button>
     {timetable.unscheduled.length > 0 && <small>另有 {timetable.unscheduled.length} 门课程未排时间，请在课表设置中核对。</small>}
@@ -54,7 +63,7 @@ export function TimetableWeekNavigation({ timetable, week, weekday, now, onWeek,
   </div>
 }
 
-export function TimetableDayView({ timetable, week, weekday, now, conflicts = new Set() }) {
+export function TimetableDayView({ timetable, week, weekday, now, conflicts = new Set(), locations = [], onSelectLocation }) {
   const date = calendarDateForDay(timetable, week, weekday)
   const today = getShanghaiCalendar(now)
   const courses = coursesForWeek(timetable, week).filter(course => course.weekday === weekday)
@@ -63,7 +72,7 @@ export function TimetableDayView({ timetable, week, weekday, now, conflicts = ne
     {courses.length ? <div className="timetable-timeline">{courses.map(course => {
       const minutes = value => Number(value.slice(0, 2)) * 60 + Number(value.slice(3))
       const state = isToday ? (today.minutes >= minutes(course.endTime) ? 'ended' : today.minutes >= minutes(course.startTime) ? 'active' : 'later') : date && date < today?.date ? 'ended' : ''
-      return <article className={`timetable-course${conflicts.has(course.id) ? ' is-conflict' : ''}${state ? ` is-${state}` : ''}`} key={course.id}><div className="timetable-course-time"><strong>{course.startTime}</strong><span>{course.endTime}</span><small>{course.periods[0]}–{course.periods[1]} 节</small></div><div className="timetable-course-copy"><div className="timetable-course-heading"><h3>{campusDisplayText(course.name)}</h3>{state && <span className="timetable-course-state">{state === 'active' ? '进行中' : state === 'ended' ? '已结束' : '待上课'}</span>}</div><p><MapPin size={13} />{campusDisplayText(course.classroom || '教室待确认')}</p>{course.teacher && <span>{campusDisplayText(course.teacher)}</span>}{conflicts.has(course.id) && <small className="timetable-course-conflict">时间有重叠，请核对</small>}</div></article>
+      return <article className={`timetable-course${conflicts.has(course.id) ? ' is-conflict' : ''}${state ? ` is-${state}` : ''}`} key={course.id}><div className="timetable-course-time"><strong>{course.startTime}</strong><span>{course.endTime}</span><small>{course.periods[0]}–{course.periods[1]} 节</small></div><div className="timetable-course-copy"><div className="timetable-course-heading"><h3>{campusDisplayText(course.name)}</h3>{state && <span className="timetable-course-state">{state === 'active' ? '进行中' : state === 'ended' ? '已结束' : '待上课'}</span>}</div><p><MapPin size={13} />{campusDisplayText(course.classroom || '教室待确认')}</p>{course.teacher && <span>{campusDisplayText(course.teacher)}</span>}{conflicts.has(course.id) && <small className="timetable-course-conflict">时间有重叠，请核对</small>}<CourseLocationControl course={course} locations={locations} onSelectLocation={onSelectLocation} /></div></article>
     })}</div> : <div className="timetable-day-empty"><CalendarDays size={28} strokeWidth={1.4} /><strong>这天没有已排课程</strong><p>可以切换日期查看安排。临时调课请以教务通知为准。</p></div>}
   </section>
 }

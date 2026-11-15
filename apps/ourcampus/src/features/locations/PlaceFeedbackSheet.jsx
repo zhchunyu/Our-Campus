@@ -1,6 +1,7 @@
 import '../mobile/inner-canvas.css'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useBackLayer } from '../../app/useBackLayer.js'
 import { MapPin, Send, ShieldCheck, X } from 'lucide-react'
 import { informationError, newReportId } from '../../data/campusInformation.js'
 import {
@@ -20,8 +21,9 @@ function toLocalDateTime(value) {
 
 const FEEDBACK_OPTIONS = Object.values(PLACE_FEEDBACK_TYPES)
 
-export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback, initialType = PLACE_FEEDBACK_TYPES.CROWD }) {
+export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback, onViewRecords, initialType = PLACE_FEEDBACK_TYPES.CROWD }) {
   const [type, setType] = useState(initialType)
+  const [submittedReportId, setSubmittedReportId] = useState(null)
   const [description, setDescription] = useState('')
   const [suggestedDescription, setSuggestedDescription] = useState('')
   const [crowdStatus, setCrowdStatus] = useState(location.crowdStatus ?? 'normal')
@@ -77,7 +79,7 @@ export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback, initia
     setSubmitting(true)
     try {
       const result = await onSubmitFeedback(input)
-      setSubmittedCloud(Boolean(result?.cloud)); setError(''); setSubmitted(true)
+      setSubmittedReportId(result?.reportId ?? null); setSubmittedCloud(Boolean(result?.cloud)); setError(''); setSubmitted(true)
     } catch (e) { setError(informationError(e)) }
     finally { setSubmitting(false) }
   }
@@ -109,9 +111,9 @@ export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback, initia
         {submitted ? (
           <div className="place-feedback-success" role="status">
             <span><ShieldCheck size={23} /></span>
-            <strong>{type === PLACE_FEEDBACK_TYPES.REPAIR ? '报修已提交，等待处理' : '已提交，等待管理员审核'}</strong>
+            <strong>{submittedCloud ? '已提交到应用，等待审核' : '已保存在本机'}</strong>
             <p>{submittedCloud ? '已保存到云端，可在“消息中心 → 我的上报”查看分析与审核状态。施工等公共提醒由管理员核实后全员通知。' : '仅保存在当前设备，可在“我的”查看本机模拟审核状态。'}</p>
-            <button type="button" onClick={onClose}>返回地点</button>
+            <button type="button" onClick={() => submittedCloud && onViewRecords ? onViewRecords(submittedReportId) : onClose()}>{submittedCloud && onViewRecords ? '查看这次上报' : '返回地点'}</button>
           </div>
         ) : (
           <form className="place-feedback-form" onSubmit={handleSubmit}>
@@ -203,4 +205,3 @@ export function PlaceFeedbackSheet({ location, onClose, onSubmitFeedback, initia
     document.body,
   )
 }
-import { useBackLayer } from '../../app/useBackLayer.js'

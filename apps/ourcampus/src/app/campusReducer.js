@@ -2,6 +2,7 @@ import { canManage, canPublishEvents, isHotspotActiveAt } from '../domain/campus
 import { CAMERA_MODES } from '../domain/camera.js'
 import { createDemoRoute, createUnavailableRoute, ROUTE_MODES } from '../domain/route.js'
 import { DEFAULT_SETTINGS, mergeSettings } from '../data/appSettings.js'
+import { isSavedRoute } from '../data/appStorage.js'
 import { getActiveBlockedEdgeIds } from '../data/events.js'
 import { getRoadEdgeOptions } from '../data/routeGraph.js'
 import {
@@ -152,6 +153,7 @@ export function createInitialState(locations, events = [], persistedState = null
     placeFeedback: Array.isArray(persisted.placeFeedback) ? persisted.placeFeedback : [],
     favoriteLocationIds,
     savedRoutes,
+    personalRecordsOwner: undefined,
     adminHistory: Array.isArray(persisted.adminHistory) ? persisted.adminHistory.slice(-MAX_ADMIN_HISTORY) : [],
     eventTime: now,
     query: '',
@@ -172,6 +174,16 @@ export function createInitialState(locations, events = [], persistedState = null
 
 export function campusReducer(state, action) {
   switch (action.type) {
+    case 'SET_PERSONAL_RECORDS': {
+      const records = action.records ?? {}
+      const knownIds = new Set(state.locations.map(location => location.id))
+      const favoriteLocationIds = Array.isArray(records.favoriteLocationIds)
+        ? [...new Set(records.favoriteLocationIds.filter(id => knownIds.has(id)))] : []
+      const savedRoutes = Array.isArray(records.savedRoutes)
+        ? records.savedRoutes.filter(route => isSavedRoute(route) && knownIds.has(route.originId) && knownIds.has(route.destinationId)) : []
+      return { ...state, favoriteLocationIds, savedRoutes, personalRecordsOwner: action.ownerId ?? null,
+        routePlan: state.personalRecordsOwner === (action.ownerId ?? null) ? state.routePlan : null }
+    }
     case 'SET_MAP_SCENE':
       return { ...state, mapScene: '2d' }
     case 'REFRESH_EVENT_TIMELINE': {

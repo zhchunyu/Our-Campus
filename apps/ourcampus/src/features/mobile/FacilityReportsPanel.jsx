@@ -34,7 +34,7 @@ export function FacilityReportsPanel({ reports = [], locations = [], role, onSta
   return (
     <section className="facility-reports-panel" aria-label="设施报修记录">
       <header className="facility-reports-panel__heading">
-        <div><Wrench size={16} /><strong>{isManager ? '设施报修管理' : '我的设施报修'}</strong></div>
+        <div><Wrench size={16} /><strong>{isManager ? '设施报修管理' : '本机报修记录'}</strong></div>
         <small>本机模拟 · 不会发送到学校</small>
       </header>
       <div className="facility-report-tabs" role="tablist" aria-label="报修处理状态">
@@ -57,12 +57,12 @@ export function FacilityReportsPanel({ reports = [], locations = [], role, onSta
             <article className="facility-report-card" key={report.id}>
               <header>
                 <span>{REPAIR_CATEGORY_LABELS[report.repairCategory] ?? '其他设施'}</span>
-                <strong className={'facility-report-status facility-report-status--' + report.status}>{STATUS_LABELS[report.status]}</strong>
+                <strong className={'facility-report-status facility-report-status--' + report.status}>{STATUS_LABELS[report.status] || '状态待确认'}</strong>
               </header>
               <p>{report.description}</p>
               <small><MapPin size={12} />{location?.name ?? '地点已不存在'}</small>
               <small><Clock3 size={12} />提交于 {formatDate(report.submittedAt)}</small>
-              {isManager && nextStatus && (
+              {isManager && nextStatus && onStatusChange && (
                 <button className="facility-report-card__advance" type="button" onClick={() => onStatusChange(report.id, nextStatus)}>
                   <Check size={13} />{nextStatus === PLACE_FEEDBACK_STATUSES.PROCESSING ? '开始处理' : '标记为已完成'}
                 </button>
@@ -71,7 +71,7 @@ export function FacilityReportsPanel({ reports = [], locations = [], role, onSta
             </article>
           )
         })}
-        {visibleReports.length === 0 && <p className="facility-report-empty">{reports.length ? '这个状态下暂无报修记录。' : '还没有报修记录。可在地点详情中提交。'}</p>}
+        {visibleReports.length === 0 && <p className="facility-report-empty">{reports.length ? '这个状态下暂无本机模拟记录。' : '暂无本机模拟记录。云端提交请在“我的云端反馈与报修记录”查看。'}</p>}
       </div>
     </section>
   )

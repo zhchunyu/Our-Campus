@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowLeft, Bell, CalendarDays, Camera, Check, ChevronRight, FileText, ImagePlus, LockKeyhole, LogOut, Pencil, Route, Settings2, Star, X, ZoomIn } from 'lucide-react'
+import { ArrowLeft, Bell, CalendarDays, Camera, Check, ChevronRight, Eye, FileText, ImagePlus, LockKeyhole, LogOut, Pencil, Play, Route, Settings2, Star, UserRound, X, ZoomIn } from 'lucide-react'
 import { describeServerError } from '../../data/supabaseClient.js'
 import { DEFAULT_PERSONAL_ARTWORK, loadPersonalHome, resizePersonalImage } from '../../data/personalHome.js'
 import { getAvatarUrl } from '../../data/memberProfiles.js'
@@ -18,6 +18,15 @@ export function Cover({ home, children, onOpen }) {
     <img src={home.cover || DEFAULT_PERSONAL_ARTWORK} alt={home.cover ? '本机个人封面' : '默认艺术封面'} style={{ objectPosition: `${home.coverX}% ${home.coverY}%` }} />
     {onOpen && <button className="personal-cover__open" type="button" onClick={onOpen} aria-label="查看完整封面"><span><ZoomIn size={15} />查看封面</span></button>}
     {children}
+  </div>
+}
+
+export function PersonalLocalPreviewContent({ home, name, avatar }) {
+  return <div className="personal-local-preview">
+    <p className="personal-preview-scope" role="status"><LockKeyhole size={15} />本机效果预览 · 他人不可见</p>
+    <Cover home={home} />
+    <div className="personal-preview-identity"><ProfileAvatar src={avatar} name={name} className="personal-avatar" /><h2>{name}</h2><p>{home.bio || '未设置签名'}</p>{home.tags.length > 0 && <div className="personal-tags">{home.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>}</div>
+    <p className="personal-preview-explanation">这里展示已保存的本机封面、签名和标签。真实访客只能看到公开头像、昵称与未撤回的大厅发言。</p>
   </div>
 }
 
@@ -200,34 +209,37 @@ export function PersonalHome({ auth, onBeforeLogout, onOpenLogin, onOpenMessages
   }
 
   return <>
-    <header className="personal-topbar"><div><strong>OurCampus</strong><span>我的</span></div><div className="personal-topbar__actions"><button type="button" aria-label="打开消息中心" onClick={onOpenMessages}><Bell size={22} />{unreadCount > 0 && <i aria-label={`${unreadCount}条未读消息`} />}</button><button type="button" aria-label="账户设置" onClick={openAccount}><Settings2 size={22} /></button></div></header>
+    <header className="personal-topbar"><div><strong>我的</strong><span>沿途</span></div><div className="personal-topbar__actions"><button type="button" aria-label="打开消息中心" onClick={onOpenMessages}><Bell size={22} />{unreadCount > 0 && <i aria-label={`${unreadCount}条未读消息`} />}</button><button type="button" aria-label="账户设置" onClick={openAccount}><Settings2 size={22} /></button></div></header>
     <div className={`personal-home personal-theme--${home.theme}`}>
-      <Cover home={home} onOpen={() => setViewingCover(true)}><button className="personal-cover__change" type="button" onClick={openDecorate}><Pencil size={15} />更换封面</button></Cover>
+      <Cover home={home} onOpen={() => setViewingCover(true)}><button className="personal-cover__change" type="button" onClick={openDecorate}><Pencil size={15} />本机封面</button></Cover>
       <div className="personal-identity">
         <ProfileAvatar src={cloudAvatar} name={name} className="personal-avatar personal-identity__avatar" />
-        <div className="personal-identity__row"><div><h2>{userId ? name : '尚未登录'}</h2><p>{userId ? home.bio || '未设置签名' : '登录后设置头像、封面和签名。'}</p></div>{userId && <button className="personal-identity__decorate" type="button" onClick={openDecorate}>装扮主页</button>}</div>
+        <div className="personal-identity__row"><div><h2>{userId ? name : '尚未登录'}</h2>{(home.bio || !userId) && <p>{userId ? home.bio : '登录后设置头像、封面和签名。'}</p>}</div></div>
+        {userId && <div className="personal-identity__actions"><button className="personal-identity__decorate" type="button" onClick={openDecorate}><Pencil size={15} />编辑</button><button className="personal-identity__preview" type="button" onClick={() => { setNotice(''); setSheet('local-preview') }}><Play size={15} fill="currentColor" />本机效果预览</button></div>}
         {userId && home.tags.length > 0 && <div className="personal-tags">{home.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>}
-        <div className="personal-identity__foot">{userId ? <><span><LockKeyhole size={14} />封面与签名 · 仅自己可见</span><button type="button" onClick={() => onOpenMemberProfile?.(userId)}>查看公开主页 <ChevronRight size={15} /></button></> : <button className="personal-login-button" type="button" onClick={onOpenLogin}>登录 / 注册 <ChevronRight size={17} /></button>}</div>
+        <div className="personal-identity__foot">{userId ? <span><LockKeyhole size={14} />封面、签名与标签 · 仅保存在本机</span> : <button className="personal-login-button" type="button" onClick={onOpenLogin}>登录 / 注册 <ChevronRight size={17} /></button>}</div>
       </div>
 
       {userId && home.avatar && !auth.profile?.avatar_path && <div className="personal-local-avatar"><p>旧版头像仍保存在此设备，可同步到大厅。</p><button type="button" disabled={busy || !avatarReady} onClick={() => saveAvatar(home.avatar)}>同步本机头像</button></div>}
 
-      <section className="personal-private" aria-label="个人快捷入口"><div className="personal-section-label"><LockKeyhole size={14} />只对自己可见</div><div className="personal-shortcuts">
+      <section className="personal-public" aria-label="公开资料"><h3 className="personal-section-label">公开资料</h3><button className="personal-public__row" type="button" onClick={openAccount}><UserRound size={22} strokeWidth={1.6} /><span>头像与昵称<small>{userId ? '同步到大厅和公开主页' : '登录后设置'}</small></span><ChevronRight size={18} /></button>{userId && onOpenMemberProfile && <button className="personal-public__row" type="button" onClick={() => onOpenMemberProfile(userId)}><Eye size={22} strokeWidth={1.6} /><span>真实访客预览<small>仅展示已公开的资料与发言</small></span><ChevronRight size={18} /></button>}</section>
+
+      <section className="personal-private" aria-label="个人快捷入口"><h3 className="personal-section-label"><LockKeyhole size={15} />只对自己可见</h3><div className="personal-shortcuts">
         <button type="button" onClick={onOpenTimetable}><CalendarDays size={23} strokeWidth={1.5} /><span>我的课表</span></button>
-        <button type="button" onClick={onOpenMyPublications}><FileText size={23} strokeWidth={1.5} /><span>我的发布</span></button>
         <button type="button" onClick={onOpenFavorites} aria-expanded={activeCollection === 'favorites'} aria-controls={activeCollection === 'favorites' ? collectionPanelId : undefined}><Star size={23} strokeWidth={1.5} /><span>我的收藏</span></button>
         <button type="button" onClick={onOpenRoutes} aria-expanded={activeCollection === 'routes'} aria-controls={activeCollection === 'routes' ? collectionPanelId : undefined}><Route size={23} strokeWidth={1.5} /><span>常用路线</span></button>
+        <button type="button" onClick={onOpenMyPublications}><FileText size={23} strokeWidth={1.5} /><span>我的发布</span></button>
       </div></section>
 
     </div>
     {viewingCover && <PersonalCoverViewer home={home} onClose={() => setViewingCover(false)} />}
 
     {!sheet && (notice || auth.error) && <p className="personal-home__notice" role="status">{notice || auth.error}{auth.error && <button type="button" onClick={() => auth.refreshProfile().catch(() => setNotice('资料加载失败，请稍后重试'))}>重试</button>}</p>}
-    {sheet && createPortal(<div className="personal-sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeSheet() }}><section ref={dialogRef} tabIndex={-1} className={`personal-sheet personal-sheet--${sheet}`} role="dialog" aria-modal="true" aria-label={sheet === 'decorate' ? '装扮主页' : '账户设置'}>
+    {sheet && createPortal(<div className="personal-sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeSheet() }}><section ref={dialogRef} tabIndex={-1} className={`personal-sheet personal-sheet--${sheet}`} role="dialog" aria-modal="true" aria-label={sheet === 'decorate' ? '装扮主页' : sheet === 'local-preview' ? '本机效果预览' : '账户设置'}>
       <>
 
-        <header className="personal-sheet__header"><span className="personal-sheet__handle" aria-hidden="true" /><h2>{sheet === 'decorate' ? '装扮主页' : '账户设置'}</h2><button type="button" aria-label="关闭" onClick={closeSheet}><X size={22} /></button></header>
-        {sheet === 'decorate' ? <><div className="personal-sheet__scroll" inert={busy}><Cover home={draft}><ProfileAvatar src={avatarDraft === null ? cloudAvatar : avatarDraft} name={name} className="personal-avatar personal-sheet__preview-avatar" /></Cover><div className="personal-sheet__photo-actions"><label><ImagePlus size={19} />选择封面<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => { readImage(event.target.files?.[0], 'cover', true); event.target.value = '' }} /></label><label><Camera size={19} />设置头像<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || !avatarReady} onChange={(event) => { readImage(event.target.files?.[0], 'avatar', true); event.target.value = '' }} /></label></div><div className="personal-sheet__text-actions">{draft.cover && <button type="button" onClick={() => setDraft({ ...draft, cover: '' })}>恢复默认封面</button>}{(avatarDraft === null ? auth.profile?.avatar_path : avatarDraft) && <button type="button" onClick={() => setAvatarDraft('')}>恢复默认头像</button>}</div>{draft.cover && <div className="personal-focus"><label>封面横向焦点 <input type="range" min="0" max="100" value={draft.coverX} onChange={(event) => setDraft({ ...draft, coverX: Number(event.target.value) })} /></label><label>封面纵向焦点 <input type="range" min="0" max="100" value={draft.coverY} onChange={(event) => setDraft({ ...draft, coverY: Number(event.target.value) })} /></label></div>}<p className="personal-sheet__hint">头像保存后同步到大厅与公开主页。封面按 2:1 展示，仅保存在本机。</p>
+        <header className="personal-sheet__header"><span className="personal-sheet__handle" aria-hidden="true" /><h2>{sheet === 'decorate' ? '装扮主页' : sheet === 'local-preview' ? '本机效果预览' : '账户设置'}</h2><button type="button" aria-label="关闭" onClick={closeSheet}><X size={22} /></button></header>
+        {sheet === 'local-preview' ? <div className="personal-sheet__scroll"><PersonalLocalPreviewContent home={home} name={name} avatar={cloudAvatar} /></div> : sheet === 'decorate' ? <><div className="personal-sheet__scroll" inert={busy}><Cover home={draft}><ProfileAvatar src={avatarDraft === null ? cloudAvatar : avatarDraft} name={name} className="personal-avatar personal-sheet__preview-avatar" /></Cover><div className="personal-sheet__photo-actions"><label><ImagePlus size={19} />选择封面<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(event) => { readImage(event.target.files?.[0], 'cover', true); event.target.value = '' }} /></label><label><Camera size={19} />设置头像<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || !avatarReady} onChange={(event) => { readImage(event.target.files?.[0], 'avatar', true); event.target.value = '' }} /></label></div><div className="personal-sheet__text-actions">{draft.cover && <button type="button" onClick={() => setDraft({ ...draft, cover: '' })}>恢复默认封面</button>}{(avatarDraft === null ? auth.profile?.avatar_path : avatarDraft) && <button type="button" onClick={() => setAvatarDraft('')}>恢复默认头像</button>}</div>{draft.cover && <div className="personal-focus"><label>封面横向焦点 <input type="range" min="0" max="100" value={draft.coverX} onChange={(event) => setDraft({ ...draft, coverX: Number(event.target.value) })} /></label><label>封面纵向焦点 <input type="range" min="0" max="100" value={draft.coverY} onChange={(event) => setDraft({ ...draft, coverY: Number(event.target.value) })} /></label></div>}<p className="personal-sheet__hint">头像保存后同步到大厅与公开主页。封面按 2:1 展示，仅保存在本机。</p>
           <div className="personal-sheet__group"><h3>个人资料</h3><label>签名<input type="text" maxLength={40} value={draft.bio} placeholder="填写签名" onChange={(event) => setDraft({ ...draft, bio: event.target.value })} /></label><label>兴趣标签 <small>最多 3 个，用逗号分开</small><input type="text" maxLength={32} value={draft.tags.join('，')} placeholder="例如：跑步，摄影" onChange={(event) => setDraft({ ...draft, tags: event.target.value.split(/[，,、]/).map((tag) => tag.trim()).slice(0, 3) })} /></label><p className="personal-sheet__hint">昵称可在账户设置中修改。</p></div>
           <div className="personal-sheet__group"><h3>我的配色</h3><div className="personal-theme-list">{THEMES.map(([id, label]) => <button type="button" className={`personal-theme-choice personal-theme-choice--${id}${draft.theme === id ? ' is-active' : ''}`} aria-pressed={draft.theme === id} key={id} onClick={() => setDraft({ ...draft, theme: id })}><span>{draft.theme === id && <Check size={18} />}</span><small>{label}</small></button>)}</div></div>
           <div className="personal-sheet__group"><h3>封面动效</h3><div className="personal-motion-options"><button type="button" className={!draft.motion ? 'is-active' : ''} aria-pressed={!draft.motion} onClick={() => setDraft({ ...draft, motion: false })}>静止<small>保持原图</small></button><button type="button" className={draft.motion ? 'is-active' : ''} aria-pressed={draft.motion} onClick={() => setDraft({ ...draft, motion: true })}>浮动<small>封面缓慢移动</small></button></div></div>
