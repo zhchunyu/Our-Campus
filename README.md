@@ -9,10 +9,11 @@
 连接校园地图、动态信息与个人安排的校园服务应用。
 
 [<img src="https://img.shields.io/badge/Android-1.19_体验版-176B55?style=for-the-badge&amp;logo=android&amp;logoColor=white" alt="下载 Android 1.19 体验版">](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.19)
+[<img src="https://img.shields.io/badge/Web-1.20_沿途预览-245B84?style=for-the-badge" alt="查看 1.20 沿途网页与源码预览">](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.20-along-preview)
 [<img src="https://img.shields.io/badge/ModelScope-模型下载-6254A4?style=for-the-badge" alt="ModelScope 模型发布页">](https://modelscope.cn/models/chunyuuu/Qwen2.5-7B-Instruct/summary)
 [<img src="https://img.shields.io/badge/SwanLab-实验记录-2C689C?style=for-the-badge" alt="SwanLab 实验记录">](https://swanlab.cn/@zhchunyu/OurCampus-AUV-training/v1/44bg6m/overview)
 
-[安装与使用](docs/download.md) · [微信反馈群](#交流与反馈) · [快速开始](docs/quickstart.md) · [文档中心](docs/README.md) · [贡献者与署名](CONTRIBUTORS.md) · [Issues](https://github.com/zhchunyu/Our-Campus/issues)
+[下载与预览](docs/download.md) · [微信反馈群](#交流与反馈) · [快速开始](docs/quickstart.md) · [文档中心](docs/README.md) · [发布记录](docs/releases/README.md) · [贡献者与署名](CONTRIBUTORS.md)
 
 `React` · `Vite` · `Capacitor` · `Supabase` · `Qwen / QLoRA`
 
@@ -36,14 +37,26 @@
 
 **个人情境关联。** 用户主动选择地点或课表上下文，助手经鉴权网关读取允许访问的资料，再提供相关建议。收藏、路线和订阅共同构成个人服务入口，定位由用户主动触发。
 
-## 下载 Android 1.19 体验版
+## 下载与预览
 
-**[下载 OurCampus-1.19.apk](https://github.com/zhchunyu/Our-Campus/releases/download/v1.19/OurCampus-1.19.apk)** · [版本说明与校验](docs/download.md)
+| 想做什么 | 当前版本与入口 |
+| --- | --- |
+| 在 Android 手机上使用 | **1.19 / 20**：[下载 APK](https://hkdblizadnkskxslyjyq.supabase.co/storage/v1/object/public/app-releases/android/OurCampus-1.19.apk) · [GitHub 备用下载](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.19) |
+| 查看最新界面与源码 | **1.20「沿途」预览**：[网页包与源码包](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.20-along-preview) · [设计与页面预览](docs/design/README.md) |
 
-- Android 7.0 及以上；安装包约 **34.03 MiB**，版本号 **1.19 / 20**。
-- 加入前台通知排队、按地区主动订阅聊天提醒和个推接入；保留社区图片、精简个人页、每日课表和头像同步。
-- APK 哈希、v2 签名及与 1.18 的证书一致性已核验。真机覆盖安装、后台送达和 vivo 离线通道仍待验收；请保留旧应用并覆盖安装。
-- GitHub 当前为公开预发布体验包，应用内更新元数据尚交由管理员接手。`main` 已继续开发 **1.20 / 21** 的 AI 上下文与相关聊天提醒，这些客户端改动未包含在本次 1.19 APK 中。详见[发布与源码记录](docs/releases/2026-11-10-1.19-release-and-ai-source.md)。
+Android 体验包要求 **Android 7.0 及以上**，约 **34.03 MiB**。1.19 包含社区图片、每日课表、精简个人页、前台通知排队和地区聊天订阅。应用内更新已于 **2026-11-11** 发布，1.17 / 1.18 用户可在「我的 → 应用设置 → 检查更新」获取。
+
+1.20「沿途」是网页与源码预览，目前没有对应的新 Android 安装包。网页包需解压后通过静态 HTTP 服务打开；安装 1.19 不会获得 1.20 的新界面。完整使用方法、文件校验和手机推送适配范围见[下载说明](docs/download.md)。
+
+## 1.20「沿途」界面预览
+
+主分支围绕「今天、校园、社区、我的」四个入口组织日常任务，连接课程、地点、路线、餐厅与消息来源。
+
+| 今天与课程 | 社区聊天 | 我的 |
+| --- | --- | --- |
+| <img src="docs/design/2026-11-15-student-daily/final-runtime/home-course-fixture.png" width="220" alt="1.20 沿途网页预览：今天页面，本地测试课程"> | <img src="docs/design/2026-11-15-student-daily/final-runtime/chat-small.png" width="220" alt="1.20 沿途网页预览：小屏聊天页面"> | <img src="docs/design/2026-11-15-student-daily/final-runtime/profile-fixture.png" width="220" alt="1.20 沿途网页预览：我的页面，本地测试账号"> |
+
+以上为 **2026-11-15 的网页预览**；课程、聊天和账号画面使用本地测试数据。设计过程、对照图及验证边界见[设计资料](docs/design/README.md)与[1.20 交付记录](docs/releases/2026-11-15-along-system-preview.md)。
 
 ## 源码、模型与实验
 
@@ -82,10 +95,10 @@ npm run dev
 欢迎加入 **Our Campus 用户反馈群**，交流安装体验与使用建议。
 
 <p align="center">
-  <img src="docs/assets/wechat-feedback-2026-10-25.png" width="280" alt="Our Campus 微信用户反馈群二维码，原图注明 2026 年 11 月 1 日前有效">
+  <img src="docs/assets/wechat-feedback-2026-11-17.png" width="280" alt="Our Campus 微信用户反馈群二维码，2026 年 11 月 17 日更新，原图注明 11 月 24 日前有效">
 </p>
 
-二维码原图注明 **2026 年 11 月 1 日前有效**。过期或群满时，请通过 [Issues](https://github.com/zhchunyu/Our-Campus/issues) 联系维护者更新；Issues 也是长期反馈入口。
+二维码更新于 **2026-11-17**，原图注明 **11 月 24 日前有效**，以微信扫码后的实际提示为准。过期或群满时，请通过 [Issues](https://github.com/zhchunyu/Our-Campus/issues) 联系维护者更新；Issues 也是长期反馈入口。
 
 反馈时附上**应用版本、设备型号、复现步骤和相关截图**。公开反馈请先遮挡账号、联系方式等个人资料。
 
@@ -100,4 +113,4 @@ npm run dev
 
 </details>
 
-<sub>首页与安装包发布资料复核：2026-11-10。后台部署、源码开发版本与已发布 APK 分别记录，具体验收范围见版本说明。</sub>
+<sub>首页、反馈入口与发布导航整理：2026-11-17。Android 体验包、网页预览及后端部署记录分别维护，详见发布记录与开发状态。</sub>

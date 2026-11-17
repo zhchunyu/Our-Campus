@@ -4,16 +4,34 @@
 
 ```text
 .
-├── .github/             问题与建议模板
+├── .github/             问题模板与自动检查
 ├── apps/
 │   └── ourcampus/        Web、Android、Node 网关和 Supabase 函数
 ├── models/
 │   └── auv/              数据、训练、推理、评测与历史配置
-├── docs/                快速开始、架构、部署、开发状态
+├── docs/                当前使用和维护文档
+│   ├── assets/          首页图标、流程图与当前反馈二维码
+│   ├── design/          设计过程、网页预览和运行截图
+│   └── releases/        按日期保留的发布与验证记录
+├── scripts/             仓库级检查工具
 ├── archive/             历史方案、赛事材料和后续研究资产
 ├── CONTRIBUTING.md      开发协作方法
+├── CONTRIBUTORS.md      贡献者与署名说明
 └── README.md            产品首页
 ```
+
+## 按任务找文件
+
+| 任务 | 入口 |
+| --- | --- |
+| 下载 APK、查看网页预览 | [下载说明](download.md) |
+| 运行或修改应用 | [快速开始](quickstart.md) · `apps/ourcampus` |
+| 核对已发布内容及待验收项 | [发布索引](releases/README.md) · [开发状态](status.md) |
+| 查看界面设计和截图 | [设计索引](design/README.md) |
+| 更新用户反馈群二维码 | [展示素材说明](assets/README.md) |
+| 训练、推理与评测 | `models/auv` |
+
+`docs` 的索引指向当前入口；带日期的交接和验证文件保留原始语境。更新二维码时同步替换首页引用、有效期与替代反馈渠道；旧图放入 `docs/assets/archive`，不继续作为入群入口。
 
 ## 旧目录对照
 

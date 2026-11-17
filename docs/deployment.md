@@ -31,12 +31,14 @@ VITE_AUV_GATEWAY_URL
 
 ## Supabase 配置
 
-当前应用沿用已有 Supabase 项目。2026-11-10 已部署 `auv-assistant` v37、`campus-information-worker` v24，以及 20 号自动关联提醒迁移 `20261110130724`。本轮 GitHub 发布不重新建库，不修改已有账号，也不发布新的 Supabase APK 更新元数据。
+当前应用沿用已有 Supabase 项目。2026-11-10 的部署记录为 `auv-assistant` v37、`campus-information-worker` v24，以及 20 号自动关联提醒迁移 `20261110130724`。2026-11-11 已发布 1.19 应用内更新，11 月 17 日只读核对仍为最新 published 记录；见[更新上线记录](releases/2026-11-11-1.19-in-app-update.md)。本次文档整理没有变更线上服务、账号或版本记录。
+
+以下函数结构和模型配置按 11 月 10 日快照说明。实际部署前，先核对当前线上版本、Secrets 与后续迁移记录。
 
 | 配置内容 | 工程位置 |
 | --- | --- |
 | 账号、聊天、窗口等 SQL 与交接说明 | [`apps/ourcampus/docs/supabase`](../apps/ourcampus/docs/supabase/) |
-| 当前线上函数发布源 | [`apps/ourcampus/supabase/deployed/2026-11-10/backend`](../apps/ourcampus/supabase/deployed/2026-11-10/backend/) |
+| 11 月 10 日线上函数发布快照 | [`apps/ourcampus/supabase/deployed/2026-11-10/backend`](../apps/ourcampus/supabase/deployed/2026-11-10/backend/) |
 | 本地开发参考 | [`apps/ourcampus/supabase/functions`](../apps/ourcampus/supabase/functions/)；不能整体覆盖当前线上函数 |
 | 函数鉴权配置 | [`apps/ourcampus/supabase/config.toml`](../apps/ourcampus/supabase/config.toml) |
 | 校园信息与推送增量交接 | [后台交接入口](../apps/ourcampus/docs/校园信息推送交接-2026-10-08/README-先看这里.md) |
@@ -60,7 +62,7 @@ VITE_AUV_GATEWAY_URL
 | `AUV_BASE_URL` | 百炼北京可使用 `https://dashscope.aliyuncs.com/compatible-mode/v1`。兼容服务的根地址由服务端补上 `/v1`，已有 `/v1` 时不重复追加；最后请求 `/chat/completions`。供应商要求的 `/compatible-mode` 等前缀须保留，不填写完整 `/chat/completions` 请求地址。 |
 | `AUV_API_KEY` | 对应地域与业务空间的服务端密钥，不写入前端、Git 或公开文档。 |
 | `AUV_EXTRACT_MODEL` | 保留 V10 自定义模型 Code：`qwen2.5-14b-instruct-ee0c448400cb`。 |
-| `AUV_PERSONA_MODEL` | 普通聊天改为 `qwen3.7-flash`；截至本轮核对用户尚未修改，仍需保存后验证真实对话。 |
+| `AUV_PERSONA_MODEL` | 11 月 10 日待改为 `qwen3.7-flash`，当日核对时用户尚未修改；接手时先确认当前配置，再验证真实对话。 |
 | `AUV_HALL_MODEL` | 可选的公开聊天理解模型；未配置或空白时默认 `qwen3.7-flash`，独立于事件抽取和普通聊天设置。 |
 
 V10 用于事件抽取，通用 flash 用于自然对话和有界公开聊天分类。仅受支持的 flash 别名及日期快照显式关闭思考，其他自定义模型不附加该专用参数。
@@ -73,7 +75,7 @@ V10 用于事件抽取，通用 flash 用于自然对话和有界公开聊天分
 
 当前生产 worker 发布源为 `backend/campus-information-worker/index.ts` 单文件，更新时保持独立令牌鉴权与投递前权限复查。调度使用即时唤醒和每分钟补偿，已核对启用。20 号脚本只为新公开聊天排队，不补处理旧聊天；每条最多一次模型请求，每月自动分析最多 1000 次，个人相关提醒默认关闭。撤回、关闭偏好和退订会重新核对待发记录。
 
-次数限制不等于百炼账户费用上限。没有设备的任务也可能正常处理结束；任务完成或服务商受理不能代替手机实际送达。当前启用设备与回执均为 0。
+次数限制不等于百炼账户费用上限。没有设备的任务也可能正常处理结束；任务完成或服务商受理不能代替手机实际送达。11 月 10 日核对时启用设备与回执均为 0，当前投递状态需另行确认。
 
 ## 独立 Node 网关
 
@@ -97,7 +99,7 @@ npm run ai:serve
 
 可下载体验包为 1.19 / versionCode 20，GitHub 标签 `v1.19`；当前 main 准备后续 1.20 / 21 源码，没有对应新 APK。保留 applicationId `cn.edu.sxau.campustwin`，沿用原证书并递增版本，原签名由原打包电脑保管。
 
-2026-11-13 的学生画布界面与餐厅照片客户端另有[预览交付记录](releases/2026-11-13-student-canvas-preview.md)。21 号照片数据库更新已上线，完整事务回滚回归通过。网页包与源码预览不等于正式 Android 升级；原签名与实机照片、覆盖安装验收仍是 APK 上线条件。
+最新交付为 2026-11-15 的 [1.20「沿途」整套应用预览](releases/2026-11-15-along-system-preview.md)。此前 11 月 13 日的学生画布与餐厅照片记录见[发布索引](releases/README.md)；21 号照片数据库更新已上线并有事务回滚回归记录。网页包与源码预览不等于正式 Android 升级；原签名与实机照片、覆盖安装验收仍是 APK 上线条件。
 
 上面的 debug 产物仅供开发测试，不能默认覆盖团队已装 APK。面向已有用户的更新应在原签名电脑配置既有签名，运行 `npm run android:release`，再核对签名、版本、哈希、真实覆盖安装和资料保留。1.19 签名与已发布 1.18 一致，但真机覆盖安装仍未验收；本机新生成的 debug 证书不能替代既有证书。
 
