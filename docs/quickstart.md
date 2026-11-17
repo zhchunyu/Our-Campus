@@ -11,8 +11,8 @@ OurCampus 的主应用位于 `apps/ourcampus`。同一套 React 页面用于 Web
 ## 获取源码与配置
 
 ```powershell
-git clone https://github.com/zhchunyu/Chun-Yu.git
-cd Chun-Yu/apps/ourcampus
+git clone https://github.com/zhchunyu/Our-Campus.git
+cd Our-Campus/apps/ourcampus
 Copy-Item .env.example .env.local
 npm ci
 ```
@@ -65,9 +65,9 @@ npm run dev -- --host 0.0.0.0
 
 ## Android 安装与构建
 
-最新团队体验包：[OurCampus 1.17](https://github.com/zhchunyu/Chun-Yu/releases/tag/v1.17)，安装要求、校验值与包名差异见[下载说明](download.md)。
+当前 Android 体验包为 [OurCampus 1.19](https://github.com/zhchunyu/Our-Campus/releases/tag/v1.19)。1.17 / 1.18 用户可在「我的 → 应用设置 → 检查更新」获取；更早版本可手动下载。安装要求、校验值与包名差异见[下载说明](download.md)。
 
-仓库当前 Android 源码配置仍为 **1.11 / versionCode 12**；以下构建命令用于当前源码，不代表能重建另行提供的 1.17 APK。[1.11 历史安装包](../apps/ourcampus/docs/apk/OurCampus-1.11-队友图标与开屏.apk)保留归档。
+主分支 Android 源码配置为 **1.20 / versionCode 21**，最新交付是 [1.20「沿途」网页与源码预览](releases/2026-11-15-along-system-preview.md)，没有对应的新签名 APK。以下命令构建当前源码；复现 1.19 请使用 `v1.19` 标签与该版原始工程路径，不能将主分支产物当作相同版本安装包。
 
 自行构建时设置 `JAVA_HOME`，并在本机 `android/local.properties` 中配置 `sdk.dir`。该文件不提交仓库。然后运行：
 
