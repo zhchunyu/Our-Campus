@@ -45,6 +45,13 @@
 *.xlsx    binary
 *.pptx    binary
 *.mp4     binary
+*.mp3     binary
+*.wav     binary
+*.m4a     binary
+*.aac     binary
+*.jar     binary
+*.apk     binary
+*.aab     binary
 *.zip     binary
 *.woff    binary
 *.woff2   binary

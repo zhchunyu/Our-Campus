@@ -1,0 +1,191 @@
+{
+  "scenes": [
+    {
+      "id": "2184",
+      "name": "铭贤学校旧址外门",
+      "sourceSize": [
+        8704,
+        4352
+      ],
+      "audio": null
+    },
+    {
+      "id": "2169",
+      "name": "外院",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2170",
+      "name": "校长院",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": "xiaozhangyuan"
+    },
+    {
+      "id": "2171",
+      "name": "崇圣楼",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": "chongshenglou"
+    },
+    {
+      "id": "2172",
+      "name": "内院",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2173",
+      "name": "石板院",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": "shibanyuan"
+    },
+    {
+      "id": "2174",
+      "name": "侧门",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2175",
+      "name": "观赏楼",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": "guanshanglou"
+    },
+    {
+      "id": "2185",
+      "name": "南院主路",
+      "sourceSize": [
+        8704,
+        4352
+      ],
+      "audio": null
+    },
+    {
+      "id": "2176",
+      "name": "校友会",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2177",
+      "name": "南院环路岔路口",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2181",
+      "name": "云波园岔路口",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2180",
+      "name": "南院楼群",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2182",
+      "name": "国际交流协会楼",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2183",
+      "name": "环路1",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2178",
+      "name": "宣传统战部",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    },
+    {
+      "id": "2179",
+      "name": "党政办",
+      "sourceSize": [
+        4480,
+        2240
+      ],
+      "audio": null
+    }
+  ],
+  "audio": {
+    "崇圣楼": {
+      "slug": "chongshenglou",
+      "bytes": 233899
+    },
+    "校长院": {
+      "slug": "xiaozhangyuan",
+      "bytes": 334311
+    },
+    "石板院": {
+      "slug": "shibanyuan",
+      "bytes": 462828
+    },
+    "尚德堂": {
+      "slug": "shangdetang",
+      "bytes": 244968
+    },
+    "南院别墅": {
+      "slug": "nanyuanbieshu",
+      "bytes": 765536
+    },
+    "南院4号楼": {
+      "slug": "nanyuan4hao",
+      "bytes": 509792
+    },
+    "南院3号楼": {
+      "slug": "nanyuan3hao",
+      "bytes": 411104
+    },
+    "观赏楼": {
+      "slug": "guanshanglou",
+      "bytes": 409568
+    }
+  }
+}

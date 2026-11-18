@@ -1,0 +1,12 @@
+# APK 是构建产物，不进版本库（用 重新打包APK.cmd 或 Gradle 生成）
+*.apk
+*.aab
+
+# Gradle 构建输出与缓存
+build/
+.gradle/
+local.properties
+
+# 打包时由 tools/build-apk-assets.mjs 从仓库根目录的网页文件复制而来，
+# 属于产物而不是源文件，避免同一份 46MB 素材在仓库里存两遍
+app/src/main/assets/www/

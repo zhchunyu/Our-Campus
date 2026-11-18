@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>铭贤学堂旧址 · 自由游览</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2314161a'/%3E%3Ctext x='16' y='22' font-size='16' text-anchor='middle' fill='%23c8a45c'%3E%E9%93%AD%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="./vendor/psv.css">
+<link rel="stylesheet" href="./app/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.min.js"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ============ 首屏 ============ -->
+<section id="intro" class="intro">
+  <div class="intro__media" id="introMedia"></div>
+  <div class="intro__veil"></div>
+  <div class="intro__content">
+    <p class="intro__eyebrow">山西铭贤学校旧址</p>
+    <h1 class="intro__title">铭贤学堂旧址</h1>
+    <p class="intro__sub">自由游览 · 全景漫游</p>
+    <p class="intro__desc">
+      拖动画面环视四周，用底部的场景条或「上一处／下一处」在 17 个场景之间自由走动。
+      部分院落配有讲解配音。
+    </p>
+    <div class="intro__actions">
+      <button id="btnStart" class="btn btn--primary" type="button">开始游览</button>
+      <button id="btnTour" class="btn btn--ghost" type="button">自动巡游</button>
+    </div>
+    <p class="intro__hint">建议使用 Chrome / Edge 全屏浏览；按 F 切换全屏，← → 换场景。</p>
+  </div>
+</section>
+
+<!-- ============ 游览界面 ============ -->
+<main id="stage" class="stage" hidden>
+  <div id="viewer" class="viewer"></div>
+
+  <!-- 顶部栏 -->
+  <header class="topbar">
+    <div class="topbar__left">
+      <span class="topbar__site">山西铭贤学校旧址</span>
+      <h2 class="topbar__scene" id="sceneName">—</h2>
+    </div>
+    <div class="topbar__right">
+      <span class="topbar__index" id="sceneIndex">1 / 17</span>
+      <button id="btnLibrary" class="iconbtn" type="button" title="讲解库">讲解库</button>
+      <button id="btnFull" class="iconbtn" type="button" title="全屏 (F)">全屏</button>
+      <button id="btnHome" class="iconbtn" type="button" title="返回首页">返回</button>
+    </div>
+  </header>
+
+  <!-- 加载中 -->
+  <div class="loader" id="loader">
+    <div class="loader__ring"></div>
+    <p class="loader__text" id="loaderText">正在加载全景…</p>
+  </div>
+
+  <!-- 场景说明 -->
+  <aside class="note" id="note">
+    <h3 class="note__name" id="noteName"></h3>
+    <p class="note__text" id="noteText"></p>
+    <p class="note__todo">史实与思政说明待校史馆审校后补充。</p>
+  </aside>
+
+  <!-- 左右切换 -->
+  <button id="btnPrev" class="navarrow navarrow--prev" type="button" title="上一处 (←)" aria-label="上一处">‹</button>
+  <button id="btnNext" class="navarrow navarrow--next" type="button" title="下一处 (→)" aria-label="下一处">›</button>
+
+  <!-- 底部：讲解播放器 + 场景条 -->
+  <footer class="dock">
+    <div class="player" id="player">
+      <button id="btnPlay" class="player__btn" type="button" title="播放/暂停 (空格)" aria-label="播放或暂停讲解">▶</button>
+      <div class="player__meta">
+        <span class="player__label" id="audioLabel">本场景暂无配音</span>
+        <div class="player__bar"><div class="player__fill" id="audioFill"></div></div>
+      </div>
+      <button id="btnAudioNext" class="player__btn player__btn--sm" type="button" title="下一段讲解" aria-label="下一段讲解">⏭</button>
+      <button id="btnReplay" class="player__btn player__btn--sm" type="button" title="重播本段" aria-label="重播本段">↻</button>
+    </div>
+
+    <div class="strip" id="strip" role="tablist" aria-label="场景列表"></div>
+
+    <div class="dock__foot">
+      <button id="btnTourRun" class="btn btn--mini" type="button">自动巡游</button>
+      <span class="dock__pos" id="dockPos"></span>
+    </div>
+  </footer>
+
+  <!-- 自动巡游进度条 -->
+  <div class="tourbar" id="tourbar" hidden>
+    <span class="tourbar__label">自动巡游中</span>
+    <div class="tourbar__track"><div class="tourbar__fill" id="tourFill"></div></div>
+    <button id="btnTourStop" class="btn btn--mini" type="button">结束</button>
+  </div>
+</main>
+
+<!-- 讲解库弹层 -->
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet__panel">
+    <div class="sheet__head">
+      <h2>讲解库</h2>
+      <button id="btnSheetClose" class="iconbtn" type="button">关闭</button>
+    </div>
+    <p class="sheet__hint">
+      8 段配音来自原平台。点「试听」确认内容，再用右侧下拉选择它该配给哪个场景；
+      结果保存在本机浏览器，可点「导出绑定配置」拿到 JSON 回填到场景数据。
+      <br>「尚德堂、南院别墅、南院4号楼、南院3号楼」在现有 17 个场景中没有同名对应，需自行确认归属。
+    </p>
+    <ul class="sheet__list" id="sheetList"></ul>
+  </div>
+</div>
+
+<!-- 提示条 -->
+<div class="toast" id="toast" hidden></div>
+
+<script type="module" src="./app/main.js"></script>
+</body>
+</html>

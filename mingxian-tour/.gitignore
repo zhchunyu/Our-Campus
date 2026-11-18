@@ -1,0 +1,9 @@
+# APK 属构建产物，用「重新打包APK.cmd」生成，不进版本库
+*.apk
+*.aab
+
+# 打包过程中的临时产物
+android-app/app/build/
+android-app/build/
+android-app/.gradle/
+android-app/local.properties

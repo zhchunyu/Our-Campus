@@ -1,0 +1,55 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace = 'cn.edu.sxau.mingxiantour'
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId 'cn.edu.sxau.mingxiantour'
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName '1.0'
+    }
+
+    buildTypes {
+        debug {
+            // 演示包：不混淆，方便排查
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            // 演示阶段先用 debug 签名，正式分发需换成团队证书
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // assets 里的全景图已经是压缩过的 webp，禁止再压一次
+    androidResources {
+        noCompress 'webp', 'mp3', 'jpg', 'png'
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging false
+        }
+    }
+}
+
+dependencies {
+    // 统一 Kotlin 运行时版本，避免 webkit(1.6.21) 与 appcompat(1.8.22) 的 stdlib 重复类冲突
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.9.24')
+
+    implementation 'androidx.appcompat:appcompat:1.7.1'
+    implementation('androidx.webkit:webkit:1.14.0') {
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+    }
+}
