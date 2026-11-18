@@ -12,6 +12,7 @@ OurCampus 将校园地点、同学社区与 AUV 助手放在同一个入口。�
 | [部署说明](deployment.md) | Web 构建设置、后台配置和 Android 交付。 |
 | [开发状态](status.md) | 已有实现、后台接入记录、验收事项与后续工作。 |
 | [仓库目录](repository-layout.md) | 当前目录职责、旧路径迁移和归档入口。 |
+| [铭贤旧址全景漫游](../mingxian-tour/README.md) | 思政「一课一品」独立全景应用：17 场景、8 段配音、可打包独立 APK。 |
 
 ## 当前交付
 
@@ -32,6 +33,7 @@ OurCampus 将校园地点、同学社区与 AUV 助手放在同一个入口。�
 - [应用工程](../apps/ourcampus/)：React 页面、Capacitor Android、服务端适配和业务脚本。
 - [应用说明](../apps/ourcampus/README.md)：工程内的运行与维护说明。
 - [团队协作](../apps/ourcampus/docs/团队协作.md)：模块负责范围、配置交接与上线检查。
+- [铭贤旧址全景漫游](../mingxian-tour/)：独立纯前端全景应用，含 17 场景素材、8 段配音与 Android 打包工程，与 OurCampus 主工程互不依赖。
 - [AUV 工程](../models/auv/)：模型、训练、推理与评测资料。
 
 ## 专题资料

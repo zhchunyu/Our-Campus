@@ -63,6 +63,7 @@ Android 体验包要求 **Android 7.0 及以上**，约 **34.03 MiB**。1.19 包
 | 入口 | 可以找到什么 |
 | --- | --- |
 | [GitHub 源码](https://github.com/zhchunyu/Our-Campus) | Web 与 Android 工程、业务网关、数据库脚本及项目文档。 |
+| [铭贤旧址全景漫游](mingxian-tour/) | 思政「一课一品」独立全景应用：17 场景、8 段配音、可离线运行并打包独立 APK。 |
 | [ModelScope 模型发布页](https://modelscope.cn/models/chunyuuu/Qwen2.5-7B-Instruct/summary) | 团队提供的模型下载入口，文件与使用条件以模型页为准。 |
 | [SwanLab 实验记录](https://swanlab.cn/@zhchunyu/OurCampus-AUV-training/v1/44bg6m/overview) | 训练曲线与实验展示；已有 V7、V10 曲线由历史训练日志后续导入。 |
 | [训练与评测资料](models/auv/) | 数据准备、版本配置、推理部署与验收脚本。 |
