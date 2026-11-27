@@ -7,7 +7,7 @@ import { safePostImagePaths } from '../../data/postImages.js'
 import { requireSupabase } from '../../data/supabaseClient.js'
 import { campusDisplayText } from '../../data/campusPresentation.js'
 import { reportImageDetails, eventReportImagePaths, INFORMATION_KINDS, PUBLIC_INFORMATION_KINDS, REPORT_STATUS, informationError, newReportId, retryCampusReport, reviewCampusReport, setReportStatus, submitCampusReport } from '../../data/campusInformation.js'
-import { CampusPush, disablePushDevice, isAndroidPush } from '../../data/campusPush.js'
+import { CampusPush, isAndroidPush } from '../../data/campusPush.js'
 import { orderRelevantNotices } from '../../data/notificationRelevance.js'
 import { AiChatReminderPreferences, NotificationPreferences } from './NotificationPreferences.jsx'
 import { HallNotificationPreferences } from './HallNotificationPreferences.jsx'
@@ -68,6 +68,20 @@ function ReviewCard({ report, locations, events, onDone, run, busy, viewerId }) 
   </section>
 }
 
+function pushStatusMessage(push) {
+  const { status, registration, error, action } = push
+  if (!isAndroidPush()) return '系统通知请在安卓 APK 中开启。'
+  if (action === 'disable') return '正在关闭设备通知…'
+  if (status.permission === 'unknown') return error ? '暂时无法读取设备通知状态。' : '正在读取设备通知状态…'
+  if (!status.configured) return '当前版本尚未启用系统通知，请安装配置完成后的更新版本。站内消息仍可查看。'
+  if (status.permission !== 'granted') return '系统通知权限未开启。可在系统设置中允许 OurCampus 通知。'
+  if (!status.enabled) return '本设备尚未开启系统通知。开启后可接收校园通知和你订阅的聊天新消息。'
+  if (!status.cid) return '正在等待个推提供设备标识…'
+  if (registration === 'registered') return '当前账号的设备通知已登记。离线送达仍取决于平台和手机厂商通道。'
+  if (registration === 'failed') return '服务端登记失败，请重试设备登记。'
+  return '正在向服务端登记此设备…'
+}
+
 export function NotificationCenter({ auth, information, push, preferences, favoriteIds, locations, onClose, onOpenLogin, onSelectLocation, onPlanRouteToLocation, onOpenChat, initialDraft, noticeId, initialReportId = null, initialTab = 'messages' }) {
   const userId = auth.user?.id
   const [tab, setTab] = useState(initialDraft ? 'publish' : initialTab === 'review' && auth.role !== 'manager' ? 'messages' : initialTab)
@@ -87,6 +101,7 @@ export function NotificationCenter({ auth, information, push, preferences, favor
     return () => cancelAnimationFrame(frame)
   }, [initialReportId, userId, information.reports, tab])
   const [consent, setConsent] = useState(false)
+  useEffect(() => { setConsent(false) }, [userId])
   const [subscribeLocation, setSubscribeLocation] = useState('')
   const [subscribeKind, setSubscribeKind] = useState('')
   const goBack = () => { if (!busy) { if (tab === 'messages' && detail) setDetail(null); else onClose() } }
@@ -224,14 +239,20 @@ export function NotificationCenter({ auth, information, push, preferences, favor
             <HallNotificationPreferences userId={userId} information={information} busy={busy} run={run} />
             <AiChatReminderPreferences key={userId} userId={userId} busy={busy} run={run} />
             {preferences && <NotificationPreferences preferences={preferences} favoriteIds={favoriteIds} locations={locations} busy={busy} run={run} />}
-            <section className="information-push"><BellRing size={24} /><div><h3>手机系统通知</h3><p>{!isAndroidPush() ? '系统通知请在安卓 APK 中开启。' : !push.status.configured ? '当前版本尚未启用系统通知，请安装配置完成后的更新版本。站内消息仍可查看。' : push.status.enabled && push.status.permission === 'granted' ? (push.status.cid ? '设备通知已开启；退出后的接收还需完成平台和手机厂商通道配置。' : '正在登记通知设备…') : '允许通知后，可接收校园通知和你订阅的聊天新消息。退出后接收需完成手机厂商通道配置。'}</p></div></section>
+            <section className="information-push"><BellRing size={24} /><div><h3>手机系统通知</h3><p role="status">{pushStatusMessage(push)}</p></div></section>
             {isAndroidPush() && push.status.configured && <section className="information-card">
               <p className="information-small">开启后个推处理设备标识、机型等信息以投递通知。校园推送接口不发送课表或应用定位坐标，并关闭 SDK 的智能、应景与应急推送。<a href="https://www.getui.com/privacy" target="_blank" rel="noreferrer">查看个推隐私政策</a></p>
               {push.status.vivoConfigured && <p className="information-small">此安装包还包含维沃移动通信有限公司提供的 vivo 推送 SDK，用于 iQOO/vivo 系统通知；会处理应用信息、推送 RegID、机型和系统信息。<a href="https://developers.vivo.com/doc/d/23807c559e844cbeb06049ee69e71833" target="_blank" rel="noreferrer">查看 vivo 推送隐私说明</a>。离线接收还需平台开通、消息分类和手机通知设置，不能仅凭安装包配置保证送达。</p>}
               <label className="information-consent"><input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />同意使用推送服务接收校园通知</label>
-              <div className="information-actions"><button disabled={!consent || push.busy} onClick={push.enable}>开启系统通知</button><button disabled={busy} onClick={() => run(async () => { await disablePushDevice(); await push.refresh() }, '已停用本设备系统推送，站内消息继续保留。')}>关闭</button><button onClick={() => CampusPush.openSettings()}>系统设置</button></div>
-              {push.error && <p className="information-error">{push.error}</p>}
+              <div className="information-actions">
+                <button disabled={!consent || busy || push.busy} onClick={push.enable}>开启系统通知</button>
+                {push.registration === 'failed' && <button disabled={busy || push.busy} onClick={push.refresh}>重试设备登记</button>}
+                <button disabled={busy || push.busy} onClick={() => run(push.disable, '已停用本设备系统推送，站内消息继续保留。')}>关闭</button>
+                <button disabled={push.busy} onClick={() => CampusPush.openSettings()}>系统设置</button>
+              </div>
             </section>}
+            {isAndroidPush() && push.error && <p className="information-error" role="status">{push.error}</p>}
+            {isAndroidPush() && push.status.permission === 'unknown' && push.error && <button className="information-text-button" disabled={push.busy} onClick={push.refresh}>重新读取设备通知状态</button>}
 <section className="information-card"><h3>只接收与你相关的信息</h3><p>按地点和类型订阅；公共施工、封路和停水停电通知自动面向全体注册用户。</p><form onSubmit={subscribe}><label>地点<select value={subscribeLocation} onChange={(e) => setSubscribeLocation(e.target.value)}><option value="">全部地点</option>{locations.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}</select></label><label>类别<select value={subscribeKind} onChange={(e) => setSubscribeKind(e.target.value)}><option value="">全部类别</option>{Object.entries(INFORMATION_KINDS).map(([value, label]) => <option key={value} value={value} disabled={value === 'activity' && preferences?.status !== 'ready'}>{label}</option>)}</select></label><button className="information-primary" disabled={busy || information.status !== 'ready'}><Check size={16} />保存订阅</button></form></section>{information.subscriptions.filter((s) => s.kind !== 'hall-message').map((s) => <div className="information-subscription" key={`${s.location_id}:${s.kind}`}><span>{locations.find((l) => l.id === s.location_id)?.name ?? '全部地点'} · {INFORMATION_KINDS[s.kind] ?? '全部类别'}</span><button aria-label="取消此订阅" disabled={busy} onClick={() => run(async () => { const { error: failed } = await requireSupabase().from('campus_subscriptions').delete().eq('user_id', userId).eq('location_id', s.location_id).eq('kind', s.kind); if (failed) throw failed; await information.refresh() }, '已取消订阅')}><X size={16} /></button></div>)}</>}
           {tab === 'review' && manager && <><p className="information-small">AI 只生成草稿。请确认现场信息和有效时间；施工等公共通知将全员发送。最近显示 100 条上报。</p>{pending.map((r) => <ReviewCard key={r.id} report={r} locations={locations} events={information.events} onDone={information.refresh} busy={busy} run={run} viewerId={userId} />)}{!pending.length && <p className="information-empty">没有待审核信息。</p>}{information.events.map((e) => <section className="information-card" key={e.id}><span className="information-tag">{e.informationScope === 'all' ? '全员通知' : '订阅通知'}</span><h3>{e.title}</h3><p>{e.impact}</p><button disabled={busy} onClick={() => run(async () => { const { error: failed } = await requireSupabase().rpc('campus_close_information_event', { p_id: e.id }); if (failed) throw failed; await information.refresh() }, '事件已结束，更新通知已加入队列')}>确认事件结束</button></section>)}</>}
         </>}

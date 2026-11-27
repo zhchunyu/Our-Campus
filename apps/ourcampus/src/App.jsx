@@ -12,7 +12,6 @@ import { describeLocationError, getDeviceLocation } from './data/deviceGeolocati
 import { wgs84ToGcj02 } from './data/tencentCampusGeo.js'
 import { cloudLostFoundPost, createFacilityContribution, createLostFoundPost, lostFoundReportDetails, loadCommunityState, LOCAL_AUTHOR_ID, MAX_LOCAL_POSTS, reviewFacilityContribution, saveCommunityState, updateLostFoundStatus } from './data/campusCommunity.js'
 import { informationDraftForUser, setReportStatus, submitCampusReport } from './data/campusInformation.js'
-import { disablePushDevice } from './data/campusPush.js'
 import { useCampusInformation } from './features/notifications/useCampusInformation.js'
 import { useCampusPush } from './features/notifications/useCampusPush.js'
 import { NotificationCenter } from './features/notifications/NotificationCenter.jsx'
@@ -133,7 +132,7 @@ function App() {
     dispatch({ type: 'CLEAR_SELECTED_LOCATION' })
   }, [closeInformation, auth.user?.id, activeTab, state.selectedId, serviceSection, hallSection, hallFullscreen, myPublicationsOpen, informationTab, noticeId])
   const openNotice = useCallback((id) => { setMemberTarget(null); setInformationSeed(null); setInformationTab('messages'); setNoticeId(id); setInformationOpen(true) }, [])
-  const push = useCampusPush(auth.user?.id, openNotice)
+  const push = useCampusPush(auth.user?.id, openNotice, auth.status === 'ready')
   const communityPosts = useMemo(() => {
     const cloud = information.reports.map((report) => cloudLostFoundPost(report, storedState.locations, communityState.posts)).filter(Boolean)
     return [...cloud, ...communityState.posts.filter((p) => !p.cloudReportId)]
@@ -599,7 +598,7 @@ function App() {
             onOpenReview={() => openInformation(null, 'review')}
             onOpenRestaurantManagement={() => handleOpenHall('restaurants')}
             onOpenLocationManagement={() => { setServiceSection('places'); setActiveTab('explore') }}
-            onBeforeLogout={disablePushDevice}
+            onBeforeLogout={push.disable}
             role={state.role}
             settings={state.settings}
             locations={state.locations}

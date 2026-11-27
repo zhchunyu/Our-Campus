@@ -3,6 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
 import * as notifications from './NotificationCenter.jsx'
 
+vi.mock('@capacitor/core', () => ({ Capacitor: { getPlatform: () => 'android' }, registerPlugin: () => ({}) }))
+
 const noop = () => {}
 const defaults = { auth: { user: { id: 'me' }, role: 'member' },
   information: { reports: [], notices: [], subscriptions: [], events: [], status: 'ready', unread: 0 },
@@ -31,5 +33,18 @@ describe('notification destinations', () => {
     for (const unavailable of [null, { ...target, deleted_at: '2026-11-15' }, { ...target, id: 'other' }]) {
       expect(notifications.HallNotificationSourceAction({ notice, target: unavailable, onOpenChat: noop })).toBeNull()
     }
+  })
+})
+
+describe('Android notification settings', () => {
+  const eligible = { configured: true, enabled: true, permission: 'granted', cid: 'test-device' }
+  const settings = (push) => renderToStaticMarkup(<notifications.NotificationCenter {...defaults} initialTab="subscriptions" push={push} />)
+
+  it('distinguishes system permission, provider, and server registration', () => {
+    expect(settings({ status: { ...eligible, permission: 'denied' } })).toContain('系统通知权限未开启')
+    expect(settings({ status: { ...eligible, cid: '' } })).toContain('正在等待个推提供设备标识')
+    expect(settings({ status: eligible, registration: 'registering' })).toContain('正在向服务端登记此设备')
+    expect(settings({ status: eligible, registration: 'failed' })).toContain('重试设备登记')
+    expect(settings({ status: eligible, registration: 'registered' })).toContain('当前账号的设备通知已登记')
   })
 })
